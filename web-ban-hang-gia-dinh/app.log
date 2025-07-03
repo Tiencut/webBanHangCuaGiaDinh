@@ -1,0 +1,822 @@
+nohup: ignoring input
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.3)
+
+2025-07-03T16:12:26.547Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] c.g.b.w.WebBanHangGiaDinhApplication     : Starting WebBanHangGiaDinhApplication v0.0.1-SNAPSHOT using Java 21.0.7 with PID 174933 (/workspaces/webBanHangCuaGiaDinh/web-ban-hang-gia-dinh/target/web-ban-hang-gia-dinh-0.0.1-SNAPSHOT.jar started by codespace in /workspaces/webBanHangCuaGiaDinh/web-ban-hang-gia-dinh)
+2025-07-03T16:12:26.550Z DEBUG 174933 --- [web-ban-hang-gia-dinh] [           main] c.g.b.w.WebBanHangGiaDinhApplication     : Running with Spring Boot v3.5.3, Spring v6.2.8
+2025-07-03T16:12:26.550Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] c.g.b.w.WebBanHangGiaDinhApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-07-03T16:12:28.327Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-07-03T16:12:28.329Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-07-03T16:12:28.475Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 138 ms. Found 10 JPA repository interfaces.
+2025-07-03T16:12:28.495Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-07-03T16:12:28.497Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-07-03T16:12:28.515Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.CategoryRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-07-03T16:12:28.516Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.CustomerRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-07-03T16:12:28.516Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.LearningProgressRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-07-03T16:12:28.517Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.OrderRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-07-03T16:12:28.517Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.ProductRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-07-03T16:12:28.518Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.SearchAnalyticsRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-07-03T16:12:28.518Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.SupplierRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-07-03T16:12:28.518Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.TrainingContentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-07-03T16:12:28.518Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-07-03T16:12:28.519Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.VehicleModelRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-07-03T16:12:28.519Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 11 ms. Found 0 Redis repository interfaces.
+2025-07-03T16:12:29.366Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-07-03T16:12:29.381Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-07-03T16:12:29.382Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.42]
+2025-07-03T16:12:29.413Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-07-03T16:12:29.414Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2792 ms
+2025-07-03T16:12:29.732Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-07-03T16:12:29.794Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.18.Final
+2025-07-03T16:12:29.828Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-07-03T16:12:30.110Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-07-03T16:12:30.135Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-07-03T16:12:30.348Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:webbanhanggiadinh user=SA
+2025-07-03T16:12:30.349Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-07-03T16:12:30.367Z  WARN 174933 --- [web-ban-hang-gia-dinh] [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-07-03T16:12:30.389Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-07-03T16:12:32.095Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    drop table if exists categories cascade 
+Hibernate: 
+    drop table if exists customers cascade 
+Hibernate: 
+    drop table if exists learning_progress cascade 
+Hibernate: 
+    drop table if exists order_details cascade 
+Hibernate: 
+    drop table if exists orders cascade 
+Hibernate: 
+    drop table if exists product_images cascade 
+Hibernate: 
+    drop table if exists product_tags cascade 
+Hibernate: 
+    drop table if exists product_vehicle_compatibility cascade 
+Hibernate: 
+    drop table if exists products cascade 
+Hibernate: 
+    drop table if exists search_analytics cascade 
+Hibernate: 
+    drop table if exists suppliers cascade 
+Hibernate: 
+    drop table if exists training_content cascade 
+Hibernate: 
+    drop table if exists training_content_products cascade 
+Hibernate: 
+    drop table if exists training_content_vehicles cascade 
+Hibernate: 
+    drop table if exists user_permissions cascade 
+Hibernate: 
+    drop table if exists users cascade 
+Hibernate: 
+    drop table if exists vehicle_models cascade 
+Hibernate: 
+    create table categories (
+        is_active boolean,
+        level integer,
+        sort_order integer,
+        created_at timestamp(6) not null,
+        id bigint generated by default as identity,
+        parent_id bigint,
+        updated_at timestamp(6),
+        name varchar(100) not null,
+        description varchar(500),
+        code varchar(255) unique,
+        created_by varchar(255),
+        path varchar(255),
+        updated_by varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    create table customers (
+        credit_limit numeric(19,2),
+        current_debt numeric(19,2),
+        discount_percentage float(53),
+        first_purchase_date date,
+        is_active boolean,
+        last_purchase_date date,
+        loyalty_points integer,
+        total_orders integer,
+        total_spent numeric(19,2),
+        created_at timestamp(6) not null,
+        id bigint generated by default as identity,
+        updated_at timestamp(6),
+        phone varchar(15),
+        name varchar(200) not null,
+        address varchar(500),
+        code varchar(255) unique,
+        company_name varchar(255),
+        contact_person varchar(255),
+        created_by varchar(255),
+        email varchar(255),
+        notes TEXT,
+        preferred_vehicle_brands varchar(255),
+        tax_code varchar(255),
+        updated_by varchar(255),
+        customer_type enum ('DEALER','GARAGE','RETAIL','VIP','WHOLESALE'),
+        status enum ('ACTIVE','BLACKLISTED','INACTIVE'),
+        primary key (id)
+    )
+Hibernate: 
+    create table learning_progress (
+        actual_read_time integer,
+        is_active boolean,
+        marked_helpful boolean,
+        understood boolean,
+        view_count integer,
+        viewed boolean,
+        created_at timestamp(6) not null,
+        id bigint generated by default as identity,
+        training_content_id bigint not null,
+        updated_at timestamp(6),
+        user_id bigint not null,
+        created_by varchar(255),
+        notes TEXT,
+        updated_by varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    create table order_details (
+        discount_amount numeric(19,2),
+        is_active boolean,
+        line_total numeric(19,2),
+        quantity integer,
+        unit_price numeric(19,2),
+        created_at timestamp(6) not null,
+        id bigint generated by default as identity,
+        order_id bigint not null,
+        product_id bigint not null,
+        updated_at timestamp(6),
+        created_by varchar(255),
+        notes varchar(255),
+        updated_by varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    create table orders (
+        discount_amount numeric(19,2),
+        is_active boolean,
+        is_deleted boolean,
+        paid_amount numeric(19,2),
+        shipping_cost numeric(19,2),
+        subtotal numeric(19,2),
+        tax_amount numeric(19,2),
+        total_amount numeric(19,2),
+        cancelled_at timestamp(6),
+        confirmed_at timestamp(6),
+        created_at timestamp(6) not null,
+        customer_id bigint not null,
+        delivered_at timestamp(6),
+        expected_delivery_date timestamp(6),
+        id bigint generated by default as identity,
+        order_date timestamp(6),
+        required_date timestamp(6),
+        shipped_at timestamp(6),
+        shipped_date timestamp(6),
+        staff_id bigint,
+        updated_at timestamp(6),
+        cancel_reason varchar(255),
+        created_by varchar(255),
+        internal_notes TEXT,
+        notes TEXT,
+        order_code varchar(255) unique,
+        order_number varchar(255) unique,
+        shipping_address varchar(255),
+        updated_by varchar(255),
+        payment_method enum ('BANK_TRANSFER','CASH','COD','CREDIT','CREDIT_CARD','MOMO','VNPAY'),
+        payment_status enum ('OVERDUE','PAID','PARTIAL','PENDING','REFUNDED'),
+        status enum ('CANCELLED','CONFIRMED','DELIVERED','PENDING','PROCESSING','RETURNED','SHIPPED'),
+        primary key (id)
+    )
+Hibernate: 
+    create table product_images (
+        product_id bigint not null,
+        image_url varchar(255)
+    )
+Hibernate: 
+    create table product_tags (
+        product_id bigint not null,
+        tag varchar(255)
+    )
+Hibernate: 
+    create table product_vehicle_compatibility (
+        product_id bigint not null,
+        vehicle_model_id bigint not null
+    )
+Hibernate: 
+    create table products (
+        base_price numeric(19,2) not null,
+        cost_price numeric(19,2),
+        is_active boolean,
+        is_combo boolean,
+        min_stock_level integer,
+        reorder_point integer,
+        selling_price numeric(19,2),
+        warranty_period integer,
+        weight float(53),
+        category_id bigint,
+        created_at timestamp(6) not null,
+        id bigint generated by default as identity,
+        updated_at timestamp(6),
+        name varchar(200) not null,
+        description varchar(1000),
+        brand varchar(255),
+        code varchar(255) unique,
+        created_by varchar(255),
+        dimensions varchar(255),
+        model varchar(255),
+        oem_number varchar(255),
+        part_number varchar(255),
+        updated_by varchar(255),
+        vehicle_type varchar(255),
+        status enum ('ACTIVE','DISCONTINUED','INACTIVE','OUT_OF_STOCK'),
+        primary key (id)
+    )
+Hibernate: 
+    create table search_analytics (
+        asked_for_help boolean,
+        is_active boolean,
+        result_count integer,
+        result_found boolean,
+        time_to_find integer,
+        used_training_content boolean,
+        created_at timestamp(6) not null,
+        id bigint generated by default as identity,
+        selected_product_id bigint,
+        updated_at timestamp(6),
+        user_id bigint not null,
+        search_query varchar(500),
+        created_by varchar(255),
+        session_notes TEXT,
+        updated_by varchar(255),
+        search_type enum ('HELP_SEARCH','PRODUCT_SEARCH','TRAINING_SEARCH','VEHICLE_SEARCH'),
+        primary key (id)
+    )
+Hibernate: 
+    create table suppliers (
+        credit_limit numeric(19,2),
+        delivery_time_days integer,
+        is_active boolean,
+        rating float(53),
+        created_at timestamp(6) not null,
+        id bigint generated by default as identity,
+        updated_at timestamp(6),
+        phone varchar(15),
+        name varchar(200) not null,
+        address varchar(500),
+        bank_account varchar(255),
+        bank_name varchar(255),
+        code varchar(255) unique,
+        contact_person varchar(255),
+        created_by varchar(255),
+        email varchar(255),
+        notes TEXT,
+        tax_code varchar(255),
+        updated_by varchar(255),
+        payment_terms enum ('CASH','NET_15','NET_30','NET_45','NET_60','NET_7'),
+        status enum ('ACTIVE','BLACKLISTED','INACTIVE'),
+        primary key (id)
+    )
+Hibernate: 
+    create table training_content (
+        estimated_read_time integer,
+        is_active boolean,
+        priority integer not null,
+        show_in_quick_help boolean,
+        created_at timestamp(6) not null,
+        id bigint generated by default as identity,
+        updated_at timestamp(6),
+        title varchar(300) not null,
+        summary varchar(500),
+        tags varchar(1000),
+        content TEXT,
+        created_by varchar(255),
+        images TEXT,
+        updated_by varchar(255),
+        video_url varchar(255),
+        category enum ('COMMON_MISTAKES','CUSTOMER_SERVICE','PRICING_GUIDE','PRODUCT_IDENTIFICATION','QUALITY_CHECK','SALES_TIPS','TECHNICAL_SPECS','VEHICLE_KNOWLEDGE') not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table training_content_products (
+        product_id bigint not null,
+        training_content_id bigint not null
+    )
+Hibernate: 
+    create table training_content_vehicles (
+        training_content_id bigint not null,
+        vehicle_model_id bigint not null
+    )
+Hibernate: 
+    create table user_permissions (
+        user_id bigint not null,
+        permission enum ('CUSTOMER_CREATE','CUSTOMER_DELETE','CUSTOMER_UPDATE','CUSTOMER_VIEW','INVENTORY_CREATE','INVENTORY_DELETE','INVENTORY_UPDATE','INVENTORY_VIEW','ORDER_CREATE','ORDER_DELETE','ORDER_UPDATE','ORDER_VIEW','PRODUCT_CREATE','PRODUCT_DELETE','PRODUCT_UPDATE','PRODUCT_VIEW','REPORT_FINANCIAL','REPORT_INVENTORY','REPORT_SALES','SUPPLIER_CREATE','SUPPLIER_DELETE','SUPPLIER_UPDATE','SUPPLIER_VIEW','SYSTEM_CONFIG','USER_MANAGEMENT')
+    )
+Hibernate: 
+    create table users (
+        failed_login_attempts integer,
+        is_active boolean,
+        is_email_verified boolean,
+        account_locked_until timestamp(6),
+        created_at timestamp(6) not null,
+        id bigint generated by default as identity,
+        last_login timestamp(6),
+        updated_at timestamp(6),
+        phone varchar(15),
+        username varchar(50) not null unique,
+        email varchar(100) not null unique,
+        full_name varchar(100),
+        password varchar(100) not null,
+        created_by varchar(255),
+        updated_by varchar(255),
+        role enum ('ADMIN','CUSTOMER','MANAGER','SHIPPER','STAFF'),
+        primary key (id)
+    )
+Hibernate: 
+    create table vehicle_models (
+        cargo_height integer,
+        cargo_length integer,
+        cargo_width integer,
+        engine_displacement integer,
+        engine_power integer,
+        is_active boolean,
+        tonnage float(53),
+        year_from integer not null,
+        year_to integer,
+        created_at timestamp(6) not null,
+        id bigint generated by default as identity,
+        updated_at timestamp(6),
+        code varchar(50) not null unique,
+        tire_size varchar(50),
+        brand varchar(100) not null,
+        origin varchar(100),
+        transmission varchar(100),
+        engine_model varchar(200),
+        name varchar(200) not null,
+        alternative_names TEXT,
+        created_by varchar(255),
+        technical_notes TEXT,
+        updated_by varchar(255),
+        production_status enum ('DISCONTINUED','IN_PRODUCTION','PLANNED') not null,
+        vehicle_type enum ('BUS','HEAVY_TRUCK','LIGHT_TRUCK','MEDIUM_TRUCK','PICKUP','SPECIALIZED','VAN'),
+        primary key (id)
+    )
+Hibernate: 
+    alter table if exists categories 
+       add constraint FKsaok720gsu4u2wrgbk10b5n8d 
+       foreign key (parent_id) 
+       references categories
+Hibernate: 
+    alter table if exists learning_progress 
+       add constraint FKs9er4eldjc5ot33vpm4g51ipt 
+       foreign key (training_content_id) 
+       references training_content
+Hibernate: 
+    alter table if exists learning_progress 
+       add constraint FKkex4pny6sl5affwroon8lfbjt 
+       foreign key (user_id) 
+       references users
+Hibernate: 
+    alter table if exists order_details 
+       add constraint FKjyu2qbqt8gnvno9oe9j2s2ldk 
+       foreign key (order_id) 
+       references orders
+Hibernate: 
+    alter table if exists order_details 
+       add constraint FK4q98utpd73imf4yhttm3w0eax 
+       foreign key (product_id) 
+       references products
+Hibernate: 
+    alter table if exists orders 
+       add constraint FKpxtb8awmi0dk6smoh2vp1litg 
+       foreign key (customer_id) 
+       references customers
+Hibernate: 
+    alter table if exists orders 
+       add constraint FKe979ux6efhhi6ph712agy4bit 
+       foreign key (staff_id) 
+       references users
+Hibernate: 
+    alter table if exists product_images 
+       add constraint FKqnq71xsohugpqwf3c9gxmsuy 
+       foreign key (product_id) 
+       references products
+Hibernate: 
+    alter table if exists product_tags 
+       add constraint FK5rk6s19k3risy7q7wqdr41uss 
+       foreign key (product_id) 
+       references products
+Hibernate: 
+    alter table if exists product_vehicle_compatibility 
+       add constraint FK1rj0t0br1iyer3mjwy4gdiu99 
+       foreign key (vehicle_model_id) 
+       references vehicle_models
+Hibernate: 
+    alter table if exists product_vehicle_compatibility 
+       add constraint FKjpj1fw80mf4x7m96cl3duki25 
+       foreign key (product_id) 
+       references products
+Hibernate: 
+    alter table if exists products 
+       add constraint FKog2rp4qthbtt2lfyhfo32lsw9 
+       foreign key (category_id) 
+       references categories
+Hibernate: 
+    alter table if exists search_analytics 
+       add constraint FKq4milfpigcgy2yydk0ip6lx51 
+       foreign key (selected_product_id) 
+       references products
+Hibernate: 
+    alter table if exists search_analytics 
+       add constraint FKnq7dn91o284rcr3yh8ob0agjb 
+       foreign key (user_id) 
+       references users
+Hibernate: 
+    alter table if exists training_content_products 
+       add constraint FK5nnit0lvtm6xl0a1blq8c8126 
+       foreign key (product_id) 
+       references products
+Hibernate: 
+    alter table if exists training_content_products 
+       add constraint FKaicj1ku5fim8k98s9tasbko7f 
+       foreign key (training_content_id) 
+       references training_content
+Hibernate: 
+    alter table if exists training_content_vehicles 
+       add constraint FKe0f1xg6u2ypavt7u68pxap4ni 
+       foreign key (vehicle_model_id) 
+       references vehicle_models
+Hibernate: 
+    alter table if exists training_content_vehicles 
+       add constraint FKsoi0tmwip5qwg2an7eush43ld 
+       foreign key (training_content_id) 
+       references training_content
+Hibernate: 
+    alter table if exists user_permissions 
+       add constraint FKkowxl8b2bngrxd1gafh13005u 
+       foreign key (user_id) 
+       references users
+2025-07-03T16:12:32.200Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-07-03T16:12:32.655Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-07-03T16:12:34.020Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2025-07-03T16:12:34.021Z  WARN 174933 --- [web-ban-hang-gia-dinh] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2025-07-03T16:12:35.305Z  WARN 174933 --- [web-ban-hang-gia-dinh] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-07-03T16:12:35.815Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2025-07-03T16:12:36.741Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:webbanhanggiadinh'
+2025-07-03T16:12:36.810Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-07-03T16:12:36.828Z  INFO 174933 --- [web-ban-hang-gia-dinh] [           main] c.g.b.w.WebBanHangGiaDinhApplication     : Started WebBanHangGiaDinhApplication in 10.911 seconds (process running for 11.542)
+Hibernate: 
+    select
+        count(*) 
+    from
+        vehicle_models vm1_0
+🚀 Initializing sample data...
+Hibernate: 
+    select
+        count(*) 
+    from
+        users u1_0
+Hibernate: 
+    insert 
+    into
+        users
+        (account_locked_until, created_at, created_by, email, failed_login_attempts, full_name, is_active, is_email_verified, last_login, password, phone, role, updated_at, updated_by, username, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        users
+        (account_locked_until, created_at, created_by, email, failed_login_attempts, full_name, is_active, is_email_verified, last_login, password, phone, role, updated_at, updated_by, username, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        users
+        (account_locked_until, created_at, created_by, email, failed_login_attempts, full_name, is_active, is_email_verified, last_login, password, phone, role, updated_at, updated_by, username, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+👥 Created default users:
+   - admin/admin123 (ADMIN)
+   - manager/manager123 (MANAGER)
+   - staff/staff123 (STAFF)
+Hibernate: 
+    insert 
+    into
+        categories
+        (code, created_at, created_by, description, is_active, level, name, parent_id, path, sort_order, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        categories
+        (code, created_at, created_by, description, is_active, level, name, parent_id, path, sort_order, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        categories
+        (code, created_at, created_by, description, is_active, level, name, parent_id, path, sort_order, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+📁 Created categories
+Hibernate: 
+    insert 
+    into
+        vehicle_models
+        (alternative_names, brand, cargo_height, cargo_length, cargo_width, code, created_at, created_by, engine_displacement, engine_model, engine_power, is_active, name, origin, production_status, technical_notes, tire_size, tonnage, transmission, updated_at, updated_by, vehicle_type, year_from, year_to, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        vehicle_models
+        (alternative_names, brand, cargo_height, cargo_length, cargo_width, code, created_at, created_by, engine_displacement, engine_model, engine_power, is_active, name, origin, production_status, technical_notes, tire_size, tonnage, transmission, updated_at, updated_by, vehicle_type, year_from, year_to, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        vehicle_models
+        (alternative_names, brand, cargo_height, cargo_length, cargo_width, code, created_at, created_by, engine_displacement, engine_model, engine_power, is_active, name, origin, production_status, technical_notes, tire_size, tonnage, transmission, updated_at, updated_by, vehicle_type, year_from, year_to, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+🚛 Created vehicle models
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.code,
+        c1_0.created_at,
+        c1_0.created_by,
+        c1_0.description,
+        c1_0.is_active,
+        c1_0.level,
+        c1_0.name,
+        c1_0.parent_id,
+        c1_0.path,
+        c1_0.sort_order,
+        c1_0.updated_at,
+        c1_0.updated_by 
+    from
+        categories c1_0 
+    where
+        c1_0.code=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.code,
+        c1_0.created_at,
+        c1_0.created_by,
+        c1_0.description,
+        c1_0.is_active,
+        c1_0.level,
+        c1_0.name,
+        c1_0.parent_id,
+        c1_0.path,
+        c1_0.sort_order,
+        c1_0.updated_at,
+        c1_0.updated_by 
+    from
+        categories c1_0 
+    where
+        c1_0.code=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.code,
+        c1_0.created_at,
+        c1_0.created_by,
+        c1_0.description,
+        c1_0.is_active,
+        c1_0.level,
+        c1_0.name,
+        c1_0.parent_id,
+        c1_0.path,
+        c1_0.sort_order,
+        c1_0.updated_at,
+        c1_0.updated_by 
+    from
+        categories c1_0 
+    where
+        c1_0.code=?
+Hibernate: 
+    insert 
+    into
+        products
+        (base_price, brand, category_id, code, cost_price, created_at, created_by, description, dimensions, is_active, is_combo, min_stock_level, model, name, oem_number, part_number, reorder_point, selling_price, status, updated_at, updated_by, vehicle_type, warranty_period, weight, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        products
+        (base_price, brand, category_id, code, cost_price, created_at, created_by, description, dimensions, is_active, is_combo, min_stock_level, model, name, oem_number, part_number, reorder_point, selling_price, status, updated_at, updated_by, vehicle_type, warranty_period, weight, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        products
+        (base_price, brand, category_id, code, cost_price, created_at, created_by, description, dimensions, is_active, is_combo, min_stock_level, model, name, oem_number, part_number, reorder_point, selling_price, status, updated_at, updated_by, vehicle_type, warranty_period, weight, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        products
+        (base_price, brand, category_id, code, cost_price, created_at, created_by, description, dimensions, is_active, is_combo, min_stock_level, model, name, oem_number, part_number, reorder_point, selling_price, status, updated_at, updated_by, vehicle_type, warranty_period, weight, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        product_tags
+        (product_id, tag) 
+    values
+        (?, ?)
+🔧 Created products
+✅ Sample data initialized successfully!
+2025-07-03T16:12:52.975Z  INFO 174933 --- [web-ban-hang-gia-dinh] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-07-03T16:12:52.975Z  INFO 174933 --- [web-ban-hang-gia-dinh] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-07-03T16:12:52.976Z  INFO 174933 --- [web-ban-hang-gia-dinh] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.account_locked_until,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.is_active,
+        u1_0.is_email_verified,
+        u1_0.last_login,
+        u1_0.password,
+        u1_0.phone,
+        u1_0.role,
+        u1_0.updated_at,
+        u1_0.updated_by,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        p1_0.user_id,
+        p1_0.permission 
+    from
+        user_permissions p1_0 
+    where
+        p1_0.user_id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.account_locked_until,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.email,
+        u1_0.failed_login_attempts,
+        u1_0.full_name,
+        u1_0.is_active,
+        u1_0.is_email_verified,
+        u1_0.last_login,
+        u1_0.password,
+        u1_0.phone,
+        u1_0.role,
+        u1_0.updated_at,
+        u1_0.updated_by,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?

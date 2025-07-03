@@ -7,13 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Category;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.User;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.VehicleModel;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.CategoryRepository;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.ProductRepository;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.UserRepository;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.VehicleModelRepository;
 
 /**
@@ -38,19 +41,25 @@ public class DataInitializer {
     
     @Autowired
     private CategoryRepository categoryRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Bean
     CommandLineRunner initDatabase() {
         return args -> {
-            // Tạm thời disable để test import
-            System.out.println("🔧 DataInitializer disabled for testing");
-            /*
             // Chỉ init nếu chưa có dữ liệu
             if (vehicleModelRepository.count() > 0) {
                 return;
             }
             
-            System.out.println("🚀 Initializing sample data...");*/
+            System.out.println("🚀 Initializing sample data...");
+            
+            // 0. Tạo default users trước
+            createDefaultUsers();
             
             // 1. Tạo categories
             initCategories();
@@ -286,5 +295,53 @@ public class DataInitializer {
         }
         
         System.out.println("🔗 Created compatibility relationships");
+    }
+    
+    /**
+     * Tạo tài khoản mặc định cho hệ thống
+     */
+    private void createDefaultUsers() {
+        // Kiểm tra nếu đã có admin thì bỏ qua
+        if (userRepository.count() > 0) {
+            return;
+        }
+        
+        // Tạo Admin user
+        User admin = new User();
+        admin.setUsername("admin");
+        admin.setPassword(passwordEncoder.encode("admin123"));
+        admin.setEmail("admin@giadinh.com");
+        admin.setFullName("Administrator");
+        admin.setRole(User.UserRole.ADMIN);
+        admin.setIsActive(true);
+        admin.setIsEmailVerified(true);
+        userRepository.save(admin);
+        
+        // Tạo Manager user
+        User manager = new User();
+        manager.setUsername("manager");
+        manager.setPassword(passwordEncoder.encode("manager123"));
+        manager.setEmail("manager@giadinh.com");
+        manager.setFullName("Quản lý");
+        manager.setRole(User.UserRole.MANAGER);
+        manager.setIsActive(true);
+        manager.setIsEmailVerified(true);
+        userRepository.save(manager);
+        
+        // Tạo Staff user
+        User staff = new User();
+        staff.setUsername("staff");
+        staff.setPassword(passwordEncoder.encode("staff123"));
+        staff.setEmail("staff@giadinh.com");
+        staff.setFullName("Nhân viên bán hàng");
+        staff.setRole(User.UserRole.STAFF);
+        staff.setIsActive(true);
+        staff.setIsEmailVerified(true);
+        userRepository.save(staff);
+        
+        System.out.println("👥 Created default users:");
+        System.out.println("   - admin/admin123 (ADMIN)");
+        System.out.println("   - manager/manager123 (MANAGER)");
+        System.out.println("   - staff/staff123 (STAFF)");
     }
 }

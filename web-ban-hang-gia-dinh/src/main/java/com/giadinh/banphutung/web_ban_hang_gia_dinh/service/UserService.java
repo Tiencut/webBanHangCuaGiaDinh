@@ -1,17 +1,19 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.service;
 
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.User;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.User.UserRole;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.User;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.User.UserRole;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +58,12 @@ public class UserService {
     @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+    
+    // Tìm user theo username - trả về User (cho authentication)
+    @Transactional(readOnly = true)
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
     }
     
     // Tìm user theo email
