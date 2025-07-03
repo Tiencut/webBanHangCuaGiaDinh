@@ -1,15 +1,23 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.entity;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -53,6 +61,9 @@ public class User extends BaseEntity {
     
     @Column(name = "failed_login_attempts")
     private Integer failedLoginAttempts = 0;
+    
+    @Column(name = "account_locked_until")
+    private LocalDateTime accountLockedUntil;
     
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
