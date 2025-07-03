@@ -801,6 +801,167 @@
   - **Performance tracking**: Theo dõi tuổi thọ thực tế
   - **Issue reporting**: Báo cáo vấn đề nếu có
   - **Knowledge base**: Tích lũy kiến thức để tư vấn tốt hơn
+
+### 3.10 Module Quản lý Thanh toán và Tài chính
+- **Payment Processing**
+  - **Multi-payment methods**: Tiền mặt, chuyển khoản, ví điện tử
+  - **Payment gateway integration**: VNPay, MoMo, ZaloPay
+  - **Split payment**: Chia thanh toán nhiều phương thức
+  - **Payment scheduling**: Lên lịch thanh toán trả góp
+  - **QR code payment**: Thanh toán nhanh bằng QR code
+
+- **Credit Management**
+  - **Credit limit setting**: Thiết lập hạn mức tín dụng theo khách hàng
+  - **Credit assessment**: Đánh giá khả năng tín dụng dựa trên lịch sử
+  - **Payment terms**: Điều khoản thanh toán linh hoạt (7, 15, 30 ngày)
+  - **Overdue management**: Quản lý nợ quá hạn với lãi suất phạt
+  - **Credit score tracking**: Theo dõi điểm tín dụng khách hàng
+
+- **Financial Reporting**
+  - **Cash flow reports**: Báo cáo dòng tiền theo ngày/tuần/tháng
+  - **Profit & Loss**: Báo cáo lãi lỗ chi tiết theo sản phẩm/khách hàng
+  - **Accounts receivable**: Báo cáo công nợ phải thu theo độ tuổi nợ
+  - **Tax reports**: Báo cáo thuế VAT tự động
+  - **Bank reconciliation**: Đối chiếu sổ ngân hàng
+
+- **Accounting Integration**
+  - **Double-entry bookkeeping**: Kế toán kép tự động
+  - **Chart of accounts**: Hệ thống tài khoản kế toán chuẩn
+  - **Journal entries**: Bút toán kế toán tự động từ giao dịch
+  - **Trial balance**: Bảng cân đối thử
+  - **Financial statements**: Báo cáo tài chính chuẩn
+
+### 3.11 Module Thông báo và Cảnh báo Thông minh
+- **Smart Notifications**
+  - **Inventory alerts**: Cảnh báo tồn kho thấp, hết hàng, hàng ế
+  - **Price change alerts**: Thông báo thay đổi giá từ NCC
+  - **Order notifications**: Thông báo đơn hàng mới, cập nhật trạng thái
+  - **Payment alerts**: Thông báo thanh toán thành công, nợ quá hạn
+  - **System alerts**: Cảnh báo lỗi hệ thống, bảo trì
+
+- **Multi-channel Delivery**
+  - **Push notifications**: Thông báo đẩy trên mobile app
+  - **SMS notifications**: Tin nhắn SMS cho thông báo khẩn cấp
+  - **Email notifications**: Email báo cáo định kỳ và thông báo quan trọng
+  - **In-app notifications**: Thông báo trong ứng dụng với action buttons
+  - **Zalo/Telegram**: Tích hợp bot thông báo qua chat app
+
+- **Intelligent Alerting**
+  - **Smart triggers**: Trigger thông minh dựa trên AI/ML
+  - **Escalation rules**: Quy tắc leo thang cảnh báo theo cấp độ
+  - **Notification preferences**: Tùy chỉnh sở thích nhận thông báo
+  - **Alert analytics**: Phân tích hiệu quả và response rate của cảnh báo
+  - **Snooze and dismiss**: Tạm hoãn hoặc bỏ qua thông báo
+
+### 3.12 Module Customer Loyalty và Marketing
+- **Loyalty Program Management**
+  - **Points system**: Hệ thống tích điểm linh hoạt (mua hàng, giới thiệu)
+  - **Tier management**: Quản lý hạng thành viên (Bronze, Silver, Gold, Platinum)
+  - **Reward catalog**: Danh mục quà tặng đổi điểm
+  - **Special promotions**: Ưu đãi đặc biệt theo hạng thành viên
+  - **Birthday rewards**: Ưu đãi sinh nhật tự động
+
+- **Marketing Automation**
+  - **Customer segmentation**: Phân khúc khách hàng tự động theo hành vi
+  - **Campaign management**: Quản lý chiến dịch marketing đa kênh
+  - **Targeted promotions**: Khuyến mãi có mục tiêu theo segment
+  - **A/B testing**: Test hiệu quả các chiến dịch marketing
+  - **Lead nurturing**: Nuôi dưỡng khách hàng tiềm năng
+
+- **Communication Tools**
+  - **SMS marketing**: Gửi tin nhắn marketing hàng loạt
+  - **Email campaigns**: Chiến dịch email marketing với template
+  - **Social media integration**: Tích hợp Facebook, Zalo OA
+  - **Customer surveys**: Khảo sát ý kiến khách hàng
+  - **Referral program**: Chương trình giới thiệu bạn bè
+
+### 3.13 Module Quality Control và Warranty
+- **Quality Management**
+  - **Quality inspection**: Kiểm tra chất lượng hàng nhập và xuất
+  - **Batch tracking**: Theo dõi sản phẩm theo số lô sản xuất
+  - **Quality reports**: Báo cáo chất lượng tổng thể và xu hướng
+  - **Supplier quality rating**: Đánh giá chất lượng của từng NCC
+  - **Defect tracking**: Theo dõi lỗi sản phẩm và nguyên nhân
+
+- **Warranty Management**
+  - **Warranty registration**: Đăng ký bảo hành sản phẩm tự động
+  - **Warranty tracking**: Theo dõi thời hạn bảo hành còn lại
+  - **Claim processing**: Xử lý yêu cầu bảo hành từ khách hàng
+  - **Warranty analytics**: Phân tích tỷ lệ claim và chi phí bảo hành
+  - **Extended warranty**: Chương trình bảo hành mở rộng
+
+- **Return Management**
+  - **Return authorization**: Ủy quyền trả hàng với QR code
+  - **Return processing**: Quy trình xử lý hàng trả lại
+  - **Refund management**: Quản lý hoàn tiền và credit note
+  - **Return analytics**: Phân tích lý do trả hàng và xu hướng
+  - **Restocking fee**: Phí tái nhập kho cho hàng trả
+
+### 3.14 Module Business Intelligence và Analytics
+- **Advanced Analytics**
+  - **Sales analytics**: Phân tích bán hàng nâng cao với drill-down
+  - **Customer analytics**: RFM analysis, lifetime value, churn prediction
+  - **Product analytics**: ABC analysis, seasonality, cross-sell analysis
+  - **Financial analytics**: ROI, gross margin, cash conversion cycle
+  - **Operational analytics**: Hiệu quả nhân viên, chi phí vận hành
+
+- **Predictive Analytics**
+  - **Demand forecasting**: Dự báo nhu cầu dựa trên ML
+  - **Churn prediction**: Dự đoán khách hàng có nguy cơ rời bỏ
+  - **Price optimization**: Tối ưu hóa giá bán dựa trên elasticity
+  - **Inventory optimization**: Tối ưu tồn kho với safety stock
+  - **Maintenance prediction**: Dự báo nhu cầu bảo dưỡng xe
+
+- **Data Visualization**
+  - **Interactive dashboards**: Dashboard tương tác realtime
+  - **Custom reports**: Báo cáo tùy chỉnh với drag & drop
+  - **Real-time metrics**: KPI và metrics thời gian thực
+  - **Mobile BI**: Business Intelligence trên mobile app
+  - **Export capabilities**: Xuất dữ liệu Excel, PDF, API
+
+### 3.15 Module Multi-branch và Franchise
+- **Branch Management**
+  - **Branch setup**: Thiết lập và cấu hình chi nhánh mới
+  - **Branch hierarchy**: Cấu trúc phân cấp chi nhánh/khu vực
+  - **Branch-specific pricing**: Giá riêng cho từng chi nhánh
+  - **Branch performance**: So sánh hiệu quả giữa các chi nhánh
+  - **Inter-branch communication**: Giao tiếp giữa chi nhánh
+
+- **Inventory Distribution**
+  - **Inter-branch transfers**: Chuyển hàng giữa các chi nhánh
+  - **Central vs local inventory**: Quản lý kho trung tâm và kho địa phương
+  - **Allocation rules**: Quy tắc phân bổ hàng hóa tự động
+  - **Stock balancing**: Cân bằng tồn kho giữa chi nhánh
+  - **Emergency stock**: Dự trữ khẩn cấp cho chi nhánh
+
+- **Franchise Support**
+  - **Royalty calculation**: Tính toán phí nhượng quyền tự động
+  - **Performance monitoring**: Giám sát hiệu quả franchise
+  - **Training materials**: Tài liệu đào tạo và hỗ trợ
+  - **Brand compliance**: Tuân thủ tiêu chuẩn thương hiệu
+  - **Franchise analytics**: Phân tích hiệu quả mô hình franchise
+
+### 3.16 Module Advanced Procurement
+- **Supplier Management Plus**
+  - **Supplier evaluation**: Đánh giá NCC đa tiêu chí (giá, chất lượng, giao hàng)
+  - **Supplier contracts**: Quản lý hợp đồng và điều khoản với NCC
+  - **Supplier portal**: Cổng thông tin cho NCC tự quản lý
+  - **Performance tracking**: Theo dõi KPI của từng NCC
+  - **Risk assessment**: Đánh giá rủi ro chuỗi cung ứng
+
+- **Advanced Purchasing**
+  - **Blanket orders**: Đơn hàng khung dài hạn với delivery schedule
+  - **Just-in-time purchasing**: Mua hàng đúng lúc để giảm tồn kho
+  - **Economic order quantity**: Tối ưu số lượng đặt hàng
+  - **Group purchasing**: Mua hàng tập trung để được giá tốt
+  - **Automated reordering**: Đặt hàng tự động khi đạt reorder point
+
+- **Supply Chain Visibility**
+  - **Shipment tracking**: Theo dõi vận chuyển từ NCC
+  - **Lead time analysis**: Phân tích thời gian giao hàng
+  - **Alternative sourcing**: Quản lý nguồn cung ứng thay thế
+  - **Supply chain mapping**: Bản đồ chuỗi cung ứng
+  - **Disruption alerts**: Cảnh báo gián đoạn chuỗi cung ứng
 ## 4. YÊU CẦU KỸ THUẬT
 
 ### 4.1 Yêu cầu chức năng
@@ -828,15 +989,18 @@
 
 ### 5.1 Backend
 - **Framework**: Spring Boot 3.x
-- **Database**: PostgreSQL (hỗ trợ JSON, full-text search, recursive CTE cho tree structure)
+- **Database**: PostgreSQL (JSON support, full-text search, recursive CTE)
 - **ORM**: Spring Data JPA + Hibernate
-- **Security**: Spring Security + JWT
-- **API Documentation**: Swagger/OpenAPI
+- **Security**: Spring Security + JWT + OAuth2
+- **API Documentation**: Swagger/OpenAPI 3.0
 - **File Storage**: MinIO/AWS S3
-- **Search Engine**: Elasticsearch (cho tìm kiếm sản phẩm nâng cao, category search)
+- **Search Engine**: Elasticsearch (advanced search, analytics)
 - **Cache**: Redis (session, cart, frequent data, category tree cache)
-- **Message Queue**: RabbitMQ (async processing, notification)
-- **Tree Structure**: PostgreSQL recursive CTE + materialized path cho category hierarchy
+- **Message Queue**: RabbitMQ (async processing, notifications)
+- **Payment Integration**: VNPay SDK, MoMo API, ZaloPay SDK
+- **ML/AI**: Python scikit-learn, TensorFlow (demand forecasting)
+- **Notification**: Firebase Cloud Messaging, Twilio SMS
+- **Accounting**: Custom double-entry bookkeeping system
 
 ### 5.2 Frontend Web
 - **Framework**: React.js hoặc Angular
@@ -867,39 +1031,47 @@
 
 ## 6. KẾ HOẠCH PHÁT TRIỂN
 
-### Phase 1 (2-3 tháng): Core Features
+### Phase 1 (3-4 tháng): Core Business Features
 - **Category Management**: Hệ thống phân loại sản phẩm đa cấp (tree structure)
-- Quản lý sản phẩm cơ bản với category assignment
-- **Product Combo System**: Tạo combo, thay thế linh kiện cơ bản
-- **Vehicle Management**: Đăng ký thông tin xe khách hàng
-- **Price Negotiation**: Thương lượng giá với validation và approval workflow
-- Quản lý nhà cung cấp
-- **Inquiry Management**: Tạo danh sách inquiry, theo dõi phản hồi NCC
-- **Note System**: Hệ thống ghi chú cơ bản (personal notes, quick notes)
-- **Delivery Management**: Quản lý giao hàng cơ bản (xe ôm, xe khách)
-- Bán hàng đơn giản
-- Quản lý kho cơ bản (nhập thực tế với giá flexibility)
+- **Product Management**: Quản lý sản phẩm cơ bản với multi-supplier support
+- **Basic Sales Module**: Bán hàng đơn giản, báo giá, tạo đơn hàng
+- **Inventory Management**: Quản lý kho cơ bản (nhập/xuất, tồn kho)
+- **Customer Management**: Quản lý khách hàng với phân loại và pricing tier
+- **Supplier Management**: Quản lý nhà cung cấp cơ bản
+- **Payment Processing**: Thanh toán cơ bản (tiền mặt, chuyển khoản)
+- **Basic Notifications**: Thông báo cơ bản (đơn hàng, tồn kho)
+- **User Management**: Phân quyền và quản lý người dùng
+- **Basic Reports**: Báo cáo doanh thu, tồn kho cơ bản
 
-### Phase 2 (2 tháng): Advanced Features
-- **Advanced Category Features**: Drag & drop, bulk operations, category analytics
-- **Substitution History**: Lưu trữ và theo dõi lịch sử thay thế linh kiện
-- **Smart Recommendations**: Gợi ý thông minh dựa trên lịch sử khách hàng và xe
+### Phase 2 (3-4 tháng): Advanced Features
+- **Product Combo System**: Tạo combo, thay thế linh kiện linh hoạt
+- **Vehicle Management**: Đăng ký thông tin xe và lịch sử thay thế
+- **Advanced Pricing**: Dynamic pricing, negotiation, discount management
 - **Voice-to-Order**: Tạo đơn hàng bằng giọng nói (mobile app)
-- **Advanced Discount Analytics**: Phân tích hiệu quả discount, customer behavior
-- Đa nguồn cung cho sản phẩm
-- **Advanced Notes**: Rich text editor, voice notes, tags, reminder
-- Báo cáo chi tiết theo danh mục
-- Mobile app cơ bản với category tree navigation
-- Tích hợp thanh toán
+- **Quality Control**: Kiểm tra chất lượng, warranty management
+- **Delivery Management**: Quản lý giao hàng đa phương thức
+- **Note System**: Hệ thống ghi chú nâng cao với voice notes
+- **Advanced Notifications**: Smart alerts với multi-channel delivery
+- **Credit Management**: Quản lý công nợ và hạn mức tín dụng
+- **Mobile App**: Flutter app với face recognition login
 
-### Phase 3 (1-2 tháng): Integration & AI/ML Features
-- **AI-powered Recommendations**: Machine learning cho gợi ý sản phẩm
-- **Predictive Analytics**: Dự báo nhu cầu thay thế dựa trên usage pattern
-- **Performance Analytics**: Phân tích hiệu quả của các loại thay thế
-- Tích hợp hóa đơn điện tử
-- API với nhà cung cấp
-- Tối ưu hiệu năng
-- Testing & deployment
+### Phase 3 (2-3 tháng): Business Intelligence & Automation
+- **Business Intelligence**: Advanced analytics, predictive models
+- **Marketing Automation**: Customer loyalty, segmentation, campaigns
+- **Advanced Procurement**: Supplier evaluation, automated reordering
+- **Multi-branch Support**: Quản lý đa chi nhánh và franchise
+- **Financial Integration**: Accounting integration, financial reporting
+- **AI/ML Features**: Demand forecasting, recommendation engine
+- **Supply Chain Visibility**: Shipment tracking, risk assessment
+- **Performance Optimization**: Caching, indexing, scalability
+
+### Phase 4 (1-2 tháng): Integration & Deployment
+- **Third-party Integration**: Payment gateways, shipping providers
+- **API Development**: External API cho partners và suppliers
+- **Enterprise Features**: Advanced security, audit logs, compliance
+- **Testing & QA**: Comprehensive testing, performance testing
+- **Production Deployment**: Docker, Kubernetes, monitoring setup
+- **User Training**: Documentation, training materials, support system
 
 ## 7. RISK & MITIGATION
 
@@ -1216,7 +1388,6 @@
    - **Tracking**: Lưu lại lịch sử discount để phân tích
 
 ### 2.13.2 Thiết kế Discount Management System
-
 1. **Database Schema cho Discount**:
    ```sql
    discount_rules (
@@ -1327,3 +1498,492 @@
   - **Voice approval requests**: "Xin phép manager giảm giá"
   - **Voice feedback**: Hệ thống đọc lại thông tin discount
   - **Smart voice parsing**: Hiểu các cách nói về giá và discount khác nhau
+## 8. API SPECIFICATION OVERVIEW
+
+### 8.1 Core API Endpoints Structure
+```javascript
+// Authentication APIs
+POST /api/auth/login
+POST /api/auth/register
+POST /api/auth/refresh-token
+POST /api/auth/biometric-setup
+POST /api/auth/face-recognition-login
+
+// Category Management APIs
+GET /api/categories/tree
+POST /api/categories
+PUT /api/categories/{id}/move
+DELETE /api/categories/{id}
+GET /api/categories/{id}/breadcrumb
+
+// Product Management APIs
+GET /api/products
+POST /api/products
+PUT /api/products/{id}
+GET /api/products/{id}/suppliers
+POST /api/products/{id}/combo-config
+GET /api/products/{id}/warranty
+
+// Order Management APIs
+POST /api/orders
+GET /api/orders/{id}
+PUT /api/orders/{id}/status
+POST /api/orders/voice-create
+POST /api/orders/{id}/discounts
+POST /api/orders/{id}/payment
+
+// Payment & Financial APIs
+POST /api/payments/process
+GET /api/payments/methods
+POST /api/payments/vnpay/callback
+POST /api/payments/momo/callback
+GET /api/financial/reports/cashflow
+GET /api/financial/reports/profit-loss
+POST /api/credit/assess
+PUT /api/credit/limit/{customerId}
+
+// Delivery & Shipping APIs
+GET /api/delivery/methods
+POST /api/delivery/calculate-cost
+POST /api/delivery/create-shipment
+PUT /api/delivery/{id}/status
+GET /api/delivery/{id}/tracking
+GET /api/delivery/partners
+POST /api/delivery/partners
+GET /api/delivery/routes/optimize
+GET /api/delivery/reports/cost
+GET /api/delivery/reports/performance
+
+// Voice Processing APIs
+POST /api/voice/speech-to-text
+POST /api/voice/process-command
+GET /api/voice/suggestions
+POST /api/voice/feedback
+
+// Discount Management APIs
+POST /api/discounts/validate
+POST /api/discounts/apply
+GET /api/discounts/approval-queue
+POST /api/discounts/approve/{id}
+
+// Quality Control APIs
+POST /api/quality/inspect
+GET /api/warranty/{productId}
+POST /api/warranty/claim
+GET /api/returns/authorization
+POST /api/returns/process
+
+// Notification APIs
+POST /api/notifications/send
+GET /api/notifications/preferences
+PUT /api/notifications/preferences
+POST /api/notifications/bulk-send
+GET /api/notifications/analytics
+
+// Loyalty & Marketing APIs
+GET /api/loyalty/points/{customerId}
+POST /api/loyalty/redeem
+GET /api/marketing/campaigns
+POST /api/marketing/campaigns
+POST /api/marketing/email/send
+GET /api/marketing/analytics
+
+// Business Intelligence APIs
+GET /api/analytics/sales
+GET /api/analytics/customers
+GET /api/analytics/products
+GET /api/analytics/financial
+POST /api/analytics/predict/demand
+GET /api/analytics/dashboard/{type}
+
+// Multi-branch APIs
+GET /api/branches
+POST /api/branches/{id}/transfers
+GET /api/branches/{id}/performance
+PUT /api/branches/{id}/inventory
+GET /api/franchise/royalty
+
+// Procurement APIs
+GET /api/suppliers/evaluation
+POST /api/procurement/blanket-orders
+GET /api/procurement/lead-times
+POST /api/procurement/auto-reorder
+GET /api/supply-chain/tracking
+```
+
+### 8.2 Real-time Features
+- **WebSocket connections**: `/ws/orders`, `/ws/inventory`, `/ws/approvals`
+- **Push notifications**: Order updates, approval requests, low stock alerts
+- **Live price updates**: Real-time pricing changes
+
+## 9. DATABASE DESIGN OVERVIEW
+
+### 9.1 Core Tables Structure
+```sql
+-- Category tree với materialized path
+categories (
+  id, name, parent_id, path, level, sort_order, properties
+);
+
+-- Product với multi-supplier support
+products (
+  id, name, description, category_id, type, combo_config
+);
+
+-- Product-Supplier mapping
+product_suppliers (
+  id, product_id, supplier_id, cost_price, selling_price, stock_quantity
+);
+
+-- Orders với flexible pricing
+orders (
+  id, customer_id, total_amount, status, delivery_method, voice_created
+);
+
+-- Order items với discount tracking
+order_items (
+  id, order_id, product_id, supplier_id, quantity, unit_price, discount_amount
+);
+
+-- Vehicle information cho substitution history
+customer_vehicles (
+  id, customer_id, license_plate, model, year, usage_type
+);
+
+-- Substitution history cho recommendations
+substitution_history (
+  id, vehicle_id, product_id, replaced_at, rating, feedback, usage_duration
+);
+
+-- Discount management
+discount_rules (
+  id, name, type, max_discount_percent, min_profit_margin, requires_approval
+);
+
+-- Voice commands log
+voice_commands (
+  id, user_id, transcript, confidence, intent, entities, success
+);
+```
+
+### 9.2 Indexes và Performance
+```sql
+-- Category tree performance
+CREATE INDEX idx_categories_path ON categories USING GIST (path);
+CREATE INDEX idx_categories_parent ON categories(parent_id);
+
+-- Product search optimization
+CREATE INDEX idx_products_name_gin ON products USING GIN (to_tsvector('english', name));
+CREATE INDEX idx_products_category ON products(category_id);
+
+-- Order performance
+CREATE INDEX idx_orders_customer_date ON orders(customer_id, created_at);
+CREATE INDEX idx_orders_status ON orders(status);
+
+-- Multi-supplier stock lookup
+CREATE INDEX idx_product_suppliers_stock ON product_suppliers(product_id, stock_quantity);
+```
+
+## 10. SECURITY & COMPLIANCE
+
+### 10.1 Data Protection
+- **GDPR Compliance**: Customer data protection và right to be forgotten
+- **Data encryption**: At-rest và in-transit encryption
+- **PII handling**: Proper handling of personal identifiable information
+- **Audit logs**: Track all data access và modifications
+
+### 10.2 Business Security
+- **Price confidentiality**: Multi-tier pricing protection
+- **Competitor intelligence**: Prevent data leakage
+- **Financial data**: Secure profit margin và cost data
+- **Voice privacy**: No storage of voice recordings
+
+### 10.3 Technical Security
+```java
+// JWT với role-based access
+@PreAuthorize("hasRole('SALES_STAFF') or hasRole('MANAGER')")
+public ResponseEntity<?> createOrder(@RequestBody OrderRequest request) {
+    // Implementation
+}
+
+// Encrypt sensitive data
+@Converter
+public class PriceEncryptionConverter implements AttributeConverter<BigDecimal, String> {
+    @Override
+    public String convertToDatabaseColumn(BigDecimal price) {
+        return encryptionService.encrypt(price.toString());
+    }
+}
+
+// Rate limiting cho voice API
+@RateLimiter(name = "voice-api", fallbackMethod = "voiceApiFallback")
+public VoiceResponse processVoiceCommand(VoiceRequest request) {
+    // Implementation
+}
+```
+
+## 11. DEPLOYMENT & INFRASTRUCTURE
+
+### 11.1 Production Architecture
+```yaml
+# Docker Compose structure
+version: '3.8'
+services:
+  app:
+    image: webhangptx/backend:latest
+    environment:
+      - SPRING_PROFILES_ACTIVE=production
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+  
+  database:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=webhangptx
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+  
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+  
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+```
+
+### 11.2 CI/CD Pipeline
+```yaml
+# GitHub Actions workflow
+name: Deploy Production
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run tests
+        run: |
+          mvn test
+          npm test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to production
+        run: |
+          docker build -t webhangptx/backend .
+          docker push webhangptx/backend:latest
+          kubectl apply -f k8s/
+```
+
+### 11.3 Monitoring & Observability
+- **Application metrics**: Micrometer + Prometheus
+- **Business metrics**: Order conversion rates, discount effectiveness
+- **Voice metrics**: Recognition accuracy, response times
+- **Error tracking**: Sentry integration
+- **Performance monitoring**: New Relic hoặc DataDog
+
+## 12. TESTING STRATEGY
+
+### 12.1 Test Pyramid
+```java
+// Unit Tests - Business Logic
+@Test
+void shouldCalculateDiscountCorrectly() {
+    // Test discount validation logic
+    DiscountValidationResult result = discountService.validateDiscount(
+        productId, originalPrice, discountedPrice, reason, user
+    );
+    assertThat(result.isValid()).isTrue();
+}
+
+// Integration Tests - API
+@SpringBootTest
+@AutoConfigureTestDatabase
+class OrderControllerTest {
+    @Test
+    void shouldCreateOrderWithVoiceInput() {
+        // Test voice-to-order workflow
+    }
+}
+
+// E2E Tests - Business Workflows
+@Test
+void shouldCompleteFullOrderWorkflow() {
+    // Test từ tạo đơn → approval → giao hàng → thanh toán
+}
+```
+
+### 12.2 Mobile Testing
+```dart
+// Flutter Widget Tests
+testWidgets('Voice order button should start recording', (tester) async {
+  await tester.pumpWidget(VoiceOrderScreen());
+  await tester.tap(find.byType(VoiceButton));
+  verify(mockVoiceService.startRecording()).called(1);
+});
+
+// Integration Tests
+group('Voice Recognition Flow', () {
+  testWidgets('should create order from voice command', (tester) async {
+    // Test complete voice-to-order flow
+  });
+});
+```
+
+### 12.3 Performance Testing
+- **Load testing**: Simulate 1000+ concurrent users
+- **Voice latency**: < 2s response time for voice commands
+- **Category tree**: Render large trees efficiently
+- **Database**: Query performance với large datasets
+
+## 13. DATA MIGRATION PLAN
+
+### 13.1 Migration từ KiotViet
+```sql
+-- Mapping KiotViet categories → Tree structure
+INSERT INTO categories (name, parent_id, path, level)
+SELECT 
+  kv_category.name,
+  CASE WHEN kv_category.parent = 'root' THEN NULL 
+       ELSE parent_cat.id END,
+  build_category_path(kv_category.hierarchy),
+  calculate_level(kv_category.hierarchy)
+FROM kiotviet_categories kv_category;
+
+-- Migrate products với multi-supplier support
+INSERT INTO products (name, description, category_id)
+SELECT name, description, mapped_category_id
+FROM kiotviet_products;
+
+-- Create initial supplier mappings
+INSERT INTO product_suppliers (product_id, supplier_id, cost_price, selling_price)
+SELECT 
+  product.id,
+  default_supplier.id,
+  kv_product.cost_price,
+  kv_product.selling_price
+FROM kiotviet_products kv_product;
+```
+
+### 13.2 Data Validation
+- **Category mapping**: Verify tree structure integrity
+- **Product pricing**: Validate cost vs selling price relationships
+- **Customer data**: Ensure complete customer information transfer
+- **Historical data**: Preserve order history và customer relationships
+
+### 13.3 Rollback Strategy
+- **Database snapshots**: Before migration checkpoint
+- **Incremental sync**: Sync changes during migration period
+- **Validation scripts**: Automated data integrity checks
+- **Emergency rollback**: < 1 hour rollback capability
+
+## 14. BUSINESS CONTINUITY
+
+### 14.1 Disaster Recovery
+- **RTO**: 4 hours maximum downtime
+- **RPO**: 1 hour maximum data loss
+- **Backup frequency**: Every 6 hours + real-time replication
+- **Geographic redundancy**: Primary + secondary datacenter
+
+### 14.2 Offline Capability
+```dart
+// Mobile offline support
+class OfflineOrderService {
+  Future<void> createOfflineOrder(Order order) async {
+    // Store order locally
+    await localDatabase.insert('pending_orders', order.toJson());
+    
+    // Sync when online
+    connectivity.onConnectivityChanged.listen((result) {
+      if (result != ConnectivityResult.none) {
+        syncPendingOrders();
+      }
+    });
+  }
+}
+```
+
+### 14.3 Business Impact Analysis
+- **Critical functions**: Order creation, inventory check, pricing
+- **Medium priority**: Reports, analytics, voice features
+- **Low priority**: Advanced features, AI recommendations
+
+## 15. POST-LAUNCH OPTIMIZATION
+
+### 15.1 Performance Monitoring
+- **Voice recognition accuracy**: Target 95%+ cho tiếng Việt
+- **Order creation speed**: < 30s cho voice orders
+- **Category tree rendering**: < 2s cho 1000+ categories
+- **Mobile app performance**: 60 FPS, < 3s cold start
+
+### 15.2 Business KPIs
+- **Order conversion rate**: Voice vs manual input
+- **Discount effectiveness**: Sales increase vs profit impact
+- **User adoption**: Feature usage patterns
+- **Customer satisfaction**: NPS score tracking
+
+### 15.3 Continuous Improvement
+```java
+// A/B testing framework
+@Component
+public class FeatureToggleService {
+    public boolean isVoiceOrderEnabled(User user) {
+        return abTestingService.isInGroup(user, "voice_order_beta");
+    }
+    
+    public PricingStrategy getPricingStrategy(Customer customer) {
+        if (customer.isVIP()) {
+            return abTestingService.getVariant("vip_pricing", customer);
+        }
+        return PricingStrategy.DEFAULT;
+    }
+}
+```
+
+## 16. SUPPORT & MAINTENANCE
+
+### 16.1 User Training Materials
+- **Video tutorials**: Voice commands, category management, combo creation
+- **User manuals**: Step-by-step guides cho từng module
+- **FAQ database**: Common issues và solutions
+- **In-app help**: Contextual help trong application
+
+### 16.2 Technical Support
+- **Helpdesk system**: Ticket tracking và resolution
+- **Remote assistance**: Screen sharing cho mobile support
+- **Error reporting**: Automatic crash reports với stack traces
+- **Performance monitoring**: Proactive issue detection
+
+### 16.3 Update Strategy
+- **Regular updates**: Monthly feature releases
+- **Security patches**: Weekly security updates
+- **Voice model updates**: Quarterly speech recognition improvements
+- **Backward compatibility**: Support 2 previous versions
+
+---
+
+## ✅ READINESS CHECKLIST
+
+### Documentation Complete ✅
+- [x] Business requirements analysis
+- [x] Technical architecture design
+- [x] API specification overview
+- [x] Database design
+- [x] Security considerations
+- [x] Deployment strategy
+- [x] Testing approach
+- [x] Migration planning
+
+### Ready for Next Steps:
+1. **🏗️ Setup Development Environment**
+2. **📊 Create Detailed ERD**
+3. **🚀 Initialize Spring Boot Project**
+4. **📱 Setup Flutter Mobile Project**
+5. **🎯 Start Phase 1 Development**
