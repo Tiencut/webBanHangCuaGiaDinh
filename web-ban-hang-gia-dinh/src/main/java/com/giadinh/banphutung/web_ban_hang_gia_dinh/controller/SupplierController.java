@@ -180,19 +180,7 @@ public class SupplierController {
         }
     }
 
-    /**
-     * Lấy nhà cung cấp theo thương hiệu xe
-     * GET /api/suppliers/vehicle-brand/Toyota
-     */
-    @GetMapping("/vehicle-brand/{brand}")
-    public ResponseEntity<List<Supplier>> getSuppliersByVehicleBrand(@PathVariable String brand) {
-        try {
-            List<Supplier> suppliers = supplierService.findByVehicleBrandsContaining(brand);
-            return ResponseEntity.ok(suppliers);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+
 
     /**
      * Lấy nhà cung cấp active

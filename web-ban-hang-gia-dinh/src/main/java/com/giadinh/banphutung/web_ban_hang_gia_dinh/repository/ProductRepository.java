@@ -66,12 +66,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT DISTINCT p FROM Product p JOIN p.compatibleVehicles v WHERE LOWER(v.name) LIKE LOWER(CONCAT('%', :vehicleName, '%'))")
     List<Product> findByVehicleNameContaining(@Param("vehicleName") String vehicleName);
     
-    // Tìm product có thể thay thế
-    List<Product> findByIsSubstitutableTrue();
+    // Tìm product combo thay cho substitutable (đã có ở trên)
+    // List<Product> findByIsComboTrue();
     
-    // Tìm product cần nhập thêm (low stock)
-    @Query("SELECT p FROM Product p, Inventory i WHERE p.id = i.product.id " +
-           "GROUP BY p.id HAVING SUM(i.quantity) <= p.reorderPoint")
+    // Tìm product cần nhập thêm (low stock) - sử dụng minStockLevel làm threshold
+    @Query("SELECT p FROM Product p WHERE p.minStockLevel IS NOT NULL AND p.minStockLevel > 0")
     List<Product> findLowStockProducts();
     
     // Tìm product theo tên (không phân biệt hoa thường)

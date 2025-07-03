@@ -31,6 +31,12 @@ const routes = [
     name: 'Vehicles',
     component: () => import('../views/Vehicles.vue'),
     meta: { title: 'Quản lý mẫu xe' }
+  },
+  {
+    path: '/import',
+    name: 'ImportData',
+    component: () => import('../views/ImportData.vue'),
+    meta: { title: 'Import dữ liệu' }
   }
 ]
 

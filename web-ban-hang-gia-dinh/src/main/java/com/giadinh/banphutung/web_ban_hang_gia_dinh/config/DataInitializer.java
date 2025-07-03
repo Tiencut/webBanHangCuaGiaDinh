@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Category;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
@@ -41,12 +42,15 @@ public class DataInitializer {
     @Bean
     CommandLineRunner initDatabase() {
         return args -> {
+            // Tạm thời disable để test import
+            System.out.println("🔧 DataInitializer disabled for testing");
+            /*
             // Chỉ init nếu chưa có dữ liệu
             if (vehicleModelRepository.count() > 0) {
                 return;
             }
             
-            System.out.println("🚀 Initializing sample data...");
+            System.out.println("🚀 Initializing sample data...");*/
             
             // 1. Tạo categories
             initCategories();
@@ -57,8 +61,8 @@ public class DataInitializer {
             // 3. Tạo products
             initProducts();
             
-            // 4. Tạo quan hệ tương thích
-            initCompatibility();
+            // 4. Tạo quan hệ tương thích (tạm thời disable để tránh lỗi LazyInitialization)
+            // initCompatibility();
             
             System.out.println("✅ Sample data initialized successfully!");
         };
@@ -234,6 +238,7 @@ public class DataInitializer {
         System.out.println("🔧 Created products");
     }
     
+    @Transactional
     private void initCompatibility() {
         // Lấy vehicles
         VehicleModel ollin500 = vehicleModelRepository.findByCode("OLLIN500").orElse(null);

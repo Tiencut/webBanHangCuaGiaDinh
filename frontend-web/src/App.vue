@@ -91,11 +91,24 @@
         <!-- Divider -->
         <div class="my-6 border-t border-gray-200"></div>
 
-        <!-- Additional Menu Items -->
+        <!-- System Menu Items -->
         <div class="space-y-2">
+          <!-- Import Data -->
+          <router-link 
+            to="/import" 
+            class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200"
+            :class="$route.name === 'ImportData' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+            @click="closeSidebarOnMobile"
+          >
+            <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+            </svg>
+            Import dữ liệu
+          </router-link>
+
           <a href="#" class="group flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
             <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2-2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
             </svg>
             Báo cáo
           </a>

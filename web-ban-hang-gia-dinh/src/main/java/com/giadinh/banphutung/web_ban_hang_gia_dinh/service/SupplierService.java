@@ -246,11 +246,7 @@ public class SupplierService {
         return supplierRepository.findByCodeContainingIgnoreCase(code);
     }
     
-    // Tìm supplier theo vehicle brands
-    @Transactional(readOnly = true)
-    public List<Supplier> findByVehicleBrandsContaining(String brand) {
-        return supplierRepository.findByVehicleBrandsContainingIgnoreCase(brand);
-    }
+
     
     // Tìm supplier active
     @Transactional(readOnly = true)
