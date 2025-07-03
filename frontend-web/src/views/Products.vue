@@ -16,6 +16,17 @@
 
     <!-- Filter & Search Section -->
     <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+      <div class="flex justify-between items-start mb-4">
+        <h2 class="text-lg font-semibold text-gray-900">Tìm kiếm & Lọc</h2>
+        <!-- Training Assistant -->
+        <TrainingAssistant 
+          :current-search-query="searchQuery"
+          :selected-product-id="selectedProductForTraining"
+          @search-suggestion="handleSearchSuggestion"
+          @help-request="handleHelpRequest"
+        />
+      </div>
+      
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm</label>
@@ -193,15 +204,20 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue'
+import TrainingAssistant from '@/components/TrainingAssistant.vue'
 
 export default {
   name: 'Products',
+  components: {
+    TrainingAssistant
+  },
   setup() {
     // Reactive data
     const searchQuery = ref('')
     const selectedCategory = ref('')
     const selectedSupplier = ref('')
     const showAddModal = ref(false)
+    const selectedProductForTraining = ref(null)
     
     // Mock data - sẽ thay thế bằng API calls
     const products = ref([
@@ -335,6 +351,23 @@ export default {
       }
     }
 
+    // Training Assistant Methods
+    const handleSearchSuggestion = (suggestion) => {
+      searchQuery.value = suggestion.query || suggestion
+      console.log('Applied search suggestion:', suggestion)
+    }
+
+    const handleHelpRequest = (request) => {
+      console.log('Help request:', request)
+      // Show help modal or send to support
+      alert('Yêu cầu hỗ trợ đã được ghi nhận. Nhân viên senior sẽ hỗ trợ bạn sớm nhất.')
+    }
+
+    const selectProductForTraining = (product) => {
+      selectedProductForTraining.value = product.id
+      console.log('Selected product for training:', product)
+    }
+
     // Lifecycle
     onMounted(() => {
       // Load data when component mounts
@@ -346,6 +379,7 @@ export default {
       selectedCategory,
       selectedSupplier,
       showAddModal,
+      selectedProductForTraining,
       products,
       categories,
       suppliers,
@@ -359,7 +393,10 @@ export default {
       applyFilters,
       clearFilters,
       editProduct,
-      deleteProduct
+      deleteProduct,
+      handleSearchSuggestion,
+      handleHelpRequest,
+      selectProductForTraining
     }
   }
 }
