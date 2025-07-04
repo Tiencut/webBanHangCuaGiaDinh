@@ -1,265 +1,528 @@
 <template>
-  <div id="app" class="min-h-screen bg-gray-50 flex">
-    <!-- Sidebar Navigation (KiotViet Style) -->
-    <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
-         :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
-      
-      <!-- Logo -->
-      <div class="flex items-center justify-center h-16 px-4 bg-[#0070F4] text-white">
-        <div class="flex items-center">
-          <div class="h-8 w-8 bg-white rounded-lg flex items-center justify-center mr-3">
-            <svg class="h-5 w-5 text-[#0070F4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 6H4a2 2 0 00-2 2v6a2 2 0 002 2h1m8-10V4a2 2 0 00-2-2H4m7 4v10m0 0h6a2 2 0 002-2v-6a2 2 0 00-2-2h-6z"/>
-            </svg>
+  <div id="app" class="min-h-screen bg-gray-50">
+    <!-- Top Navigation Bar (Horizontal) -->
+    <div class="bg-white shadow-lg border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
+      <div class="w-full px-2 sm:px-4">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <div class="flex items-center">
+            <div class="h-8 w-8 bg-[#0070F4] rounded-lg flex items-center justify-center mr-3">
+              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 6H4a2 2 0 00-2 2v6a2 2 0 002 2h1m8-10V4a2 2 0 00-2-2H4m7 4v10m0 0h6a2 2 0 002-2v-6a2 2 0 00-2-2h-6z" />
+              </svg>
+            </div>
+            <span class="font-bold text-lg text-gray-900">AutoParts</span>
           </div>
-          <span class="font-bold text-lg">AutoParts</span>
-        </div>
-      </div>
 
-      <!-- Navigation Menu -->
-      <nav class="mt-8 px-4">
-        <div class="space-y-2">
-          <!-- Dashboard -->
-          <router-link 
-            to="/" 
-            class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200"
-            :class="$route.name === 'Home' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
-            @click="closeSidebarOnMobile"
-          >
-            <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"/>
-            </svg>
-            Tổng quan
-          </router-link>
+          <!-- Navigation Menu (Horizontal) -->
+          <nav class="hidden md:flex items-center space-x-6 flex-1">
+            <!-- Dashboard -->
+            <router-link to="/"
+              class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'Home' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
+              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z" />
+              </svg>
+              Tổng quan
+            </router-link>
 
-          <!-- Products -->
-          <router-link 
-            to="/products" 
-            class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200"
-            :class="$route.name === 'Products' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
-            @click="closeSidebarOnMobile"
-          >
-            <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-            </svg>
-            Hàng hóa
-          </router-link>
+            <!-- Products -->
+            <div class="relative group">
+              <router-link to="/products"
+                class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+                :class="$route.name === 'Products' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
+                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                Hàng hóa
+                <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </router-link>
+              
+              <!-- Dropdown Menu -->
+              <div class="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div class="py-2">
+                  <router-link to="/products"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    :class="$route.name === 'Products' ? 'bg-blue-50 text-[#0070F4]' : ''">
+                    <div class="flex items-center">
+                      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                      </svg>
+                      Danh sách hàng hóa
+                    </div>
+                  </router-link>
+                  <router-link to="/pricing"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    :class="$route.name === 'Pricing' ? 'bg-blue-50 text-[#0070F4]' : ''">
+                    <div class="flex items-center">
+                      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                      Thiết lập giá
+                    </div>
+                  </router-link>
+                </div>
+              </div>
+            </div>
 
-          <!-- Orders -->
-          <router-link 
-            to="/orders" 
-            class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200"
-            :class="$route.name === 'Orders' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
-            @click="closeSidebarOnMobile"
-          >
-            <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            Hóa đơn
-          </router-link>
+            <!-- Purchase/Import -->
+            <div class="relative group">
+              <a href="#"
+                class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 text-gray-700 hover:bg-gray-100"
+                :class="['Suppliers', 'PurchaseOrder', 'PurchaseReturns'].includes($route.name) ? 'bg-[#0070F4] text-white' : ''">
+                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                Nhập hàng
+                <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </a>
+              
+              <!-- Purchase Dropdown Menu -->
+              <div class="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div class="py-2">
+                  <router-link to="/suppliers"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    :class="$route.name === 'Suppliers' ? 'bg-blue-50 text-[#0070F4]' : ''">
+                    <div class="flex items-center">
+                      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      Nhà cung cấp
+                    </div>
+                  </router-link>
+                  <router-link to="/purchase-order"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    :class="$route.name === 'PurchaseOrder' ? 'bg-blue-50 text-[#0070F4]' : ''">
+                    <div class="flex items-center">
+                      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M16 11V7a4 4 0 00-8 0v4M8 11v6a2 2 0 002 2h4a2 2 0 002-2v-6M8 11h8" />
+                      </svg>
+                      Nhập hàng
+                    </div>
+                  </router-link>
+                  <router-link to="/purchase-returns"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    :class="$route.name === 'PurchaseReturns' ? 'bg-blue-50 text-[#0070F4]' : ''">
+                    <div class="flex items-center">
+                      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z" />
+                      </svg>
+                      Trả hàng nhập
+                    </div>
+                  </router-link>
+                </div>
+              </div>
+            </div>
 
-          <!-- Customers -->
-          <router-link 
-            to="/customers" 
-            class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200"
-            :class="$route.name === 'Customers' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
-            @click="closeSidebarOnMobile"
-          >
-            <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-            </svg>
-            Khách hàng
-          </router-link>
+            <!-- Orders -->
+            <router-link to="/orders"
+              class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'Orders' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
+              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2H9m0 0V3a2 2 0 012-2h2a2 2 0 012 2v2" />
+              </svg>
+              Đơn hàng
+            </router-link>
 
-          <!-- Vehicles -->
-          <router-link 
-            to="/vehicles" 
-            class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200"
-            :class="$route.name === 'Vehicles' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
-            @click="closeSidebarOnMobile"
-          >
-            <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 6H4a2 2 0 00-2 2v6a2 2 0 002 2h1m8-10V4a2 2 0 00-2-2H4m7 4v10m0 0h6a2 2 0 002-2v-6a2 2 0 00-2-2h-6z"/>
-            </svg>
-            Mẫu xe
-          </router-link>
-        </div>
+            <!-- Customers -->
+            <router-link to="/customers"
+              class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'Customers' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
+              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Khách hàng
+            </router-link>
 
-        <!-- Divider -->
-        <div class="my-6 border-t border-gray-200"></div>
+            <!-- Vehicles -->
+            <router-link to="/vehicles"
+              class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'Vehicles' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
+              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 6H4a2 2 0 00-2 2v6a2 2 0 002 2h1m8-10V4a2 2 0 00-2-2H4m7 4v10m0 0h6a2 2 0 002-2v-6a2 2 0 00-2-2h-6z" />
+              </svg>
+              Loại xe
+            </router-link>
 
-        <!-- System Menu Items -->
-        <div class="space-y-2">
-          <!-- Import Data -->
-          <router-link 
-            to="/import" 
-            class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200"
-            :class="$route.name === 'ImportData' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
-            @click="closeSidebarOnMobile"
-          >
-            <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
-            </svg>
-            Import dữ liệu
-          </router-link>
+            <!-- Import Data -->
+            <router-link to="/import"
+              class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'ImportData' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
+              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+              </svg>
+              Import
+            </router-link>
 
-          <a href="#" class="group flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-            <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2-2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-            </svg>
-            Báo cáo
-          </a>
-
-          <a href="#" class="group flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-            <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-            Cài đặt
-          </a>
-        </div>
-      </nav>
-    </div>
-
-    <!-- Main Content Area -->
-    <div class="flex-1 lg:ml-0">
-      <!-- Top Header -->
-      <header class="bg-white shadow-sm border-b border-gray-200 h-16 fixed top-0 right-0 left-0 lg:left-64 z-40">
-        <div class="flex items-center justify-between h-full px-4">
-          <!-- Mobile Menu Button -->
-          <button 
-            @click="sidebarOpen = !sidebarOpen"
-            class="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#0070F4]"
-          >
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-          </button>
-
-          <!-- Page Title -->
-          <div class="hidden lg:block">
-            <h1 class="text-lg font-semibold text-gray-900">{{ getPageTitle() }}</h1>
-          </div>
+            <!-- Sales (Bán hàng) - Positioned at the far right -->
+            <div class="ml-auto">
+              <router-link to="/sales"
+                class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 shadow-md"
+                :class="$route.name === 'Sales' ? 'bg-gradient-to-r from-[#FF6B35] to-[#FF8E53] text-white shadow-lg' : 'bg-gradient-to-r from-[#0070F4] to-[#0056b3] text-white hover:from-[#0056b3] hover:to-[#004085] shadow-lg'">
+                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5-2.5M7 13l2.5 2.5" />
+                </svg>
+                Bán hàng
+              </router-link>
+            </div>
+          </nav>
 
           <!-- Right Actions -->
           <div class="flex items-center space-x-4">
+            <!-- Mobile Menu Button -->
+            <button @click="sidebarOpen = !sidebarOpen"
+              class="md:hidden p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#0070F4]">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+
             <!-- Quick Actions -->
-            <button class="p-2 text-gray-500 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0070F4]">
+            <button
+              class="p-2 text-gray-500 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0070F4]">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5-5-5h5v-13h0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
 
-            <!-- Notifications -->
-            <button class="relative p-2 text-gray-500 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0070F4]">
-              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5-5-5h5v-13h0z"/>
-              </svg>
-              <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
-            </button>
-
-            <!-- Profile Menu -->
+            <!-- User Menu -->
             <div class="relative">
-              <button 
-                @click="showProfileMenu = !showProfileMenu"
-                class="flex items-center space-x-2 p-2 text-gray-700 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0070F4]"
-              >
+              <button
+                class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0070F4] rounded-lg p-2">
                 <div class="h-8 w-8 bg-[#0070F4] rounded-full flex items-center justify-center">
-                  <span class="text-sm font-medium text-white">A</span>
+                  <span class="text-white text-sm font-medium">A</span>
                 </div>
-                <span class="hidden md:block text-sm font-medium">Admin</span>
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
+                <span class="hidden lg:block text-sm font-medium">Admin</span>
               </button>
-
-              <!-- Profile Dropdown -->
-              <transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="transform opacity-0 scale-95"
-                enter-to-class="transform opacity-100 scale-100"
-                leave-active-class="transition ease-in duration-75"
-                leave-from-class="transform opacity-100 scale-100"
-                leave-to-class="transform opacity-0 scale-95"
-              >
-                <div 
-                  v-show="showProfileMenu"
-                  class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
-                >
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Hồ sơ cá nhân</a>
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cài đặt</a>
-                  <div class="border-t border-gray-100 my-1"></div>
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Đăng xuất</a>
-                </div>
-              </transition>
             </div>
           </div>
         </div>
-      </header>
 
-      <!-- Main Content -->
-      <main class="pt-16 min-h-screen bg-gray-50">
+        <!-- Mobile Menu (Dropdown) -->
+        <div class="md:hidden" :class="sidebarOpen ? 'block' : 'hidden'">
+          <div class="px-4 py-2 space-y-1 bg-gray-50 border-t border-gray-200">
+            <router-link to="/" class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'Home' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+              @click="sidebarOpen = false">
+              Tổng quan
+            </router-link>
+            <router-link to="/products"
+              class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'Products' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+              @click="sidebarOpen = false">
+              Hàng hóa
+            </router-link>
+            <router-link to="/suppliers"
+              class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'Suppliers' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+              @click="sidebarOpen = false">
+              Nhà cung cấp
+            </router-link>
+            <router-link to="/purchase-order"
+              class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'PurchaseOrder' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+              @click="sidebarOpen = false">
+              Nhập hàng
+            </router-link>
+            <router-link to="/purchase-returns"
+              class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'PurchaseReturns' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+              @click="sidebarOpen = false">
+              Trả hàng nhập
+            </router-link>
+            <router-link to="/orders"
+              class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'Orders' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+              @click="sidebarOpen = false">
+              Đơn hàng
+            </router-link>
+            <router-link to="/customers"
+              class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'Customers' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+              @click="sidebarOpen = false">
+              Khách hàng
+            </router-link>
+            <router-link to="/vehicles"
+              class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'Vehicles' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+              @click="sidebarOpen = false">
+              Loại xe
+            </router-link>
+            <router-link to="/import"
+              class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'ImportData' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+              @click="sidebarOpen = false">
+              Import dữ liệu
+            </router-link>
+            <router-link to="/sales"
+              class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'Sales' ? 'bg-gradient-to-r from-[#FF6B35] to-[#FF8E53] text-white' : 'bg-gradient-to-r from-[#0070F4] to-[#0056b3] text-white hover:from-[#0056b3] hover:to-[#004085]'"
+              @click="sidebarOpen = false">
+              <div class="flex items-center">
+                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5-2.5M7 13l2.5 2.5" />
+                </svg>
+                Bán hàng
+              </div>
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Main Content Area -->
+    <div class="pt-16">
+      <div class="w-full px-2 sm:px-4 py-4">
         <router-view />
-      </main>
+      </div>
     </div>
 
-    <!-- Mobile Sidebar Overlay -->
-    <div 
-      v-if="sidebarOpen" 
-      @click="sidebarOpen = false"
-      class="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
-    ></div>
-
-    <!-- Click outside to close profile menu -->
-    <div 
-      v-if="showProfileMenu" 
-      @click="showProfileMenu = false"
-      class="fixed inset-0 z-30"
-    ></div>
+    <!-- Backdrop for Mobile Menu -->
+    <div v-if="sidebarOpen" @click="sidebarOpen = false"
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden">
+    </div>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue'
-import { useRoute } from 'vue-router'
-
 export default {
   name: 'App',
-  setup() {
-    const route = useRoute()
-    const sidebarOpen = ref(false)
-    const showProfileMenu = ref(false)
-
-    const getPageTitle = () => {
-      const titles = {
-        'Home': 'Tổng quan',
-        'Products': 'Quản lý hàng hóa',
-        'Orders': 'Quản lý hóa đơn',
-        'Customers': 'Quản lý khách hàng',
-        'Vehicles': 'Quản lý mẫu xe'
-      }
-      return titles[route.name] || 'AutoParts'
-    }
-
-    const closeSidebarOnMobile = () => {
-      if (window.innerWidth < 1024) {
-        sidebarOpen.value = false
-      }
-    }
-
+  data() {
     return {
-      sidebarOpen,
-      showProfileMenu,
-      getPageTitle,
-      closeSidebarOnMobile
+      sidebarOpen: false
     }
+  },
+  methods: {
+    getPageTitle() {
+      const routeNames = {
+        'Home': 'Tổng quan',
+        'Products': 'Hàng hóa',
+        'Pricing': 'Thiết lập giá',
+        'Suppliers': 'Nhà cung cấp',
+        'PurchaseOrder': 'Nhập hàng',
+        'PurchaseReturns': 'Trả hàng nhập',
+        'Orders': 'Đơn hàng',
+        'Customers': 'Khách hàng',
+        'Vehicles': 'Loại xe',
+        'ImportData': 'Import dữ liệu',
+        'Sales': 'Bán hàng'
+      }
+      return routeNames[this.$route.name] || 'Trang chủ'
+    },
+    closeSidebarOnMobile() {
+      if (window.innerWidth < 1024) {
+        this.sidebarOpen = false
+      }
+    }
+  },
+  mounted() {
+    // Close sidebar on window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024) {
+        this.sidebarOpen = false
+      }
+    })
   }
 }
 </script>
 
 <style>
-/* Global styles sẽ được load từ main.css */
+/* Global styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f9fafb;
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Dropdown Menu Styles */
+.group:hover .group-hover\:opacity-100 {
+  opacity: 1;
+}
+
+.group:hover .group-hover\:visible {
+  visibility: visible;
+}
+
+/* Smooth transitions */
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+/* Focus styles */
+.focus-ring {
+  outline: none;
+  box-shadow: 0 0 0 2px #0070F4;
+}
+
+/* Button styles */
+.btn-primary {
+  background-color: #0070F4;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #e5e7eb;
+}
+
+/* Card styles */
+.card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  padding: 24px;
+}
+
+/* Table styles */
+.table {
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 12px 24px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table td {
+  padding: 16px 24px;
+  font-size: 14px;
+  color: #111827;
+}
+
+/* Form styles */
+.form-input {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input:focus {
+  border-color: #0070F4;
+  box-shadow: 0 0 0 2px rgba(0, 112, 244, 0.1);
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+/* Animation classes */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.slide-enter-active, .slide-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.slide-enter-from {
+  transform: translateX(-100%);
+}
+
+.slide-leave-to {
+  transform: translateX(-100%);
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .desktop-hidden {
+    display: none !important;
+  }
+}
 </style>

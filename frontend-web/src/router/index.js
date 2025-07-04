@@ -15,6 +15,30 @@ const routes = [
     meta: { title: 'Quản lý sản phẩm' }
   },
   {
+    path: '/pricing',
+    name: 'Pricing',
+    component: () => import('../views/Pricing.vue'),
+    meta: { title: 'Thiết lập giá' }
+  },
+  {
+    path: '/suppliers',
+    name: 'Suppliers',
+    component: () => import('../views/Suppliers.vue'),
+    meta: { title: 'Quản lý nhà cung cấp' }
+  },
+  {
+    path: '/purchase-order',
+    name: 'PurchaseOrder',
+    component: () => import('../views/PurchaseOrder.vue'),
+    meta: { title: 'Nhập hàng' }
+  },
+  {
+    path: '/purchase-returns',
+    name: 'PurchaseReturns',
+    component: () => import('../views/PurchaseReturns.vue'),
+    meta: { title: 'Trả hàng nhập' }
+  },
+  {
     path: '/customers',
     name: 'Customers',
     component: () => import('../views/Customers.vue'),
@@ -37,6 +61,12 @@ const routes = [
     name: 'ImportData',
     component: () => import('../views/ImportData.vue'),
     meta: { title: 'Import dữ liệu' }
+  },
+  {
+    path: '/sales',
+    name: 'Sales',
+    component: () => import('../views/Sales.vue'),
+    meta: { title: 'Bán hàng' }
   }
 ]
 
