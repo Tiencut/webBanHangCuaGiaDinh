@@ -32,11 +32,11 @@
               Tổng quan
             </router-link>
 
-            <!-- Products -->
+            <!-- Products (Hàng hóa) -->
             <div class="relative group">
-              <router-link to="/products"
-                class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-                :class="$route.name === 'Products' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
+              <button
+                class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 text-gray-700 hover:bg-gray-100"
+                :class="['Products', 'Pricing'].includes($route.name) ? 'bg-[#0070F4] text-white' : ''">
                 <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -45,25 +45,27 @@
                 <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
-              </router-link>
+              </button>
               
-              <!-- Dropdown Menu -->
-              <div class="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <!-- Products Dropdown Menu -->
+              <div class="dropdown-menu absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                 <div class="py-2">
                   <router-link to="/products"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                    :class="$route.name === 'Products' ? 'bg-blue-50 text-[#0070F4]' : ''">
+                    :class="$route.name === 'Products' ? 'bg-blue-50 text-[#0070F4]' : ''"
+                    @click.stop>
                     <div class="flex items-center">
                       <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                       </svg>
-                      Danh sách hàng hóa
+                      Danh sách sản phẩm
                     </div>
                   </router-link>
                   <router-link to="/pricing"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                    :class="$route.name === 'Pricing' ? 'bg-blue-50 text-[#0070F4]' : ''">
+                    :class="$route.name === 'Pricing' ? 'bg-blue-50 text-[#0070F4]' : ''"
+                    @click.stop>
                     <div class="flex items-center">
                       <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -90,9 +92,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
               </a>
-              
+
               <!-- Purchase Dropdown Menu -->
-              <div class="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div
+                class="dropdown-menu absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div class="py-2">
                   <router-link to="/suppliers"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
@@ -132,15 +135,72 @@
             </div>
 
             <!-- Orders -->
-            <router-link to="/orders"
-              class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-              :class="$route.name === 'Orders' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
-              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2H9m0 0V3a2 2 0 012-2h2a2 2 0 012 2v2" />
-              </svg>
-              Đơn hàng
-            </router-link>
+            <div class="relative group">
+              <a href="#"
+                class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 text-gray-700 hover:bg-gray-100"
+                :class="['Orders', 'OrderCreate', 'OrderReturns', 'DeliveryPartners'].includes($route.name) ? 'bg-[#0070F4] text-white' : ''">
+                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2H9m0 0V3a2 2 0 012-2h2a2 2 0 012 2v2" />
+                </svg>
+                Đơn hàng
+                <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </a>
+
+              <!-- Orders Dropdown Menu -->
+              <div
+                class="dropdown-menu absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div class="py-2">
+                  <router-link to="/order-create"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    :class="$route.name === 'OrderCreate' ? 'bg-blue-50 text-[#0070F4]' : ''">
+                    <div class="flex items-center">
+                      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Đặt hàng
+                    </div>
+                  </router-link>
+                  <router-link to="/orders"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    :class="$route.name === 'Orders' ? 'bg-blue-50 text-[#0070F4]' : ''">
+                    <div class="flex items-center">
+                      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2H9m0 0V3a2 2 0 012-2h2a2 2 0 012 2v2" />
+                      </svg>
+                      Đơn hàng
+                    </div>
+                  </router-link>
+                  <router-link to="/order-returns"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    :class="$route.name === 'OrderReturns' ? 'bg-blue-50 text-[#0070F4]' : ''">
+                    <div class="flex items-center">
+                      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z" />
+                      </svg>
+                      Trả hàng
+                    </div>
+                  </router-link>
+                  <!-- Divider -->
+                  <hr class="my-2 border-gray-200">
+                  <router-link to="/delivery-partners"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    :class="$route.name === 'DeliveryPartners' ? 'bg-blue-50 text-[#0070F4]' : ''">
+                    <div class="flex items-center">
+                      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                      </svg>
+                      Đối tác giao hàng
+                    </div>
+                  </router-link>
+                </div>
+              </div>
+            </div>
 
             <!-- Customers -->
             <router-link to="/customers"
@@ -151,28 +211,6 @@
                   d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
               </svg>
               Khách hàng
-            </router-link>
-
-            <!-- Table Demo -->
-            <router-link to="/table-demo"
-              class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-              :class="$route.name === 'TableDemo' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
-              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M3 10h18M3 14h18M8 4v16m8-16v16" />
-              </svg>
-              Demo Bảng
-            </router-link>
-
-            <!-- Table Comparison -->
-            <router-link to="/table-comparison"
-              class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-              :class="$route.name === 'TableComparison' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
-              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
-              </svg>
-              So sánh Bảng
             </router-link>
 
             <!-- Vehicles -->
@@ -186,6 +224,17 @@
                   d="M13 6H4a2 2 0 00-2 2v6a2 2 0 002 2h1m8-10V4a2 2 0 00-2-2H4m7 4v10m0 0h6a2 2 0 002-2v-6a2 2 0 00-2-2h-6z" />
               </svg>
               Loại xe
+            </router-link>
+
+            <!-- Inventory Check -->
+            <router-link to="/inventory-check"
+              class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'InventoryCheck' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
+              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2H9m0 0V3a2 2 0 012-2h2a2 2 0 012 2v2M9 5a2 2 0 012 2v2a2 2 0 01-2 2m6 0a2 2 0 002-2V7a2 2 0 00-2-2M9 5a2 2 0 012 2v2a2 2 0 01-2 2m6 0a2 2 0 002-2V7a2 2 0 00-2-2" />
+              </svg>
+              Kiểm kho
             </router-link>
 
             <!-- Import Data -->
@@ -257,7 +306,13 @@
               class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
               :class="$route.name === 'Products' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
               @click="sidebarOpen = false">
-              Hàng hóa
+              Danh sách sản phẩm
+            </router-link>
+            <router-link to="/pricing"
+              class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'Pricing' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+              @click="sidebarOpen = false">
+              Thiết lập giá
             </router-link>
             <router-link to="/suppliers"
               class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
@@ -277,11 +332,29 @@
               @click="sidebarOpen = false">
               Trả hàng nhập
             </router-link>
+            <router-link to="/order-create"
+              class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'OrderCreate' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+              @click="sidebarOpen = false">
+              Đặt hàng
+            </router-link>
             <router-link to="/orders"
               class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
               :class="$route.name === 'Orders' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
               @click="sidebarOpen = false">
               Đơn hàng
+            </router-link>
+            <router-link to="/order-returns"
+              class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'OrderReturns' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+              @click="sidebarOpen = false">
+              Trả hàng
+            </router-link>
+            <router-link to="/delivery-partners"
+              class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'DeliveryPartners' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+              @click="sidebarOpen = false">
+              Đối tác giao hàng
             </router-link>
             <router-link to="/customers"
               class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
@@ -294,6 +367,12 @@
               :class="$route.name === 'Vehicles' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
               @click="sidebarOpen = false">
               Loại xe
+            </router-link>
+            <router-link to="/inventory-check"
+              class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'InventoryCheck' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+              @click="sidebarOpen = false">
+              Kiểm kho
             </router-link>
             <router-link to="/import"
               class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
@@ -325,8 +404,7 @@
     </div>
 
     <!-- Backdrop for Mobile Menu -->
-    <div v-if="sidebarOpen" @click="sidebarOpen = false"
-      class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden">
+    <div v-if="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden">
     </div>
   </div>
 </template>
@@ -349,8 +427,12 @@ export default {
         'PurchaseOrder': 'Nhập hàng',
         'PurchaseReturns': 'Trả hàng nhập',
         'Orders': 'Đơn hàng',
+        'OrderCreate': 'Đặt hàng',
+        'OrderReturns': 'Trả hàng',
+        'DeliveryPartners': 'Đối tác giao hàng',
         'Customers': 'Khách hàng',
         'Vehicles': 'Loại xe',
+        'InventoryCheck': 'Kiểm kho',
         'ImportData': 'Import dữ liệu',
         'Sales': 'Bán hàng'
       }
@@ -369,6 +451,18 @@ export default {
         this.sidebarOpen = false
       }
     })
+    
+    // Fix dropdown navigation by ensuring proper event handling
+    this.$nextTick(() => {
+      // Add event listeners to all dropdown items
+      const dropdownItems = document.querySelectorAll('.dropdown-menu a[href^="/"]')
+      dropdownItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+          // Allow normal router-link behavior
+          e.stopPropagation()
+        })
+      })
+    })
   }
 }
 </script>
@@ -381,7 +475,8 @@ export default {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -419,6 +514,28 @@ html, body {
 }
 
 .group:hover .group-hover\:visible {
+  visibility: visible;
+}
+
+/* Improved dropdown hover */
+.group {
+  position: relative;
+}
+
+.group:hover > div:last-child {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.group > div:last-child {
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+/* Keep dropdown visible when hovering over it */
+.group > div:last-child:hover {
+  opacity: 1;
   visibility: visible;
 }
 
@@ -515,15 +632,18 @@ html, body {
 }
 
 /* Animation classes */
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s ease;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
-.slide-enter-active, .slide-leave-active {
+.slide-enter-active,
+.slide-leave-active {
   transition: transform 0.3s ease;
 }
 
@@ -546,5 +666,62 @@ html, body {
   .desktop-hidden {
     display: none !important;
   }
+}
+
+/* Dropdown improvements */
+.group:hover .group-hover\:opacity-100 {
+  opacity: 1 !important;
+}
+
+.group:hover .group-hover\:visible {
+  visibility: visible !important;
+}
+
+/* Ensure dropdown menu stays visible when hovering over it */
+.group {
+  position: relative;
+}
+
+.group .dropdown-menu {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  pointer-events: none;
+}
+
+.group:hover .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Keep dropdown visible when hovering over the dropdown itself */
+.dropdown-menu:hover {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Improve click area for dropdown items */
+.dropdown-menu a {
+  cursor: pointer;
+  pointer-events: auto;
+  text-decoration: none;
+  display: block;
+  position: relative;
+  z-index: 60;
+}
+
+.dropdown-menu a:hover {
+  text-decoration: none;
+}
+
+/* Add a small delay to prevent flicker */
+.group:hover .dropdown-menu {
+  transition-delay: 0.1s;
+}
+
+.group:not(:hover) .dropdown-menu {
+  transition-delay: 0.3s;
 }
 </style>

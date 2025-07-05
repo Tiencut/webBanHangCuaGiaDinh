@@ -63,10 +63,34 @@ const routes = [
     meta: { title: 'Quản lý đơn hàng' }
   },
   {
+    path: '/order-create',
+    name: 'OrderCreate',
+    component: () => import('../views/OrderCreate.vue'),
+    meta: { title: 'Đặt hàng' }
+  },
+  {
+    path: '/order-returns',
+    name: 'OrderReturns',
+    component: () => import('../views/OrderReturns.vue'),
+    meta: { title: 'Trả hàng' }
+  },
+  {
+    path: '/delivery-partners',
+    name: 'DeliveryPartners',
+    component: () => import('../views/DeliveryPartners.vue'),
+    meta: { title: 'Đối tác giao hàng' }
+  },
+  {
     path: '/vehicles',
     name: 'Vehicles',
     component: () => import('../views/Vehicles.vue'),
     meta: { title: 'Quản lý mẫu xe' }
+  },
+  {
+    path: '/inventory-check',
+    name: 'InventoryCheck',
+    component: () => import('../views/InventoryCheck.vue'),
+    meta: { title: 'Kiểm kho' }
   },
   {
     path: '/import',
