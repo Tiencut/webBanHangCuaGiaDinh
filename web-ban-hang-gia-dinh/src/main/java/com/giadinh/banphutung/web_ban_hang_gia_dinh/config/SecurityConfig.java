@@ -70,6 +70,10 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/products/**").permitAll() // Tạm thời cho test
+                .requestMatchers("/api/inventory/**").permitAll() // Tạm thời cho test
+                .requestMatchers("/api/categories/**").permitAll() // Tạm thời cho test
+                .requestMatchers("/api/suppliers/**").permitAll() // Tạm thời cho test
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()

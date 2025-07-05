@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Demo Phần Mềm Quản Lý Tồn Kho</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: white;
+            color: black;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .action-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .action-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 5px 15px rgba(0,123,255,0.2);
+            transform: translateY(-2px);
+        }
+        .action-card h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-success { background-color: #28a745; }
+        .btn-success:hover { background-color: #1e7e34; }
+        .btn-warning { background-color: #ffc107; color: black; }
+        .btn-warning:hover { background-color: #e0a800; }
+        .btn-info { background-color: #17a2b8; }
+        .btn-info:hover { background-color: #117a8b; }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .demo-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .demo-table th, .demo-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .demo-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .stock-good { color: #28a745; font-weight: bold; }
+        .stock-low { color: #ffc107; font-weight: bold; }
+        .stock-out { color: #dc3545; font-weight: bold; }
+        .step-number {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Demo Phần Mềm Quản Lý Tồn Kho</h1>
+            <p>Hướng dẫn từng bước sử dụng phần mềm</p>
+        </div>
+
+        <!-- Status Check -->
+        <div class="action-card">
+            <h3>📋 Kiểm Tra Trạng Thái Hệ Thống</h3>
+            <button class="btn btn-info" onclick="checkSystemStatus()">Kiểm Tra Hệ Thống</button>
+            <div id="system-status"></div>
+        </div>
+
+        <!-- Step by Step Guide -->
+        <div class="action-grid">
+            <div class="action-card" onclick="openVSCode()">
+                <h3><span class="step-number">1</span>Mở VS Code</h3>
+                <p>Mở VS Code và load workspace</p>
+                <div class="btn btn-success">Click để mở VS Code</div>
+            </div>
+
+            <div class="action-card">
+                <h3><span class="step-number">2</span>Khởi Chạy Backend</h3>
+                <p>Ctrl+Shift+P → Tasks → Run Spring Boot App</p>
+                <button class="btn" onclick="showBackendInstructions()">Xem Hướng Dẫn</button>
+                <div id="backend-instructions" style="display:none; margin-top:10px; padding:10px; background:#f8f9fa; border-radius:5px;">
+                    <strong>Các bước:</strong><br>
+                    1. Nhấn Ctrl+Shift+P<br>
+                    2. Gõ "Tasks: Run Task"<br>
+                    3. Chọn "Run Spring Boot App"<br>
+                    4. Đợi thông báo "Started WebBanHangGiaDinhApplication"
+                </div>
+            </div>
+
+            <div class="action-card">
+                <h3><span class="step-number">3</span>Khởi Chạy Frontend</h3>
+                <p>Ctrl+Shift+P → Tasks → Run Frontend Dev Server</p>
+                <button class="btn" onclick="showFrontendInstructions()">Xem Hướng Dẫn</button>
+                <div id="frontend-instructions" style="display:none; margin-top:10px; padding:10px; background:#f8f9fa; border-radius:5px;">
+                    <strong>Các bước:</strong><br>
+                    1. Nhấn Ctrl+Shift+P<br>
+                    2. Gõ "Tasks: Run Task"<br>
+                    3. Chọn "Run Frontend Dev Server"<br>
+                    4. Đợi thông báo "Local: http://localhost:3000"
+                </div>
+            </div>
+
+            <div class="action-card" onclick="openApp()">
+                <h3><span class="step-number">4</span>Mở Phần Mềm</h3>
+                <p>Mở trình duyệt và truy cập ứng dụng</p>
+                <div class="btn btn-warning">Mở http://localhost:3000</div>
+            </div>
+
+            <div class="action-card">
+                <h3><span class="step-number">5</span>Vào Trang Products</h3>
+                <p>Click menu "Products" để quản lý sản phẩm</p>
+                <button class="btn btn-info" onclick="showProductsGuide()">Xem Demo Table</button>
+            </div>
+
+            <div class="action-card" onclick="openTestPage()">
+                <h3><span class="step-number">6</span>Test APIs</h3>
+                <p>Test các API inventory</p>
+                <div class="btn btn-success">Mở Test Page</div>
+            </div>
+        </div>
+
+        <!-- Demo Table -->
+        <div id="demo-table" style="display:none;">
+            <h3>📊 Demo Bảng Sản Phẩm</h3>
+            <table class="demo-table">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Tồn kho</th>
+                        <th>Có sẵn</th>
+                        <th>Đã đặt</th>
+                        <th>Nhà CC</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>🔧 Lọc dầu động cơ<br><small>SKU: OIL-001</small></td>
+                        <td>Động cơ</td>
+                        <td><span class="stock-good">50</span></td>
+                        <td>45</td>
+                        <td>5</td>
+                        <td>2</td>
+                        <td>
+                            <button class="btn" style="padding:5px 10px; font-size:12px;" onclick="showStockModal('Lọc dầu động cơ')">👁️ Xem</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>🚗 Má phanh trước<br><small>SKU: BRAKE-002</small></td>
+                        <td>Phanh</td>
+                        <td><span class="stock-low">8</span></td>
+                        <td>8</td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>
+                            <button class="btn" style="padding:5px 10px; font-size:12px;" onclick="showStockModal('Má phanh trước')">👁️ Xem</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>🛞 Lốp xe 900R20<br><small>SKU: TIRE-003</small></td>
+                        <td>Lốp xe</td>
+                        <td><span class="stock-out">0</span></td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>
+                            <button class="btn" style="padding:5px 10px; font-size:12px;" onclick="showStockModal('Lốp xe 900R20')">👁️ Xem</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><strong>💡 Hướng dẫn:</strong></p>
+            <ul>
+                <li><span class="stock-good">Xanh lá</span>: Tồn kho đủ (>20)</li>
+                <li><span class="stock-low">Vàng</span>: Tồn kho thấp (5-20)</li>
+                <li><span class="stock-out">Đỏ</span>: Hết hàng (<5)</li>
+            </ul>
+        </div>
+
+        <!-- Instructions -->
+        <div style="margin-top: 30px; padding: 20px; background: #e9ecef; border-radius: 10px;">
+            <h3>📖 Lưu Ý Quan Trọng</h3>
+            <ul>
+                <li><strong>Backend phải chạy trước:</strong> Đảm bảo thấy "Started WebBanHangGiaDinhApplication"</li>
+                <li><strong>Frontend chạy sau:</strong> Đảm bảo thấy "Local: http://localhost:3000"</li>
+                <li><strong>Kiểm tra port:</strong> Backend (8080), Frontend (3000)</li>
+                <li><strong>Khi có lỗi:</strong> Restart tasks và thử lại</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function checkSystemStatus() {
+            const statusDiv = document.getElementById('system-status');
+            statusDiv.innerHTML = '<div class="status status-warning">Đang kiểm tra...</div>';
+            
+            try {
+                // Check backend
+                const backendResponse = await fetch('http://localhost:8080/api/products');
+                const backendOK = backendResponse.ok;
+                
+                // Check frontend
+                const frontendResponse = await fetch('http://localhost:3000');
+                const frontendOK = frontendResponse.ok;
+                
+                let status = '';
+                if (backendOK && frontendOK) {
+                    status = '<div class="status status-success">✅ Hệ thống hoạt động bình thường!</div>';
+                } else if (backendOK && !frontendOK) {
+                    status = '<div class="status status-warning">⚠️ Backend OK, cần khởi chạy Frontend</div>';
+                } else if (!backendOK && frontendOK) {
+                    status = '<div class="status status-warning">⚠️ Frontend OK, cần khởi chạy Backend</div>';
+                } else {
+                    status = '<div class="status status-error">❌ Cần khởi chạy cả Backend và Frontend</div>';
+                }
+                
+                statusDiv.innerHTML = status;
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status status-error">❌ Không thể kết nối. Hãy khởi chạy Backend và Frontend</div>';
+            }
+        }
+
+        function openVSCode() {
+            alert('Hãy mở VS Code và load workspace của bạn');
+        }
+
+        function showBackendInstructions() {
+            const div = document.getElementById('backend-instructions');
+            div.style.display = div.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showFrontendInstructions() {
+            const div = document.getElementById('frontend-instructions');
+            div.style.display = div.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function openApp() {
+            window.open('http://localhost:3000', '_blank');
+        }
+
+        function openTestPage() {
+            window.open('test-inventory-frontend.html', '_blank');
+        }
+
+        function showProductsGuide() {
+            const div = document.getElementById('demo-table');
+            div.style.display = div.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showStockModal(productName) {
+            alert(`Demo: Modal chi tiết tồn kho cho "${productName}"\n\nTrong phần mềm thực tế, bạn sẽ thấy:\n- 4 thẻ thống kê màu\n- Bảng chi tiết theo nhà cung cấp\n- Thông tin giá vốn và vị trí kho`);
+        }
+
+        // Auto check status when page loads
+        window.onload = function() {
+            setTimeout(checkSystemStatus, 1000);
+        };
+    </script>
+</body>
+</html>

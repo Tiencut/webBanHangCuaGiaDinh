@@ -42,7 +42,16 @@ export const productsAPI = {
   delete: (id) => api.delete(`/products/${id}`),
   
   // Search products
-  search: (searchTerm, page = 0, size = 10) => api.get(`/products/search?q=${searchTerm}&page=${page}&size=${size}`)
+  search: (searchTerm, page = 0, size = 10) => api.get(`/products/search?q=${searchTerm}&page=${page}&size=${size}`),
+  
+  // Get products with inventory info
+  getAllWithInventory: () => api.get('/products/with-inventory'),
+  
+  // Get product inventory by product ID
+  getInventory: (productId) => api.get(`/products/${productId}/inventory`),
+  
+  // Get product total stock
+  getTotalStock: (productId) => api.get(`/products/${productId}/total-stock`)
 }
 
 // Customers API Service
@@ -293,6 +302,54 @@ export const dashboardAPI = {
   getRevenueChart: (period = '30days') => api.get(`/dashboard/revenue?period=${period}`)
 }
 
+// Inventory API Service
+export const inventoryAPI = {
+  // Get all inventory records
+  getAll: () => api.get('/inventory'),
+  
+  // Get inventory by product ID
+  getByProductId: (productId) => api.get(`/inventory/product/${productId}`),
+  
+  // Get inventory by supplier ID
+  getBySupplierId: (supplierId) => api.get(`/inventory/supplier/${supplierId}`),
+  
+  // Get total stock for a product
+  getTotalStock: (productId) => api.get(`/inventory/product/${productId}/total-stock`),
+  
+  // Get available stock for a product
+  getAvailableStock: (productId) => api.get(`/inventory/product/${productId}/available-stock`),
+  
+  // Get reserved stock for a product
+  getReservedStock: (productId) => api.get(`/inventory/product/${productId}/reserved-stock`),
+  
+  // Get supplier count for a product
+  getSupplierCount: (productId) => api.get(`/inventory/product/${productId}/supplier-count`),
+  
+  // Get inventory details for a product
+  getProductDetails: (productId) => api.get(`/inventory/product/${productId}/details`),
+  
+  // Stock in (add inventory)
+  stockIn: (inventoryData) => api.post('/inventory/stock-in', inventoryData),
+  
+  // Stock out (remove inventory)
+  stockOut: (inventoryData) => api.post('/inventory/stock-out', inventoryData),
+  
+  // Reserve stock
+  reserveStock: (inventoryData) => api.post('/inventory/reserve', inventoryData),
+  
+  // Update inventory record
+  update: (id, inventoryData) => api.put(`/inventory/${id}`, inventoryData),
+  
+  // Delete inventory record
+  delete: (id) => api.delete(`/inventory/${id}`),
+  
+  // Get low stock alerts
+  getLowStockAlerts: () => api.get('/inventory/low-stock-alerts'),
+  
+  // Get inventory statistics
+  getStatistics: () => api.get('/inventory/statistics')
+}
+
 // Export all services
 export {
   productsAPI,
@@ -304,5 +361,6 @@ export {
   trainingAPI,
   authAPI,
   importAPI,
-  dashboardAPI
+  dashboardAPI,
+  inventoryAPI
 }

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Navigation - Hệ thống Bán hàng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .group:hover .group-hover\:opacity-100 {
+            opacity: 1;
+        }
+        .group:hover .group-hover\:visible {
+            visibility: visible;
+        }
+        .group:hover .group-hover\:rotate-180 {
+            transform: rotate(180deg);
+        }
+        
+        /* Improve dropdown interaction */
+        .group:hover .dropdown-menu {
+            display: block;
+            animation: dropdown-fade-in 0.2s ease-out;
+        }
+        
+        .dropdown-menu {
+            display: none;
+        }
+        
+        @keyframes dropdown-fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="bg-white shadow-lg border-b border-gray-200">
+        <div class="w-full px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <div class="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <span class="font-bold text-lg text-gray-900">AutoParts</span>
+                </div>
+
+                <!-- Navigation Menu -->
+                <nav class="flex items-center space-x-6">
+                    <!-- Dashboard -->
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100">
+                        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                        </svg>
+                        Tổng quan
+                    </a>
+
+                    <!-- Products -->
+                    <div class="relative group">
+                        <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100">
+                            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                            Hàng hóa
+                            <svg class="ml-1 h-4 w-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </a>
+                        
+                        <!-- Dropdown Menu -->
+                        <div class="dropdown-menu absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                            <div class="py-2">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <div class="flex items-center">
+                                        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                                        </svg>
+                                        Danh sách hàng hóa
+                                    </div>
+                                </a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <div class="flex items-center">
+                                        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                        </svg>
+                                        Thiết lập giá
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Orders -->
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100">
+                        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2H9m0 0V3a2 2 0 012-2h2a2 2 0 012 2v2" />
+                        </svg>
+                        Đơn hàng
+                    </a>
+
+                    <!-- Direct Products Link -->
+                    <a href="../frontend-web/src/views/Products.vue" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+                        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                        Trực tiếp → Hàng hóa
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">Test Navigation</h1>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Hướng dẫn kiểm tra Navigation</h2>
+            <div class="space-y-4">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h3 class="font-medium text-blue-900">1. Kiểm tra Dropdown Menu</h3>
+                    <p class="text-blue-700">Hover vào menu "Hàng hóa" ở trên để thấy dropdown menu với các tùy chọn:</p>
+                    <ul class="list-disc list-inside mt-2 text-blue-600">
+                        <li>Danh sách hàng hóa</li>
+                        <li>Thiết lập giá</li>
+                    </ul>
+                </div>
+                
+                <div class="p-4 bg-green-50 rounded-lg">
+                    <h3 class="font-medium text-green-900">2. Kiểm tra Link Trực tiếp</h3>
+                    <p class="text-green-700">Nút "Trực tiếp → Hàng hóa" màu xanh sẽ dẫn trực tiếp đến trang Products</p>
+                </div>
+                
+                <div class="p-4 bg-amber-50 rounded-lg">
+                    <h3 class="font-medium text-amber-900">3. Khắc phục sự cố</h3>
+                    <p class="text-amber-700">Nếu dropdown không hoạt động:</p>
+                    <ul class="list-disc list-inside mt-2 text-amber-600">
+                        <li>Kiểm tra CSS hover effects</li>
+                        <li>Đảm bảo không có JavaScript conflict</li>
+                        <li>Sử dụng link trực tiếp thay thế</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Trạng thái Navigation</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-medium mb-2">Desktop Navigation</h3>
+                    <p class="text-sm text-gray-600">Dropdown menu với hover effect</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-medium mb-2">Mobile Navigation</h3>
+                    <p class="text-sm text-gray-600">Menu hamburger với links trực tiếp</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test navigation functionality
+        console.log('Navigation test page loaded');
+        
+        // Add click handlers for testing
+        document.addEventListener('DOMContentLoaded', function() {
+            const productLinks = document.querySelectorAll('a[href*="products"], a[href*="Products"]');
+            productLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    alert('Navigation to Products page - link working!');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

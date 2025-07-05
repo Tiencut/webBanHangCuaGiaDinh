@@ -2,6 +2,7 @@ package com.giadinh.banphutung.web_ban_hang_gia_dinh.controller;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product.ProductStatus;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.InventoryService;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.ProductService;
 
 import jakarta.validation.Valid;
@@ -35,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ProductController {
     
     private final ProductService productService;
+    private final InventoryService inventoryService;
     
     // GET /api/products - Lấy tất cả product active
     @GetMapping
@@ -200,6 +203,63 @@ public class ProductController {
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             log.error("Error deleting product: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // GET /api/products/{id}/inventory - Lấy thông tin tồn kho của sản phẩm
+    @GetMapping("/{id}/inventory")
+    public ResponseEntity<Map<String, Object>> getProductInventory(@PathVariable Long id) {
+        log.info("Getting inventory information for product with id: {}", id);
+        try {
+            Map<String, Object> inventoryInfo = inventoryService.getInventoryStatistics(id);
+            return ResponseEntity.ok(inventoryInfo);
+        } catch (RuntimeException e) {
+            log.error("Error getting product inventory: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // GET /api/products/{id}/stock-summary - Lấy tổng kết tồn kho
+    @GetMapping("/{id}/stock-summary")
+    public ResponseEntity<Map<String, Integer>> getProductStockSummary(@PathVariable Long id) {
+        log.info("Getting stock summary for product with id: {}", id);
+        try {
+            Integer totalQuantity = inventoryService.getTotalQuantity(id);
+            Integer totalAvailable = inventoryService.getTotalAvailableQuantity(id);
+            Integer totalReserved = inventoryService.getTotalReservedQuantity(id);
+            
+            Map<String, Integer> summary = Map.of(
+                "totalQuantity", totalQuantity,
+                "totalAvailable", totalAvailable,
+                "totalReserved", totalReserved
+            );
+            
+            return ResponseEntity.ok(summary);
+        } catch (RuntimeException e) {
+            log.error("Error getting product stock summary: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // GET /api/products/with-inventory - Lấy danh sách sản phẩm có tồn kho
+    @GetMapping("/with-inventory")
+    public ResponseEntity<List<Map<String, Object>>> getProductsWithInventory() {
+        log.info("Getting products with inventory information");
+        try {
+            List<Product> products = productService.findAllActiveProducts();
+            List<Map<String, Object>> productsWithInventory = products.stream().map(product -> {
+                Map<String, Object> inventoryStats = inventoryService.getInventoryStatistics(product.getId());
+                
+                return Map.of(
+                    "product", product,
+                    "inventory", inventoryStats
+                );
+            }).toList();
+            
+            return ResponseEntity.ok(productsWithInventory);
+        } catch (RuntimeException e) {
+            log.error("Error getting products with inventory: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }

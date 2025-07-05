@@ -55,47 +55,45 @@
 
       <!-- Custom cell cho tồn kho -->
       <template #cell-stock="{ item }">
-        <div class="flex flex-col">
-          <span :class="getStockClass(item.totalStock)" class="px-2 py-1 text-xs font-medium rounded-full text-center mb-1">
-            {{ item.totalStock || 0 }}
-          </span>
-          <div v-if="item.supplierStocks?.length" class="text-xs text-gray-500">
-            <div v-for="stock in item.supplierStocks.slice(0, 2)" :key="stock.supplierId" class="truncate">
-              {{ getSupplierName(stock.supplierId) }}: {{ stock.quantity }}
-            </div>
-            <div v-if="item.supplierStocks.length > 2" class="text-blue-600 cursor-pointer" @click="showStockDetails(item)">
-              +{{ item.supplierStocks.length - 2 }} khác...
-            </div>
-          </div>
+        <div class="flex items-center justify-center">
+          <button 
+            @click="showStockDetails(item)"
+            class="px-2 py-1 rounded-full text-xs font-medium cursor-pointer hover:bg-gray-100"
+            :class="getStockClass(item.stock)"
+          >
+            {{ item.stock || 0 }}
+          </button>
         </div>
       </template>
 
-      <!-- Custom cell cho giá bán -->
-      <template #cell-salePrice="{ item }">
-        <div class="text-right">
-          <div class="font-medium">{{ formatCurrency(item.salePrice) }}</div>
-          <div v-if="item.costPrice" class="text-xs text-gray-500">
-            Vốn: {{ formatCurrency(item.costPrice) }}
-          </div>
+      <!-- Custom cell cho available stock -->
+      <template #cell-availableStock="{ item }">
+        <div class="text-center">
+          <span class="text-sm font-medium text-green-600">{{ item.availableStock || 0 }}</span>
+        </div>
+      </template>
+
+      <!-- Custom cell cho reserved stock -->
+      <template #cell-reservedStock="{ item }">
+        <div class="text-center">
+          <span class="text-sm font-medium text-yellow-600">{{ item.reservedStock || 0 }}</span>
+        </div>
+      </template>
+
+      <!-- Custom cell cho supplier count -->
+      <template #cell-supplierCount="{ item }">
+        <div class="text-center">
+          <span class="text-sm font-medium text-purple-600">{{ item.supplierCount || 0 }}</span>
         </div>
       </template>
 
       <!-- Custom actions -->
-      <template #actions="{ item }">
-        <div class="flex items-center justify-end space-x-2">
+      <template #cell-actions="{ item }">
+        <div class="flex items-center justify-center space-x-2">
           <button
-            @click="duplicateProduct(item)"
-            class="text-green-600 hover:text-green-900 transition-colors"
-            title="Nhân bản"
-          >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-          </button>
-          <button
-            @click="viewHistory(item)"
-            class="text-purple-600 hover:text-purple-900 transition-colors"
-            title="Lịch sử"
+            @click="showStockDetails(item)"
+            class="text-blue-600 hover:text-blue-900 transition-colors"
+            title="Xem chi tiết tồn kho"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -125,7 +123,7 @@
 
     <!-- Stock Details Modal -->
     <div v-if="showStockModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-md">
+      <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-semibold">Chi tiết tồn kho</h3>
           <button @click="showStockModal = false" class="text-gray-400 hover:text-gray-600">
@@ -134,15 +132,88 @@
             </svg>
           </button>
         </div>
-        <div v-if="selectedProductForStock" class="space-y-3">
-          <div class="font-medium">{{ selectedProductForStock.name }}</div>
-          <div v-for="stock in selectedProductForStock.supplierStocks" :key="stock.supplierId" class="flex justify-between border-b pb-2">
-            <span>{{ getSupplierName(stock.supplierId) }}</span>
-            <span class="font-medium">{{ stock.quantity }}</span>
+        
+        <div v-if="selectedProductForStock" class="space-y-4">
+          <div class="border-b pb-4">
+            <h4 class="font-medium text-lg">{{ selectedProductForStock.name }}</h4>
+            <p class="text-sm text-gray-600">SKU: {{ selectedProductForStock.sku }}</p>
           </div>
-          <div class="border-t pt-2 flex justify-between font-semibold">
-            <span>Tổng cộng</span>
-            <span>{{ selectedProductForStock.totalStock }}</span>
+
+          <!-- Summary Cards -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <div class="text-sm text-blue-600">Tổng tồn kho</div>
+              <div class="text-xl font-bold text-blue-800">{{ selectedProductForStock.stock || 0 }}</div>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+              <div class="text-sm text-green-600">Có sẵn</div>
+              <div class="text-xl font-bold text-green-800">{{ selectedProductForStock.availableStock || 0 }}</div>
+            </div>
+            <div class="bg-yellow-50 p-4 rounded-lg">
+              <div class="text-sm text-yellow-600">Đã đặt trước</div>
+              <div class="text-xl font-bold text-yellow-800">{{ selectedProductForStock.reservedStock || 0 }}</div>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg">
+              <div class="text-sm text-purple-600">Nhà cung cấp</div>
+              <div class="text-xl font-bold text-purple-800">{{ selectedProductForStock.supplierCount || 0 }}</div>
+            </div>
+          </div>
+
+          <!-- Inventory Details Table -->
+          <div v-if="selectedProductForStock.inventoryDetails && selectedProductForStock.inventoryDetails.length > 0">
+            <h5 class="font-medium text-gray-900 mb-3">Chi tiết theo nhà cung cấp</h5>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Nhà cung cấp
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tồn kho
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Có sẵn
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Đã đặt
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Giá vốn
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Vị trí
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr v-for="inventory in selectedProductForStock.inventoryDetails" :key="inventory.id">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{ inventory.supplier?.name || 'N/A' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{ inventory.quantity || 0 }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{ inventory.availableQuantity || 0 }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{ inventory.reservedQuantity || 0 }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{ formatCurrency(inventory.costPrice) }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{ inventory.location || 'N/A' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div v-else class="text-center py-8 text-gray-500">
+            <p>Chưa có dữ liệu tồn kho cho sản phẩm này</p>
           </div>
         </div>
       </div>
@@ -154,6 +225,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useProductsStore } from '../stores/products'
 import { formatCurrency, debounce } from '../utils/helpers'
+import { productsAPI, inventoryAPI } from '@/services'
 import TrainingAssistant from '@/components/TrainingAssistant.vue'
 import DataTable from '@/components/DataTable.vue'
 
@@ -199,7 +271,28 @@ export default {
         label: 'Tồn kho',
         sortable: true,
         align: 'center',
-        width: '120px'
+        width: '100px'
+      },
+      {
+        key: 'availableStock',
+        label: 'Có sẵn',
+        sortable: true,
+        align: 'center',
+        width: '100px'
+      },
+      {
+        key: 'reservedStock',
+        label: 'Đã đặt',
+        sortable: true,
+        align: 'center',
+        width: '100px'
+      },
+      {
+        key: 'supplierCount',
+        label: 'Nhà CC',
+        sortable: true,
+        align: 'center',
+        width: '80px'
       },
       {
         key: 'costPrice',
@@ -228,6 +321,13 @@ export default {
           'OUT_OF_STOCK': { text: 'Hết hàng', class: 'bg-red-100 text-red-800' },
           'DISCONTINUED': { text: 'Ngừng bán', class: 'bg-gray-100 text-gray-800' }
         }
+      },
+      {
+        key: 'actions',
+        label: 'Thao tác',
+        sortable: false,
+        align: 'center',
+        width: '120px'
       }
     ])
 
@@ -325,6 +425,59 @@ export default {
       return filtered
     })
 
+    // API Methods
+    const fetchProductsWithInventory = async () => {
+      loading.value = true
+      try {
+        const response = await productsAPI.getAllWithInventory()
+        products.value = response.data.map(product => ({
+          ...product,
+          stock: product.totalStock || 0,
+          availableStock: product.availableStock || 0,
+          reservedStock: product.reservedStock || 0,
+          supplierCount: product.supplierCount || 0
+        }))
+      } catch (error) {
+        console.error('Error fetching products with inventory:', error)
+        // Fallback to basic products API
+        try {
+          const basicResponse = await productsAPI.getAll()
+          products.value = basicResponse.data.map(product => ({
+            ...product,
+            stock: 0,
+            availableStock: 0,
+            reservedStock: 0,
+            supplierCount: 0
+          }))
+        } catch (fallbackError) {
+          console.error('Error fetching basic products:', fallbackError)
+        }
+      } finally {
+        loading.value = false
+      }
+    }
+
+    const fetchProductInventory = async (productId) => {
+      try {
+        const response = await inventoryAPI.getProductDetails(productId)
+        return response.data
+      } catch (error) {
+        console.error('Error fetching product inventory:', error)
+        return null
+      }
+    }
+
+    const showStockDetails = async (product) => {
+      const inventoryDetails = await fetchProductInventory(product.id)
+      if (inventoryDetails) {
+        selectedProductForStock.value = {
+          ...product,
+          inventoryDetails
+        }
+        showStockModal.value = true
+      }
+    }
+
     // Methods
     const getCategoryName = (categoryId) => {
       const category = categories.value.find(c => c.id === categoryId)
@@ -340,11 +493,6 @@ export default {
       if (quantity === 0) return 'bg-red-100 text-red-800'
       if (quantity < 10) return 'bg-yellow-100 text-yellow-800'
       return 'bg-green-100 text-green-800'
-    }
-
-    const showStockDetails = (product) => {
-      selectedProductForStock.value = product
-      showStockModal.value = true
     }
 
     // DataTable event handlers
@@ -405,6 +553,7 @@ export default {
     // Lifecycle
     onMounted(() => {
       // Load data when component mounts
+      fetchProductsWithInventory()
       console.log('Products component mounted')
     })
 
@@ -433,6 +582,8 @@ export default {
       getSupplierName,
       getStockClass,
       showStockDetails,
+      fetchProductsWithInventory,
+      fetchProductInventory,
       formatCurrency,
       
       // DataTable handlers

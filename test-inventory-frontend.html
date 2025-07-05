@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Inventory Frontend Integration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .stock-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .stock-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 5px;
+            flex: 1;
+        }
+        .stock-card h4 {
+            margin: 0 0 5px 0;
+            color: #495057;
+        }
+        .stock-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Inventory Frontend Integration</h1>
+        <p>Test các API tồn kho và tích hợp frontend-backend</p>
+
+        <div class="test-section">
+            <h3>1. Test Products with Inventory API</h3>
+            <button onclick="testProductsWithInventory()">Test Products with Inventory</button>
+            <div id="products-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Test Inventory Statistics</h3>
+            <button onclick="testInventoryStatistics()">Test Inventory Statistics</button>
+            <div id="inventory-stats-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Test Product Inventory Details</h3>
+            <input type="number" id="product-id" placeholder="Nhập Product ID (1, 2, 3...)" value="1">
+            <button onclick="testProductInventoryDetails()">Test Product Inventory Details</button>
+            <div id="product-inventory-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Test Low Stock Products</h3>
+            <button onclick="testLowStockProducts()">Test Low Stock Products</button>
+            <div id="low-stock-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Test Frontend Services</h3>
+            <button onclick="testFrontendServices()">Test Frontend Services</button>
+            <div id="frontend-services-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>6. Products Table Preview</h3>
+            <button onclick="loadProductsTable()">Load Products Table</button>
+            <div id="products-table-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api';
+
+        // Helper function to make API calls
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                };
+
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${result.message || 'Unknown error'}`);
+                }
+                
+                return result;
+            } catch (error) {
+                console.error('API call error:', error);
+                throw error;
+            }
+        }
+
+        // Test 1: Products with Inventory
+        async function testProductsWithInventory() {
+            const resultDiv = document.getElementById('products-result');
+            resultDiv.textContent = 'Testing...';
+            
+            try {
+                const result = await apiCall('/products/with-inventory');
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ Success!\n\nFound ${result.length} products with inventory:\n\n${JSON.stringify(result, null, 2)}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+
+        // Test 2: Inventory Statistics
+        async function testInventoryStatistics() {
+            const resultDiv = document.getElementById('inventory-stats-result');
+            resultDiv.textContent = 'Testing...';
+            
+            try {
+                const result = await apiCall('/inventory/statistics');
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ Success!\n\nInventory Statistics:\n\n${JSON.stringify(result, null, 2)}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+
+        // Test 3: Product Inventory Details
+        async function testProductInventoryDetails() {
+            const resultDiv = document.getElementById('product-inventory-result');
+            const productId = document.getElementById('product-id').value;
+            
+            if (!productId) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ Please enter a product ID';
+                return;
+            }
+            
+            resultDiv.textContent = 'Testing...';
+            
+            try {
+                const result = await apiCall(`/inventory/product/${productId}/details`);
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ Success!\n\nProduct ${productId} Inventory Details:\n\n${JSON.stringify(result, null, 2)}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+
+        // Test 4: Low Stock Products
+        async function testLowStockProducts() {
+            const resultDiv = document.getElementById('low-stock-result');
+            resultDiv.textContent = 'Testing...';
+            
+            try {
+                const result = await apiCall('/inventory/low-stock-alerts');
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ Success!\n\nLow Stock Products:\n\n${JSON.stringify(result, null, 2)}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+
+        // Test 5: Frontend Services
+        async function testFrontendServices() {
+            const resultDiv = document.getElementById('frontend-services-result');
+            resultDiv.textContent = 'Testing frontend services...';
+            
+            try {
+                // Test if frontend is running
+                const frontendCheck = await fetch('http://localhost:3000');
+                const isFrontendRunning = frontendCheck.ok;
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ Frontend Status:\n\nFrontend Server: ${isFrontendRunning ? 'Running on port 3000' : 'Not running'}\nBackend API: ${API_BASE_URL}\n\nNext Steps:\n1. Open http://localhost:3000 in your browser\n2. Navigate to Products page\n3. Check if inventory data is displayed correctly`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Frontend Check Error: ${error.message}`;
+            }
+        }
+
+        // Test 6: Products Table Preview
+        async function loadProductsTable() {
+            const resultDiv = document.getElementById('products-table-result');
+            resultDiv.textContent = 'Loading products table...';
+            
+            try {
+                const products = await apiCall('/products/with-inventory');
+                
+                let tableHTML = '<table>';
+                tableHTML += '<tr><th>ID</th><th>Name</th><th>SKU</th><th>Total Stock</th><th>Available</th><th>Reserved</th><th>Suppliers</th></tr>';
+                
+                products.forEach(product => {
+                    tableHTML += `<tr>
+                        <td>${product.id}</td>
+                        <td>${product.name}</td>
+                        <td>${product.sku || 'N/A'}</td>
+                        <td>${product.totalStock || 0}</td>
+                        <td>${product.availableStock || 0}</td>
+                        <td>${product.reservedStock || 0}</td>
+                        <td>${product.supplierCount || 0}</td>
+                    </tr>`;
+                });
+                
+                tableHTML += '</table>';
+                
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `✅ Products Table Preview:\n\n${tableHTML}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+
+        // Auto-run basic tests when page loads
+        window.onload = function() {
+            console.log('🧪 Inventory Frontend Integration Test Page Loaded');
+            console.log('Backend API:', API_BASE_URL);
+            console.log('Frontend URL: http://localhost:3000');
+        };
+    </script>
+</body>
+</html>
