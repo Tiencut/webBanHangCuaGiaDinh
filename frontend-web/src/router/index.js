@@ -39,6 +39,18 @@ const routes = [
     meta: { title: 'Trả hàng nhập' }
   },
   {
+    path: '/table-demo',
+    name: 'TableDemo',
+    component: () => import('../views/TableDemo.vue'),
+    meta: { title: 'Demo Bảng' }
+  },
+  {
+    path: '/table-comparison',
+    name: 'TableComparison',
+    component: () => import('../views/TableComparison.vue'),
+    meta: { title: 'So sánh Bảng' }
+  },
+  {
     path: '/customers',
     name: 'Customers',
     component: () => import('../views/Customers.vue'),

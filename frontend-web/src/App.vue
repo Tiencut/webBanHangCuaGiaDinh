@@ -148,9 +148,31 @@
               :class="$route.name === 'Customers' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
               <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
               </svg>
               Khách hàng
+            </router-link>
+
+            <!-- Table Demo -->
+            <router-link to="/table-demo"
+              class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'TableDemo' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
+              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 10h18M3 14h18M8 4v16m8-16v16" />
+              </svg>
+              Demo Bảng
+            </router-link>
+
+            <!-- Table Comparison -->
+            <router-link to="/table-comparison"
+              class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+              :class="$route.name === 'TableComparison' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
+              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+              </svg>
+              So sánh Bảng
             </router-link>
 
             <!-- Vehicles -->
