@@ -43,12 +43,30 @@ CREATE TABLE `categories` (
 -- ===========================================
 CREATE TABLE `suppliers` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(100) NOT NULL,
+    `name` VARCHAR(200) NOT NULL,
+    `code` VARCHAR(50) UNIQUE,
     `contact_person` VARCHAR(100),
-    `phone` VARCHAR(20),
+    `phone` VARCHAR(15),
     `email` VARCHAR(100),
-    `address` TEXT,
+    `address` VARCHAR(500),
+    `city` VARCHAR(100) COMMENT 'Thành phố/Tỉnh',
+    `district` VARCHAR(100) COMMENT 'Quận/Huyện',
+    `ward` VARCHAR(100) COMMENT 'Phường/Xã',
+    `region` VARCHAR(100) COMMENT 'Khu vực/Vùng miền',
     `tax_code` VARCHAR(20),
+    `bank_account` VARCHAR(50),
+    `bank_name` VARCHAR(100),
+    `credit_limit` DECIMAL(19,2) DEFAULT 0,
+    `delivery_time_days` INTEGER DEFAULT 0,
+    `rating` DECIMAL(3,2) DEFAULT 0.0,
+    `notes` TEXT,
+    -- KiotViet compatibility fields
+    `supplier_group` VARCHAR(100) COMMENT 'Nhóm nhà cung cấp',
+    `total_purchased` DECIMAL(19,2) DEFAULT 0 COMMENT 'Tổng tiền đã mua',
+    `current_debt` DECIMAL(19,2) DEFAULT 0 COMMENT 'Công nợ hiện tại',
+    `last_transaction_date` DATE COMMENT 'Ngày giao dịch cuối cùng',
+    `payment_terms` ENUM('CASH', 'NET_7', 'NET_15', 'NET_30', 'NET_45', 'NET_60') DEFAULT 'CASH',
+    `status` ENUM('ACTIVE', 'INACTIVE', 'BLACKLISTED') DEFAULT 'ACTIVE',
     `is_active` BOOLEAN DEFAULT TRUE,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -270,3 +288,15 @@ CREATE INDEX idx_purchase_orders_status ON purchase_orders(status);
 CREATE INDEX idx_inventory_transactions_product ON inventory_transactions(product_id);
 CREATE INDEX idx_inventory_transactions_type ON inventory_transactions(transaction_type);
 CREATE INDEX idx_inventory_transactions_date ON inventory_transactions(created_at);
+
+-- Indexes cho suppliers (bao gồm các trường KiotViet)
+CREATE INDEX idx_suppliers_code ON suppliers(code);
+CREATE INDEX idx_suppliers_phone ON suppliers(phone);
+CREATE INDEX idx_suppliers_email ON suppliers(email);
+CREATE INDEX idx_suppliers_city ON suppliers(city);
+CREATE INDEX idx_suppliers_district ON suppliers(district);
+CREATE INDEX idx_suppliers_status ON suppliers(status);
+CREATE INDEX idx_suppliers_region ON suppliers(region);
+CREATE INDEX idx_suppliers_supplier_group ON suppliers(supplier_group);
+CREATE INDEX idx_suppliers_active ON suppliers(is_active);
+CREATE INDEX idx_suppliers_last_transaction ON suppliers(last_transaction_date);

@@ -1,0 +1,5 @@
+Mã nhà cung cấp,Tên nhà cung cấp,Số điện thoại,Email,Địa chỉ,Thành phố,Quận/Huyện,Phường/Xã,Vùng miền,Nhóm nhà cung cấp,Tổng tiền mua,Công nợ hiện tại,Ngày giao dịch cuối,Ghi chú
+SUP004,Công ty Phụ tùng Test,0904444444,test@company.com,123 Test Street,Hà Nội,Cầu Giấy,Phường Test,Miền Bắc,Nhóm Test,5000000,250000,15/12/2024,Nhà cung cấp test import
+SUP005,Garage Minh Test,0905555555,garage@test.com,456 Garage Road,TP.HCM,Quận 7,Phường Tân Phú,Miền Nam,Garage Group,3000000,0,20/12/2024,Test garage import
+NEW001,Nhà cung cấp mới,0906666666,new@supplier.com,789 New Avenue,Đà Nẵng,Hải Châu,Phường Hải Châu 1,Miền Trung,Nhóm Mới,1000000,100000,01/01/2025,Nhà cung cấp hoàn toàn mới
+DUP001,Test Duplicate,0901111111,duplicate@test.com,Duplicate Address,TP.HCM,Quận 1,Phường Test,Miền Nam,Test Group,2000000,50000,10/01/2025,Test duplicate detection

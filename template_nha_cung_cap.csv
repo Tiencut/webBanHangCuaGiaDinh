@@ -1,0 +1,4 @@
+Mã nhà cung cấp,Tên nhà cung cấp,Số điện thoại,Email,Địa chỉ,Thành phố,Quận/Huyện,Phường/Xã,Vùng miền,Nhóm nhà cung cấp,Tổng giá trị mua,Nợ hiện tại,Ngày giao dịch cuối,Ghi chú
+SUP001,Công ty TNHH Phụ tùng ABC,0123456789,abc@company.com,123 Đường ABC,Hà Nội,Đống Đa,Láng Thượng,Miền Bắc,Phụ tùng chính hãng,50000000,2500000,15/12/2023,Nhà cung cấp uy tín
+SUP002,Công ty Cổ phần XYZ,0987654321,info@xyz.com,456 Đường XYZ,TP. Hồ Chí Minh,Quận 1,Phường Bến Nghé,Miền Nam,Phụ tùng thay thế,30000000,0,20/12/2023,Giá cả cạnh tranh
+SUP003,Cửa hàng Phụ tùng DEF,0369258147,def@gmail.com,789 Đường DEF,Đà Nẵng,Hải Châu,Hải Châu I,Miền Trung,Phụ tùng nhập khẩu,15000000,500000,10/12/2023,Chất lượng tốt

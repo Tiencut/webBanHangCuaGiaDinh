@@ -17,6 +17,9 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     // Tìm supplier theo code
     Optional<Supplier> findByCode(String code);
     
+    // Tìm supplier theo tên chính xác
+    Optional<Supplier> findByName(String name);
+    
     // Tìm supplier theo phone
     Optional<Supplier> findByPhone(String phone);
     

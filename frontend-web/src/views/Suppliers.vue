@@ -83,6 +83,16 @@
               <option value="inactive">Tạm dừng</option>
             </select>
           </div>
+          
+          <!-- Import CSV Button -->
+          <button @click="showImportModal = true" class="btn-secondary">
+            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+            </svg>
+            Import CSV
+          </button>
+          
           <button @click="showAddSupplierModal = true" class="btn-primary">
             <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -223,12 +233,125 @@
         </form>
       </div>
     </div>
+  
+    <!-- Import Modal -->
+    <ImportModal 
+      :show="showImportModal"
+      :title="importConfig.title"
+      :upload-message="importConfig.uploadMessage"
+      :update-option-text="importConfig.updateOptionText"
+      :status="importState.status"
+      :results="importState.results"
+      @close="showImportModal = false"
+      @import="handleImport"
+      @download-template="handleDownloadTemplate"
+      @show-guide="showImportGuide = true"
+    />
+
+    <!-- Import Guide Modal -->
+    <div v-if="showImportGuide" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold text-gray-900">Hướng dẫn import CSV nhà cung cấp</h3>
+            <button @click="showImportGuide = false" class="text-gray-400 hover:text-gray-600">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <div class="space-y-6">
+            <div>
+              <h4 class="font-medium text-gray-900 mb-3">1. Chuẩn bị file CSV</h4>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <p class="text-sm text-gray-700 mb-3">File CSV cần có các cột sau (theo thứ tự):</p>
+                <ul class="text-sm text-gray-600 space-y-1">
+                  <li>• <strong>Mã nhà cung cấp</strong> (bắt buộc) - Mã duy nhất</li>
+                  <li>• <strong>Tên nhà cung cấp</strong> (bắt buộc)</li>
+                  <li>• <strong>Số điện thoại</strong></li>
+                  <li>• <strong>Email</strong></li>
+                  <li>• <strong>Địa chỉ</strong></li>
+                  <li>• <strong>Thành phố</strong></li>
+                  <li>• <strong>Quận/Huyện</strong></li>
+                  <li>• <strong>Phường/Xã</strong></li>
+                  <li>• <strong>Vùng miền</strong></li>
+                  <li>• <strong>Nhóm nhà cung cấp</strong></li>
+                  <li>• <strong>Tổng giá trị mua</strong> (số)</li>
+                  <li>• <strong>Nợ hiện tại</strong> (số)</li>
+                  <li>• <strong>Ngày giao dịch cuối</strong> (dd/MM/yyyy)</li>
+                  <li>• <strong>Ghi chú</strong></li>
+                </ul>
+              </div>
+            </div>
+            
+            <div>
+              <h4 class="font-medium text-gray-900 mb-3">2. Định dạng dữ liệu</h4>
+              <div class="bg-blue-50 rounded-lg p-4">
+                <ul class="text-sm text-blue-700 space-y-1">
+                  <li>• File phải có định dạng .csv</li>
+                  <li>• Mã hóa: UTF-8</li>
+                  <li>• Dòng đầu tiên là tiêu đề cột</li>
+                  <li>• Số tiền: chỉ nhập số, không có dấu phẩy hoặc ký tự đặc biệt</li>
+                  <li>• Ngày tháng: định dạng dd/MM/yyyy (ví dụ: 15/12/2023)</li>
+                  <li>• Tối đa 10MB</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div>
+              <h4 class="font-medium text-gray-900 mb-3">3. Lưu ý quan trọng</h4>
+              <div class="bg-yellow-50 rounded-lg p-4">
+                <ul class="text-sm text-yellow-700 space-y-1">
+                  <li>• Mã nhà cung cấp phải duy nhất trong hệ thống</li>
+                  <li>• Nếu trùng mã, hệ thống sẽ bỏ qua hoặc cập nhật (tùy tùy chọn)</li>
+                  <li>• Kiểm tra kỹ dữ liệu trước khi import</li>
+                  <li>• Sao lưu dữ liệu trước khi import số lượng lớn</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-6 flex justify-end">
+            <button @click="showImportGuide = false" class="btn-primary">
+              Đã hiểu
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import api from '@/services/api'
+import ImportModal from '@/components/ImportModal.vue'
+import { useImport } from '@/composables/useImport'
+
 export default {
   name: 'Suppliers',
+  components: {
+    ImportModal
+  },
+  setup() {
+    const { 
+      importState, 
+      config: importConfig, 
+      executeImport, 
+      downloadTemplate,
+      setFile,
+      resetImport
+    } = useImport('suppliers');
+    
+    return {
+      importState,
+      importConfig,
+      executeImport,
+      downloadTemplate,
+      setFile,
+      resetImport
+    };
+  },
   data() {
     return {
       searchTerm: '',
@@ -304,7 +427,11 @@ export default {
         city: '',
         status: 'active',
         totalValue: 0
-      }
+      },
+      
+      // Import CSV properties
+      showImportModal: false,
+      showImportGuide: false
     }
   },
   computed: {
@@ -359,6 +486,38 @@ export default {
     },
     viewSupplierDetails(supplier) {
       console.log('Xem chi tiết nhà cung cấp:', supplier.name);
+    },
+    
+    // Import CSV methods
+    async handleImport(importData) {
+      // Set file và options từ ImportModal
+      this.setFile(importData.file);
+      this.importState.updateExisting = importData.updateExisting;
+      
+      const result = await this.executeImport();
+      
+      // Refresh suppliers list if import was successful
+      if (result.success && this.importState.results.summary && this.importState.results.summary.successCount > 0) {
+        await this.refreshSuppliers();
+      }
+    },
+    
+    async handleDownloadTemplate() {
+      const result = await this.downloadTemplate();
+      if (!result.success) {
+        alert(result.message);
+      }
+    },
+    
+    async refreshSuppliers() {
+      try {
+        const response = await api.get('/suppliers');
+        if (response.data) {
+          this.suppliers = response.data;
+        }
+      } catch (error) {
+        console.error('Error refreshing suppliers:', error);
+      }
     }
   }
 }
