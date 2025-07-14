@@ -11,10 +11,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.controller.OrderController.OrderStatsResponse;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.OrderStatsResponse;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Order;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Order.OrderStatus;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.OrderDetail;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.OrderRepository;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -95,12 +98,12 @@ public class OrderService {
         log.info("Updating order with id: {}", id);
         
         Order existingOrder = orderRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
         
         // Không cho phép cập nhật order đã delivered hoặc cancelled
         if (existingOrder.getStatus() == OrderStatus.DELIVERED || 
             existingOrder.getStatus() == OrderStatus.CANCELLED) {
-            throw new RuntimeException("Không thể cập nhật đơn hàng đã giao hoặc đã hủy");
+            throw new BusinessException("Không thể cập nhật đơn hàng đã giao hoặc đã hủy");
         }
         
         // Cập nhật thông tin
@@ -122,11 +125,11 @@ public class OrderService {
         log.info("Deleting order with id: {}", id);
         
         Order order = orderRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
         
         // Chỉ cho phép xóa order pending
         if (order.getStatus() != OrderStatus.PENDING) {
-            throw new RuntimeException("Chỉ có thể xóa đơn hàng ở trạng thái PENDING");
+            throw new BusinessException("Chỉ có thể xóa đơn hàng ở trạng thái PENDING");
         }
         
         order.setIsDeleted(true);
@@ -142,7 +145,7 @@ public class OrderService {
         log.info("Updating order {} status to: {}", id, status);
         
         Order order = orderRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
         
         OrderStatus newStatus = OrderStatus.valueOf(status.toUpperCase());
         
@@ -189,11 +192,11 @@ public class OrderService {
         log.info("Cancelling order {} with reason: {}", id, reason);
         
         Order order = orderRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
         
         // Không cho phép hủy đơn đã giao
         if (order.getStatus() == OrderStatus.DELIVERED) {
-            throw new RuntimeException("Không thể hủy đơn hàng đã được giao");
+            throw new BusinessException("Không thể hủy đơn hàng đã được giao");
         }
         
         order.setStatus(OrderStatus.CANCELLED);
@@ -224,82 +227,152 @@ public class OrderService {
         return orderRepository.findByOrderDateBetween(fromDate, toDate);
     }
     
+    // Tìm đơn hàng theo mã đơn hàng
+    @Transactional(readOnly = true)
+    public Optional<Order> findByOrderCode(String orderCode) {
+        return orderRepository.findByOrderCode(orderCode);
+    }
+
+    // Tìm đơn hàng theo khách hàng
+    @Transactional(readOnly = true)
+    public List<Order> findByCustomer(Long customerId) {
+        return orderRepository.findByCustomerId(customerId);
+    }
+
+    // Tìm đơn hàng theo trạng thái
+    @Transactional(readOnly = true)
+    public List<Order> findByStatus(OrderStatus status) {
+        return orderRepository.findByStatus(status);
+    }
+
+    // Tìm đơn hàng theo khoảng thời gian (LocalDateTime)
+    @Transactional(readOnly = true)
+    public List<Order> findByDateRange(LocalDateTime start, LocalDateTime end) {
+        return orderRepository.findByOrderDateBetween(start, end);
+    }
+
+    // Tìm đơn hàng theo khoảng tổng tiền
+    @Transactional(readOnly = true)
+    public List<Order> findByTotalRange(BigDecimal minTotal, BigDecimal maxTotal) {
+        return orderRepository.findByTotalAmountBetween(minTotal, maxTotal);
+    }
+
+    // Tìm kiếm đơn hàng theo từ khóa (orderCode, customer name, v.v.)
+    @Transactional(readOnly = true)
+    public Page<Order> searchOrders(String term, Pageable pageable) {
+        return orderRepository.searchOrders(term, pageable);
+    }
+
+    // Thêm sản phẩm vào đơn hàng
+    public OrderDetail addOrderItem(Long orderId, OrderDetail orderDetail) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+        order.getOrderDetails().add(orderDetail);
+        calculateTotalAmount(order);
+        orderRepository.save(order);
+        return orderDetail;
+    }
+
+    // Cập nhật sản phẩm trong đơn hàng
+    public OrderDetail updateOrderItem(Long orderId, Long itemId, OrderDetail orderDetail) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+        OrderDetail existing = order.getOrderDetails().stream()
+            .filter(od -> od.getId().equals(itemId))
+            .findFirst()
+            .orElseThrow(() -> new ResourceNotFoundException("Order item not found: " + itemId));
+        existing.setProduct(orderDetail.getProduct());
+        existing.setQuantity(orderDetail.getQuantity());
+        existing.setUnitPrice(orderDetail.getUnitPrice());
+        calculateTotalAmount(order);
+        orderRepository.save(order);
+        return existing;
+    }
+
+    // Xóa sản phẩm khỏi đơn hàng
+    public void removeOrderItem(Long orderId, Long itemId) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+        order.getOrderDetails().removeIf(od -> od.getId().equals(itemId));
+        calculateTotalAmount(order);
+        orderRepository.save(order);
+    }
+    
     // ========== Statistics Methods ==========
     
     // Thống kê đơn hàng theo ngày
     @Transactional(readOnly = true)
     public OrderStatsResponse getDailyStats(LocalDate date) {
         log.info("Getting daily stats for date: {}", date);
-        
         // Đếm tổng đơn hàng
         Long totalOrders = orderRepository.countByOrderDate(date);
-        
         // Tính tổng doanh thu
         BigDecimal totalRevenue = orderRepository.sumTotalAmountByOrderDate(date);
-        
         // Đếm theo từng status
         List<Object[]> statusCounts = orderRepository.countOrdersByStatusAndDate(date);
-        
-        int pendingOrders = 0, confirmedOrders = 0, shippedOrders = 0, 
-            deliveredOrders = 0, cancelledOrders = 0;
-        
+        int pendingOrders = 0, confirmedOrders = 0, processingOrders = 0, shippedOrders = 0, deliveredOrders = 0, cancelledOrders = 0, returnedOrders = 0;
         for (Object[] row : statusCounts) {
             OrderStatus status = (OrderStatus) row[0];
             Long count = (Long) row[1];
-            
             switch (status) {
                 case PENDING: pendingOrders = count.intValue(); break;
                 case CONFIRMED: confirmedOrders = count.intValue(); break;
-                case PROCESSING: confirmedOrders += count.intValue(); break; // Cộng vào confirmed
+                case PROCESSING: processingOrders = count.intValue(); break;
                 case SHIPPED: shippedOrders = count.intValue(); break;
                 case DELIVERED: deliveredOrders = count.intValue(); break;
                 case CANCELLED: cancelledOrders = count.intValue(); break;
-                case RETURNED: cancelledOrders += count.intValue(); break; // Cộng vào cancelled
+                case RETURNED: returnedOrders = count.intValue(); break;
             }
         }
-        
-        return new OrderStatsResponse(
-            totalOrders.intValue(), totalRevenue, 
-            pendingOrders, confirmedOrders, shippedOrders, 
-            deliveredOrders, cancelledOrders
-        );
+        OrderStatsResponse stats = new OrderStatsResponse();
+        stats.setDate(date);
+        stats.setTotalOrders(totalOrders.intValue());
+        stats.setPendingOrders(pendingOrders);
+        stats.setConfirmedOrders(confirmedOrders);
+        stats.setProcessingOrders(processingOrders);
+        stats.setShippedOrders(shippedOrders);
+        stats.setDeliveredOrders(deliveredOrders);
+        stats.setCancelledOrders(cancelledOrders);
+        stats.setReturnedOrders(returnedOrders);
+        stats.setTotalRevenue(totalRevenue);
+        return stats;
     }
-    
+
     // Thống kê đơn hàng theo tháng
     @Transactional(readOnly = true)
     public OrderStatsResponse getMonthlyStats(int year, int month) {
         log.info("Getting monthly stats for {}/{}", month, year);
-        
         // Tính tổng doanh thu
         BigDecimal totalRevenue = orderRepository.sumTotalAmountByYearAndMonth(year, month);
-        
         // Đếm theo từng status
         List<Object[]> statusCounts = orderRepository.countOrdersByStatusAndYearMonth(year, month);
-        
-        int totalOrders = 0, pendingOrders = 0, confirmedOrders = 0, 
-            shippedOrders = 0, deliveredOrders = 0, cancelledOrders = 0;
-        
+        int totalOrders = 0, pendingOrders = 0, confirmedOrders = 0, processingOrders = 0, shippedOrders = 0, deliveredOrders = 0, cancelledOrders = 0, returnedOrders = 0;
         for (Object[] row : statusCounts) {
             OrderStatus status = (OrderStatus) row[0];
             Long count = (Long) row[1];
             totalOrders += count.intValue();
-            
             switch (status) {
                 case PENDING: pendingOrders = count.intValue(); break;
                 case CONFIRMED: confirmedOrders = count.intValue(); break;
-                case PROCESSING: confirmedOrders += count.intValue(); break; // Cộng vào confirmed
+                case PROCESSING: processingOrders = count.intValue(); break;
                 case SHIPPED: shippedOrders = count.intValue(); break;
                 case DELIVERED: deliveredOrders = count.intValue(); break;
                 case CANCELLED: cancelledOrders = count.intValue(); break;
-                case RETURNED: cancelledOrders += count.intValue(); break; // Cộng vào cancelled
+                case RETURNED: returnedOrders = count.intValue(); break;
             }
         }
-        
-        return new OrderStatsResponse(
-            totalOrders, totalRevenue, 
-            pendingOrders, confirmedOrders, shippedOrders, 
-            deliveredOrders, cancelledOrders
-        );
+        OrderStatsResponse stats = new OrderStatsResponse();
+        stats.setDate(LocalDate.of(year, month, 1));
+        stats.setTotalOrders(totalOrders);
+        stats.setPendingOrders(pendingOrders);
+        stats.setConfirmedOrders(confirmedOrders);
+        stats.setProcessingOrders(processingOrders);
+        stats.setShippedOrders(shippedOrders);
+        stats.setDeliveredOrders(deliveredOrders);
+        stats.setCancelledOrders(cancelledOrders);
+        stats.setReturnedOrders(returnedOrders);
+        stats.setTotalRevenue(totalRevenue);
+        return stats;
     }
     
     // ========== Helper Methods ==========
@@ -307,25 +380,24 @@ public class OrderService {
     // Validate đơn hàng
     private void validateOrder(Order order) {
         if (order.getCustomer() == null) {
-            throw new RuntimeException("Order phải có customer");
+            throw new BusinessException("Order phải có customer");
         }
         
         if (order.getOrderDetails() == null || order.getOrderDetails().isEmpty()) {
-            throw new RuntimeException("Order phải có ít nhất 1 sản phẩm");
+            throw new BusinessException("Order phải có ít nhất 1 sản phẩm");
         }
         
-        // Validate từng order detail
-        order.getOrderDetails().forEach(detail -> {
+        for (OrderDetail detail : order.getOrderDetails()) {
             if (detail.getProduct() == null) {
-                throw new RuntimeException("Order detail phải có product");
+                throw new BusinessException("Order detail phải có product");
             }
             if (detail.getQuantity() <= 0) {
-                throw new RuntimeException("Số lượng phải lớn hơn 0");
+                throw new BusinessException("Số lượng phải lớn hơn 0");
             }
-            if (detail.getUnitPrice().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new RuntimeException("Giá phải lớn hơn 0");
+            if (detail.getUnitPrice() == null || detail.getUnitPrice().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BusinessException("Giá phải lớn hơn 0");
             }
-        });
+        }
     }
     
     // Tính tổng tiền
@@ -353,33 +425,33 @@ public class OrderService {
         switch (currentStatus) {
             case PENDING:
                 if (newStatus != OrderStatus.CONFIRMED && newStatus != OrderStatus.PROCESSING && newStatus != OrderStatus.CANCELLED) {
-                    throw new RuntimeException("PENDING chỉ có thể chuyển thành CONFIRMED, PROCESSING hoặc CANCELLED");
+                    throw new BusinessException("PENDING chỉ có thể chuyển thành CONFIRMED, PROCESSING hoặc CANCELLED");
                 }
                 break;
             case CONFIRMED:
                 if (newStatus != OrderStatus.PROCESSING && newStatus != OrderStatus.SHIPPED && newStatus != OrderStatus.CANCELLED) {
-                    throw new RuntimeException("CONFIRMED chỉ có thể chuyển thành PROCESSING, SHIPPED hoặc CANCELLED");
+                    throw new BusinessException("CONFIRMED chỉ có thể chuyển thành PROCESSING, SHIPPED hoặc CANCELLED");
                 }
                 break;
             case PROCESSING:
                 if (newStatus != OrderStatus.SHIPPED && newStatus != OrderStatus.CANCELLED) {
-                    throw new RuntimeException("PROCESSING chỉ có thể chuyển thành SHIPPED hoặc CANCELLED");
+                    throw new BusinessException("PROCESSING chỉ có thể chuyển thành SHIPPED hoặc CANCELLED");
                 }
                 break;
             case SHIPPED:
                 if (newStatus != OrderStatus.DELIVERED && newStatus != OrderStatus.CANCELLED) {
-                    throw new RuntimeException("SHIPPED chỉ có thể chuyển thành DELIVERED hoặc CANCELLED");
+                    throw new BusinessException("SHIPPED chỉ có thể chuyển thành DELIVERED hoặc CANCELLED");
                 }
                 break;
             case DELIVERED:
                 if (newStatus != OrderStatus.RETURNED) {
-                    throw new RuntimeException("DELIVERED chỉ có thể chuyển thành RETURNED");
+                    throw new BusinessException("DELIVERED chỉ có thể chuyển thành RETURNED");
                 }
                 break;
             case CANCELLED:
-                throw new RuntimeException("Không thể thay đổi trạng thái đơn hàng đã bị hủy");
+                throw new BusinessException("Không thể thay đổi trạng thái đơn hàng đã bị hủy");
             case RETURNED:
-                throw new RuntimeException("Không thể thay đổi trạng thái đơn hàng đã được trả");
+                throw new BusinessException("Không thể thay đổi trạng thái đơn hàng đã được trả");
         }
     }
     

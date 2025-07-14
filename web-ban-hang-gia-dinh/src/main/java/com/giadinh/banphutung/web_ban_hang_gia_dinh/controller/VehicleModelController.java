@@ -19,10 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.VehicleModel;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.VehicleModel.VehicleType;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.VehicleModelService;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.VehicleModelService.VehicleProductSuggestion;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * VehicleModelController - API quản lý mẫu xe và gợi ý sản phẩm
@@ -45,60 +48,36 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/vehicles")
 @CrossOrigin(origins = "*")
+@Slf4j
 public class VehicleModelController {
 
     @Autowired
     private VehicleModelService vehicleModelService;
 
     /**
-     * ⭐ API GỢI Ý THÔNG MINH - QUAN TRỌNG NHẤT ⭐
-     * 
-     * Khi khách hàng nói: "tôi cần hộp số cho xe Thaco Ollin"
-     * Nhân viên gọi: GET /api/vehicles/suggest?product=hộp số&vehicle=thaco ollin
-     * 
-     * Response sẽ bao gồm:
-     * - Danh sách mẫu xe Thaco Ollin  
-     * - Tất cả sản phẩm tương thích
-     * - Sản phẩm được lọc (hộp số)
-     * - Thông tin kỹ thuật xe
+     * API Gợi ý sản phẩm theo xe và từ khóa
+     * GET /api/vehicles/suggest?product=hộp số&vehicle=thaco ollin
      */
     @GetMapping("/suggest")
-    public ResponseEntity<VehicleProductSuggestion> suggestProducts(
+    public ResponseEntity<VehicleModelService.VehicleProductSuggestion> suggestProducts(
             @RequestParam(required = false) String product,
             @RequestParam String vehicle
     ) {
         try {
-            if (product == null || product.trim().isEmpty()) {
-                // Chỉ tìm xe, không lọc sản phẩm
-                product = "";
-            }
-            
-            VehicleProductSuggestion suggestion = vehicleModelService
+            VehicleModelService.VehicleProductSuggestion suggestion = vehicleModelService
                 .suggestProductsByKeywordAndVehicle(product, vehicle);
             
             return ResponseEntity.ok(suggestion);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+        } catch (BusinessException e) {
+            log.error("Business error suggesting products: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
+            log.error("Error suggesting products: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    /**
-     * API Tìm kiếm xe thông minh
-     * GET /api/vehicles/search?keyword=thaco ollin
-     */
-    @GetMapping("/search")
-    public ResponseEntity<List<VehicleModel>> searchVehicles(
-            @RequestParam String keyword
-    ) {
-        try {
-            List<VehicleModel> vehicles = vehicleModelService.intelligentSearch(keyword);
-            return ResponseEntity.ok(vehicles);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+
 
     /**
      * Lấy tất cả sản phẩm tương thích với 1 mẫu xe
@@ -109,9 +88,11 @@ public class VehicleModelController {
         try {
             List<Product> products = vehicleModelService.suggestProductsForVehicle(id);
             return ResponseEntity.ok(products);
-        } catch (RuntimeException e) {
+        } catch (ResourceNotFoundException e) {
+            log.error("Vehicle model not found: {}", e.getMessage());
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
+            log.error("Error getting compatible products: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -146,37 +127,48 @@ public class VehicleModelController {
     }
 
     /**
-     * Tạo mẫu xe mới
-     * POST /api/vehicles
+     * Tạo vehicle model mới
+     * POST /api/vehicle-models
      */
     @PostMapping
-    public ResponseEntity<VehicleModel> createVehicle(@Valid @RequestBody VehicleModel vehicle) {
+    public ResponseEntity<VehicleModel> createVehicleModel(@Valid @RequestBody VehicleModel vehicleModel) {
         try {
-            VehicleModel savedVehicle = vehicleModelService.createVehicleModel(vehicle);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedVehicle);
+            VehicleModel savedVehicleModel = vehicleModelService.createVehicleModel(vehicleModel);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedVehicleModel);
+        } catch (BusinessException e) {
+            log.error("Business error creating vehicle model: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            log.error("Error creating vehicle model: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
-     * Cập nhật mẫu xe
-     * PUT /api/vehicles/1
+     * Cập nhật vehicle model
+     * PUT /api/vehicle-models/{id}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<VehicleModel> updateVehicle(
+    public ResponseEntity<VehicleModel> updateVehicleModel(
             @PathVariable Long id, 
-            @Valid @RequestBody VehicleModel vehicle
+            @Valid @RequestBody VehicleModel vehicleModel
     ) {
         try {
-            VehicleModel updatedVehicle = vehicleModelService.updateVehicleModel(id, vehicle);
-            return ResponseEntity.ok(updatedVehicle);
-        } catch (RuntimeException e) {
+            VehicleModel updatedVehicleModel = vehicleModelService.updateVehicleModel(id, vehicleModel);
+            return ResponseEntity.ok(updatedVehicleModel);
+        } catch (BusinessException e) {
+            log.error("Business error updating vehicle model: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
+        } catch (ResourceNotFoundException e) {
+            log.error("Vehicle model not found: {}", e.getMessage());
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            log.error("Error updating vehicle model: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+
 
     /**
      * Xóa mẫu xe (soft delete)
@@ -187,9 +179,11 @@ public class VehicleModelController {
         try {
             vehicleModelService.deleteVehicleModel(id);
             return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
+        } catch (ResourceNotFoundException e) {
+            log.error("Vehicle model not found: {}", e.getMessage());
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
+            log.error("Error deleting vehicle model: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

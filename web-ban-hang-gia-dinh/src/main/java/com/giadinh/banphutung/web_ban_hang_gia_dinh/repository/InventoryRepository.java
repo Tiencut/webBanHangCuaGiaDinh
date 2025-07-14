@@ -1,69 +1,340 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.repository;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Inventory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Inventory;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Supplier;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
+/**
+ * InventoryRepository - Repository cho quản lý tồn kho theo supplier
+ * 
+ * Cung cấp các query methods để:
+ * - Quản lý tồn kho chi tiết theo supplier
+ * - Cảnh báo tồn kho thấp và cần đặt hàng
+ * - Tính toán vòng quay tồn kho
+ * - Theo dõi lịch sử nhập/xuất
+ */
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     
-    // Tìm inventory theo product
-    List<Inventory> findByProduct(Product product);
+    /**
+     * Tìm tồn kho theo product và supplier
+     */
+    Optional<Inventory> findByProductIdAndSupplierId(Long productId, Long supplierId);
     
-    // Tìm inventory theo product ID
-    List<Inventory> findByProductId(Long productId);
+    /**
+     * Tìm tất cả tồn kho của một sản phẩm
+     */
+    List<Inventory> findByProductIdOrderByCurrentQuantityDesc(Long productId);
     
-    // Tìm inventory theo product và supplier
-    Optional<Inventory> findByProductAndSupplier(Product product, Supplier supplier);
+    /**
+     * Tìm tồn kho đang hoạt động của một sản phẩm
+     */
+    List<Inventory> findByProductIdAndIsActiveTrueOrderByCurrentQuantityDesc(Long productId);
     
-    // Tìm inventory có sẵn (available status và quantity > 0)
-    @Query("SELECT i FROM Inventory i WHERE i.product.id = :productId AND i.status = 'AVAILABLE' AND i.quantity > 0")
-    List<Inventory> findAvailableInventoryByProductId(@Param("productId") Long productId);
+    /**
+     * Tìm tồn kho của một supplier
+     */
+    List<Inventory> findBySupplierIdOrderByCurrentQuantityDesc(Long supplierId);
     
-    // Tính tổng số lượng có sẵn của một sản phẩm từ tất cả nguồn
-    @Query("SELECT COALESCE(SUM(i.quantity - COALESCE(i.reservedQuantity, 0)), 0) FROM Inventory i WHERE i.product.id = :productId AND i.status = 'AVAILABLE'")
-    Integer getTotalAvailableQuantityByProductId(@Param("productId") Long productId);
+    /**
+     * Tìm tồn kho đang hoạt động của một supplier
+     */
+    List<Inventory> findBySupplierIdAndIsActiveTrueOrderByCurrentQuantityDesc(Long supplierId);
     
-    // Tính tổng số lượng trong kho (bao gồm cả reserved) của một sản phẩm
-    @Query("SELECT COALESCE(SUM(i.quantity), 0) FROM Inventory i WHERE i.product.id = :productId AND i.status = 'AVAILABLE'")
-    Integer getTotalQuantityByProductId(@Param("productId") Long productId);
+    /**
+     * Tìm tồn kho theo trạng thái
+     */
+    List<Inventory> findByStockStatusOrderByProductNameAsc(Inventory.StockStatus stockStatus);
     
-    // Tính tổng số lượng đã đặt trước
-    @Query("SELECT COALESCE(SUM(i.reservedQuantity), 0) FROM Inventory i WHERE i.product.id = :productId AND i.status = 'AVAILABLE'")
-    Integer getTotalReservedQuantityByProductId(@Param("productId") Long productId);
+    /**
+     * Tìm tồn kho hết hàng
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.currentQuantity = 0 AND i.isActive = true " +
+           "ORDER BY i.product.name, i.supplier.name")
+    List<Inventory> findOutOfStockItems();
     
-    // Tìm inventory theo batch number
-    Optional<Inventory> findByBatchNumber(String batchNumber);
+    /**
+     * Tìm tồn kho sắp hết hàng
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.currentQuantity <= i.minStockLevel " +
+           "AND i.currentQuantity > 0 AND i.isActive = true " +
+           "ORDER BY i.product.name, i.supplier.name")
+    List<Inventory> findLowStockItems();
     
-    // Tìm inventory theo location
-    List<Inventory> findByLocationContainingIgnoreCase(String location);
+    /**
+     * Tìm tồn kho cần đặt hàng lại
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.currentQuantity <= i.reorderPoint " +
+           "AND i.isActive = true ORDER BY i.product.name, i.supplier.name")
+    List<Inventory> findItemsNeedingReorder();
     
-    // Tìm inventory với thông tin chi tiết (join với supplier)
-    @Query("SELECT i FROM Inventory i LEFT JOIN FETCH i.supplier WHERE i.product.id = :productId")
-    List<Inventory> findByProductIdWithSupplier(@Param("productId") Long productId);
+    /**
+     * Tìm tồn kho theo khoảng số lượng
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.currentQuantity BETWEEN :minQuantity AND :maxQuantity " +
+           "AND i.isActive = true ORDER BY i.currentQuantity ASC")
+    List<Inventory> findByQuantityRange(@Param("minQuantity") Integer minQuantity, 
+                                       @Param("maxQuantity") Integer maxQuantity);
     
-    // Tìm inventory theo supplier
-    List<Inventory> findBySupplier(Supplier supplier);
+    /**
+     * Tìm tồn kho theo khoảng giá trị
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.inventoryValue BETWEEN :minValue AND :maxValue " +
+           "AND i.isActive = true ORDER BY i.inventoryValue ASC")
+    List<Inventory> findByValueRange(@Param("minValue") BigDecimal minValue, 
+                                    @Param("maxValue") BigDecimal maxValue);
     
-    // Tìm inventory theo supplier ID
-    List<Inventory> findBySupplierId(Long supplierId);
+    /**
+     * Tìm tồn kho theo vòng quay
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.turnoverRate >= :minTurnover " +
+           "AND i.isActive = true ORDER BY i.turnoverRate DESC")
+    List<Inventory> findByTurnoverRateGreaterThan(@Param("minTurnover") Double minTurnover);
     
-    // Tìm inventory có quantity > 0
-    @Query("SELECT i FROM Inventory i WHERE i.product.id = :productId AND i.quantity > 0 AND i.status = 'AVAILABLE'")
-    List<Inventory> findByProductIdWithStock(@Param("productId") Long productId);
+    /**
+     * Tìm tồn kho theo số ngày tồn kho
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.averageDaysInStock <= :maxDays " +
+           "AND i.isActive = true ORDER BY i.averageDaysInStock ASC")
+    List<Inventory> findByAverageDaysInStockLessThan(@Param("maxDays") Integer maxDays);
     
-    // Đếm số lượng inventory entries cho một product
-    Long countByProductId(Long productId);
+    /**
+     * Tìm tồn kho theo category
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.product.category.id = :categoryId " +
+           "AND i.isActive = true ORDER BY i.product.name, i.supplier.name")
+    List<Inventory> findByCategoryId(@Param("categoryId") Long categoryId);
     
-    // Đếm số lượng supplier khác nhau cho một product
-    @Query("SELECT COUNT(DISTINCT i.supplier.id) FROM Inventory i WHERE i.product.id = :productId AND i.status = 'AVAILABLE'")
-    Long countDistinctSuppliersByProductId(@Param("productId") Long productId);
-}
+    /**
+     * Tìm tồn kho theo brand
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.product.brand = :brand " +
+           "AND i.isActive = true ORDER BY i.product.name, i.supplier.name")
+    List<Inventory> findByBrand(@Param("brand") String brand);
+    
+    /**
+     * Tìm tồn kho theo vehicle type
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.product.vehicleType = :vehicleType " +
+           "AND i.isActive = true ORDER BY i.product.name, i.supplier.name")
+    List<Inventory> findByVehicleType(@Param("vehicleType") String vehicleType);
+    
+    /**
+     * Tìm tồn kho có nhập hàng gần đây
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.lastReceivedDate IS NOT NULL " +
+           "ORDER BY i.lastReceivedDate DESC")
+    Page<Inventory> findRecentlyReceivedItems(Pageable pageable);
+    
+    /**
+     * Tìm tồn kho có xuất hàng gần đây
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.lastShippedDate IS NOT NULL " +
+           "ORDER BY i.lastShippedDate DESC")
+    Page<Inventory> findRecentlyShippedItems(Pageable pageable);
+    
+    /**
+     * Tìm tồn kho chưa bao giờ nhập hàng
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.lastReceivedDate IS NULL " +
+           "AND i.isActive = true ORDER BY i.product.name, i.supplier.name")
+    List<Inventory> findItemsNeverReceived();
+    
+    /**
+     * Tìm tồn kho chưa bao giờ xuất hàng
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.lastShippedDate IS NULL " +
+           "AND i.isActive = true ORDER BY i.product.name, i.supplier.name")
+    List<Inventory> findItemsNeverShipped();
+    
+    /**
+     * Tìm tồn kho theo khoảng giá nhập trung bình
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.averageCost BETWEEN :minCost AND :maxCost " +
+           "AND i.isActive = true ORDER BY i.averageCost ASC")
+    List<Inventory> findByAverageCostRange(@Param("minCost") BigDecimal minCost, 
+                                          @Param("maxCost") BigDecimal maxCost);
+    
+    /**
+     * Tìm tồn kho có vòng quay cao nhất
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.turnoverRate > 0 " +
+           "ORDER BY i.turnoverRate DESC")
+    Page<Inventory> findHighestTurnoverItems(Pageable pageable);
+    
+    /**
+     * Tìm tồn kho có vòng quay thấp nhất
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.turnoverRate > 0 " +
+           "ORDER BY i.turnoverRate ASC")
+    Page<Inventory> findLowestTurnoverItems(Pageable pageable);
+    
+    /**
+     * Tìm tồn kho có số ngày tồn kho cao nhất
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.averageDaysInStock > 0 " +
+           "ORDER BY i.averageDaysInStock DESC")
+    Page<Inventory> findLongestStockItems(Pageable pageable);
+    
+    /**
+     * Tìm tồn kho có số ngày tồn kho thấp nhất
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.averageDaysInStock > 0 " +
+           "ORDER BY i.averageDaysInStock ASC")
+    Page<Inventory> findShortestStockItems(Pageable pageable);
+    
+    /**
+     * Tìm tồn kho có giá trị cao nhất
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.inventoryValue > 0 " +
+           "ORDER BY i.inventoryValue DESC")
+    Page<Inventory> findHighestValueItems(Pageable pageable);
+    
+    /**
+     * Tìm tồn kho có số lượng cao nhất
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.currentQuantity > 0 " +
+           "ORDER BY i.currentQuantity DESC")
+    Page<Inventory> findHighestQuantityItems(Pageable pageable);
+    
+    /**
+     * Tìm tồn kho theo tên sản phẩm (fuzzy search)
+     */
+    @Query("SELECT i FROM Inventory i WHERE LOWER(i.product.name) LIKE LOWER(CONCAT('%', :productName, '%')) " +
+           "AND i.isActive = true ORDER BY i.product.name, i.supplier.name")
+    List<Inventory> findByProductNameContainingIgnoreCase(@Param("productName") String productName);
+    
+    /**
+     * Tìm tồn kho theo tên supplier (fuzzy search)
+     */
+    @Query("SELECT i FROM Inventory i WHERE LOWER(i.supplier.name) LIKE LOWER(CONCAT('%', :supplierName, '%')) " +
+           "AND i.isActive = true ORDER BY i.supplier.name, i.product.name")
+    List<Inventory> findBySupplierNameContainingIgnoreCase(@Param("supplierName") String supplierName);
+    
+    /**
+     * Tìm tồn kho theo ghi chú (fuzzy search)
+     */
+    @Query("SELECT i FROM Inventory i WHERE LOWER(i.notes) LIKE LOWER(CONCAT('%', :notes, '%')) " +
+           "AND i.isActive = true ORDER BY i.product.name, i.supplier.name")
+    List<Inventory> findByNotesContainingIgnoreCase(@Param("notes") String notes);
+    
+    /**
+     * Đếm số tồn kho của một sản phẩm
+     */
+    long countByProductIdAndIsActiveTrue(Long productId);
+    
+    /**
+     * Đếm số tồn kho của một supplier
+     */
+    long countBySupplierIdAndIsActiveTrue(Long supplierId);
+    
+    /**
+     * Đếm số tồn kho theo trạng thái
+     */
+    long countByStockStatusAndIsActiveTrue(Inventory.StockStatus stockStatus);
+    
+    /**
+     * Đếm số tồn kho hết hàng
+     */
+    @Query("SELECT COUNT(i) FROM Inventory i WHERE i.currentQuantity = 0 AND i.isActive = true")
+    long countOutOfStockItems();
+    
+    /**
+     * Đếm số tồn kho sắp hết hàng
+     */
+    @Query("SELECT COUNT(i) FROM Inventory i WHERE i.currentQuantity <= i.minStockLevel " +
+           "AND i.currentQuantity > 0 AND i.isActive = true")
+    long countLowStockItems();
+    
+    /**
+     * Đếm số tồn kho cần đặt hàng lại
+     */
+    @Query("SELECT COUNT(i) FROM Inventory i WHERE i.currentQuantity <= i.reorderPoint " +
+           "AND i.isActive = true")
+    long countItemsNeedingReorder();
+    
+    /**
+     * Tính tổng giá trị tồn kho
+     */
+    @Query("SELECT SUM(i.inventoryValue) FROM Inventory i WHERE i.isActive = true")
+    BigDecimal getTotalInventoryValue();
+    
+    /**
+     * Tính tổng giá trị tồn kho theo category
+     */
+    @Query("SELECT SUM(i.inventoryValue) FROM Inventory i WHERE i.product.category.id = :categoryId " +
+           "AND i.isActive = true")
+    BigDecimal getTotalInventoryValueByCategory(@Param("categoryId") Long categoryId);
+    
+    /**
+     * Tính tổng giá trị tồn kho theo supplier
+     */
+    @Query("SELECT SUM(i.inventoryValue) FROM Inventory i WHERE i.supplier.id = :supplierId " +
+           "AND i.isActive = true")
+    BigDecimal getTotalInventoryValueBySupplier(@Param("supplierId") Long supplierId);
+    
+    /**
+     * Tính tổng số lượng tồn kho
+     */
+    @Query("SELECT SUM(i.currentQuantity) FROM Inventory i WHERE i.isActive = true")
+    Long getTotalInventoryQuantity();
+    
+    /**
+     * Tính tổng số lượng tồn kho theo category
+     */
+    @Query("SELECT SUM(i.currentQuantity) FROM Inventory i WHERE i.product.category.id = :categoryId " +
+           "AND i.isActive = true")
+    Long getTotalInventoryQuantityByCategory(@Param("categoryId") Long categoryId);
+    
+    /**
+     * Tính tổng số lượng tồn kho theo supplier
+     */
+    @Query("SELECT SUM(i.currentQuantity) FROM Inventory i WHERE i.supplier.id = :supplierId " +
+           "AND i.isActive = true")
+    Long getTotalInventoryQuantityBySupplier(@Param("supplierId") Long supplierId);
+    
+    /**
+     * Tính vòng quay tồn kho trung bình
+     */
+    @Query("SELECT AVG(i.turnoverRate) FROM Inventory i WHERE i.turnoverRate > 0 AND i.isActive = true")
+    Double getAverageTurnoverRate();
+    
+    /**
+     * Tính số ngày tồn kho trung bình
+     */
+    @Query("SELECT AVG(i.averageDaysInStock) FROM Inventory i WHERE i.averageDaysInStock > 0 AND i.isActive = true")
+    Double getAverageDaysInStock();
+    
+    /**
+     * Tìm category có tồn kho cao nhất
+     */
+    @Query("SELECT i.product.category.id, SUM(i.inventoryValue) as totalValue " +
+           "FROM Inventory i WHERE i.isActive = true " +
+           "GROUP BY i.product.category.id ORDER BY totalValue DESC")
+    List<Object[]> findCategoriesWithHighestInventory();
+    
+    /**
+     * Tìm supplier có tồn kho cao nhất
+     */
+    @Query("SELECT i.supplier.id, SUM(i.inventoryValue) as totalValue " +
+           "FROM Inventory i WHERE i.isActive = true " +
+           "GROUP BY i.supplier.id ORDER BY totalValue DESC")
+    List<Object[]> findSuppliersWithHighestInventory();
+    
+    /**
+     * Tìm sản phẩm có tồn kho cao nhất
+     */
+    @Query("SELECT i.product.id, SUM(i.inventoryValue) as totalValue " +
+           "FROM Inventory i WHERE i.isActive = true " +
+           "GROUP BY i.product.id ORDER BY totalValue DESC")
+    List<Object[]> findProductsWithHighestInventory();
+} 

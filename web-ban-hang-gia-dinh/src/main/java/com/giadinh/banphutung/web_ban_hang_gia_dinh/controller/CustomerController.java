@@ -23,8 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Customer;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.CustomerService;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * CustomerController - API quản lý khách hàng
@@ -46,6 +49,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/customers")
 @CrossOrigin(origins = "*") // Cho phép frontend gọi API từ domain khác
+@Slf4j
 public class CustomerController {
 
     @Autowired
@@ -66,6 +70,7 @@ public class CustomerController {
             Page<Customer> customers = customerService.findAll(pageable);
             return ResponseEntity.ok(customers);
         } catch (Exception e) {
+            log.error("Error getting customers: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -80,7 +85,11 @@ public class CustomerController {
             Optional<Customer> customer = customerService.findById(id);
             return customer.map(ResponseEntity::ok)
                           .orElse(ResponseEntity.notFound().build());
+        } catch (ResourceNotFoundException e) {
+            log.error("Customer not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
+            log.error("Error getting customer: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -93,10 +102,14 @@ public class CustomerController {
     @PostMapping
     public ResponseEntity<Customer> createCustomer(@Valid @RequestBody Customer customer) {
         try {
-            Customer savedCustomer = customerService.save(customer);
+            Customer savedCustomer = customerService.createCustomer(customer);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedCustomer);
+        } catch (BusinessException e) {
+            log.error("Business error creating customer: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            log.error("Error creating customer: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -111,14 +124,17 @@ public class CustomerController {
             @Valid @RequestBody Customer customer
     ) {
         try {
-            if (!customerService.existsById(id)) {
-                return ResponseEntity.notFound().build();
-            }
-            customer.setId(id);
-            Customer updatedCustomer = customerService.save(customer);
+            Customer updatedCustomer = customerService.updateCustomer(id, customer);
             return ResponseEntity.ok(updatedCustomer);
+        } catch (BusinessException e) {
+            log.error("Business error updating customer: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
+        } catch (ResourceNotFoundException e) {
+            log.error("Customer not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            log.error("Error updating customer: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -129,12 +145,13 @@ public class CustomerController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
         try {
-            if (!customerService.existsById(id)) {
-                return ResponseEntity.notFound().build();
-            }
             customerService.deleteById(id);
             return ResponseEntity.noContent().build();
+        } catch (ResourceNotFoundException e) {
+            log.error("Customer not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
+            log.error("Error deleting customer: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

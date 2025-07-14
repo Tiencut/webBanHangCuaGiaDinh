@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Bán Hàng Gia Đình - API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .api-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .api-title {
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 10px;
+        }
+        .api-url {
+            background-color: #ecf0f1;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        .test-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+        .error {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Web Bán Hàng Gia Đình - API Test</h1>
+        
+        <div class="api-section">
+            <div class="api-title">🔍 Health Check</div>
+            <div class="api-url">GET /api/test/health</div>
+            <button class="test-button" onclick="testHealth()">Test Health Check</button>
+            <div id="health-result" class="result"></div>
+        </div>
+
+        <div class="api-section">
+            <div class="api-title">ℹ️ API Info</div>
+            <div class="api-url">GET /api/test/info</div>
+            <button class="test-button" onclick="testInfo()">Test API Info</button>
+            <div id="info-result" class="result"></div>
+        </div>
+
+        <div class="api-section">
+            <div class="api-title">📦 Products</div>
+            <div class="api-url">GET /api/products</div>
+            <button class="test-button" onclick="testProducts()">Test Products API</button>
+            <div id="products-result" class="result"></div>
+        </div>
+
+        <div class="api-section">
+            <div class="api-title">🏷️ Categories</div>
+            <div class="api-url">GET /api/categories</div>
+            <button class="test-button" onclick="testCategories()">Test Categories API</button>
+            <div id="categories-result" class="result"></div>
+        </div>
+
+        <div class="api-section">
+            <div class="api-title">🚛 Vehicle Models</div>
+            <div class="api-url">GET /api/vehicles</div>
+            <button class="test-button" onclick="testVehicleModels()">Test Vehicle Models API</button>
+            <div id="vehicle-models-result" class="result"></div>
+        </div>
+
+        <div class="api-section">
+            <div class="api-title">👥 Customers</div>
+            <div class="api-url">GET /api/customers</div>
+            <button class="test-button" onclick="testCustomers()">Test Customers API</button>
+            <div id="customers-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testAPI(url, resultId) {
+            const resultDiv = document.getElementById(resultId);
+            resultDiv.textContent = 'Testing...';
+            resultDiv.className = 'result';
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                resultDiv.textContent = `Status: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+                resultDiv.className = response.ok ? 'result success' : 'result error';
+            } catch (error) {
+                resultDiv.textContent = `Error: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        function testHealth() {
+            testAPI('/api/test/health', 'health-result');
+        }
+
+        function testInfo() {
+            testAPI('/api/test/info', 'info-result');
+        }
+
+        function testProducts() {
+            testAPI('/api/products', 'products-result');
+        }
+
+        function testCategories() {
+            testAPI('/api/categories', 'categories-result');
+        }
+
+        function testVehicleModels() {
+            testAPI('/api/vehicles', 'vehicle-models-result');
+        }
+
+        function testCustomers() {
+            testAPI('/api/customers', 'customers-result');
+        }
+
+        // Auto test health check on page load
+        window.onload = function() {
+            testHealth();
+        };
+    </script>
+</body>
+</html> 

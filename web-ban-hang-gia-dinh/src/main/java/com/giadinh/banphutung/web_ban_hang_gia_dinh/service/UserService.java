@@ -1,6 +1,5 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,10 +9,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.User;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.User.UserRole;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.User.UserStatus;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.UserRepository;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -30,20 +34,26 @@ public class UserService {
         
         // Kiểm tra username đã tồn tại
         if (userRepository.existsByUsername(user.getUsername())) {
-            throw new RuntimeException("Username đã tồn tại: " + user.getUsername());
+            throw new BusinessException("Username đã tồn tại: " + user.getUsername());
         }
         
         // Kiểm tra email đã tồn tại
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Email đã tồn tại: " + user.getEmail());
+        if (user.getEmail() != null && userRepository.existsByEmail(user.getEmail())) {
+            throw new BusinessException("Email đã tồn tại: " + user.getEmail());
         }
         
         // Mã hóa password
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (user.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
         
         // Set default values
-        user.setIsEmailVerified(false);
-        user.setFailedLoginAttempts(0);
+        if (user.getRole() == null) {
+            user.setRole(UserRole.USER);
+        }
+        if (user.getStatus() == null) {
+            user.setStatus(UserStatus.ACTIVE);
+        }
         
         return userRepository.save(user);
     }
@@ -58,12 +68,6 @@ public class UserService {
     @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
-    }
-    
-    // Tìm user theo username - trả về User (cho authentication)
-    @Transactional(readOnly = true)
-    public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username).orElse(null);
     }
     
     // Tìm user theo email
@@ -89,51 +93,68 @@ public class UserService {
         log.info("Updating user with id: {}", id);
         
         User existingUser = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         
-        // Cập nhật thông tin
+        // Cập nhật thông tin cơ bản
         existingUser.setFullName(userUpdate.getFullName());
+        existingUser.setEmail(userUpdate.getEmail());
         existingUser.setPhone(userUpdate.getPhone());
         existingUser.setRole(userUpdate.getRole());
+        existingUser.setStatus(userUpdate.getStatus());
         
         // Cập nhật email nếu khác
-        if (!existingUser.getEmail().equals(userUpdate.getEmail())) {
+        if (userUpdate.getEmail() != null && 
+            !userUpdate.getEmail().equals(existingUser.getEmail())) {
             if (userRepository.existsByEmail(userUpdate.getEmail())) {
-                throw new RuntimeException("Email đã tồn tại: " + userUpdate.getEmail());
+                throw new BusinessException("Email đã tồn tại: " + userUpdate.getEmail());
             }
             existingUser.setEmail(userUpdate.getEmail());
-            existingUser.setIsEmailVerified(false);
         }
         
         return userRepository.save(existingUser);
     }
     
     // Đổi password
-    public void changePassword(Long userId, String oldPassword, String newPassword) {
-        log.info("Changing password for user id: {}", userId);
-        
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+    public void changePassword(Long id, String oldPassword, String newPassword) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
         // Kiểm tra password cũ
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new RuntimeException("Password cũ không đúng");
+            throw new BusinessException("Password cũ không đúng");
         }
         
         // Cập nhật password mới
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        
+        log.info("Password changed for user: {}", user.getUsername());
     }
     
-    // Khóa/mở khóa user
-    public void toggleUserStatus(Long userId) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+    // Reset password
+    public void resetPassword(Long id, String newPassword) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
-        user.setIsActive(!user.getIsActive());
+        user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         
-        log.info("User {} status changed to: {}", user.getUsername(), user.getIsActive());
+        log.info("Password reset for user: {}", user.getUsername());
+    }
+
+    // Khóa/mở khóa user
+    public void toggleUserStatus(Long id) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        if (user.getStatus() == UserStatus.ACTIVE) {
+            user.setStatus(UserStatus.INACTIVE);
+        } else if (user.getStatus() == UserStatus.INACTIVE) {
+            user.setStatus(UserStatus.ACTIVE);
+        }
+        
+        userRepository.save(user);
+        log.info("User {} status changed to: {}", user.getUsername(), user.getStatus());
     }
     
     // Cập nhật lần login cuối
@@ -185,7 +206,7 @@ public class UserService {
     // Xóa user (soft delete)
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
         user.setIsActive(false);
         userRepository.save(user);

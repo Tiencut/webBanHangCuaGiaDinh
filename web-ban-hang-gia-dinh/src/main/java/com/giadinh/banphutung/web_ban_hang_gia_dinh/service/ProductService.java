@@ -14,6 +14,8 @@ import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product.ProductStatus;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.CategoryRepository;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.ProductRepository;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +35,7 @@ public class ProductService {
         
         // Kiểm tra code đã tồn tại
         if (product.getCode() != null && productRepository.existsByCode(product.getCode())) {
-            throw new RuntimeException("Product code đã tồn tại: " + product.getCode());
+            throw new BusinessException("Product code đã tồn tại: " + product.getCode());
         }
         
         // Tự động tạo code nếu chưa có
@@ -44,13 +46,13 @@ public class ProductService {
         // Kiểm tra part number đã tồn tại
         if (product.getPartNumber() != null && 
             productRepository.existsByPartNumber(product.getPartNumber())) {
-            throw new RuntimeException("Part number đã tồn tại: " + product.getPartNumber());
+            throw new BusinessException("Part number đã tồn tại: " + product.getPartNumber());
         }
         
         // Validate category
         if (product.getCategory() != null) {
             Category category = categoryRepository.findById(product.getCategory().getId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
             product.setCategory(category);
         }
         
@@ -90,7 +92,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public List<Product> findByCategory(Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
-            .orElseThrow(() -> new RuntimeException("Category not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         return productRepository.findByCategoryOrderByNameAsc(category);
     }
     
@@ -135,7 +137,7 @@ public class ProductService {
         log.info("Updating product with id: {}", id);
         
         Product existingProduct = productRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
         
         // Cập nhật thông tin cơ bản
         existingProduct.setName(productUpdate.getName());
@@ -155,7 +157,7 @@ public class ProductService {
         // Cập nhật code nếu khác
         if (!existingProduct.getCode().equals(productUpdate.getCode())) {
             if (productRepository.existsByCode(productUpdate.getCode())) {
-                throw new RuntimeException("Product code đã tồn tại: " + productUpdate.getCode());
+                throw new BusinessException("Product code đã tồn tại: " + productUpdate.getCode());
             }
             existingProduct.setCode(productUpdate.getCode());
         }
@@ -164,7 +166,7 @@ public class ProductService {
         if (productUpdate.getPartNumber() != null && 
             !productUpdate.getPartNumber().equals(existingProduct.getPartNumber())) {
             if (productRepository.existsByPartNumber(productUpdate.getPartNumber())) {
-                throw new RuntimeException("Part number đã tồn tại: " + productUpdate.getPartNumber());
+                throw new BusinessException("Part number đã tồn tại: " + productUpdate.getPartNumber());
             }
             existingProduct.setPartNumber(productUpdate.getPartNumber());
         }
@@ -172,7 +174,7 @@ public class ProductService {
         // Cập nhật category
         if (productUpdate.getCategory() != null) {
             Category category = categoryRepository.findById(productUpdate.getCategory().getId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
             existingProduct.setCategory(category);
         }
         
@@ -184,7 +186,7 @@ public class ProductService {
         log.info("Updating price for product id: {} to {}", id, newPrice);
         
         Product product = productRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         
         product.setSellingPrice(newPrice);
         return productRepository.save(product);
@@ -195,7 +197,7 @@ public class ProductService {
         log.info("Updating status for product id: {} to {}", id, status);
         
         Product product = productRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         
         product.setStatus(status);
         return productRepository.save(product);
@@ -203,13 +205,12 @@ public class ProductService {
     
     // Xóa product (soft delete)
     public void deleteProduct(Long id) {
-        Product product = productRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
+        log.info("Deleting product with id: {}", id);
         
-        // Kiểm tra có đơn hàng đang sử dụng không (sẽ implement sau)
+        Product product = productRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         
         product.setIsActive(false);
-        product.setStatus(ProductStatus.DISCONTINUED);
         productRepository.save(product);
         
         log.info("Product {} has been deactivated", product.getName());

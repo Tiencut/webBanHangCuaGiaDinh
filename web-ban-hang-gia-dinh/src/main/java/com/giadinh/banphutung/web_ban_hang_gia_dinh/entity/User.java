@@ -1,23 +1,15 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.entity;
 
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
-
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -53,6 +45,10 @@ public class User extends BaseEntity {
     @Column(name = "role")
     private UserRole role;
     
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private UserStatus status;
+    
     @Column(name = "is_email_verified")
     private Boolean isEmailVerified = false;
     
@@ -65,6 +61,9 @@ public class User extends BaseEntity {
     @Column(name = "account_locked_until")
     private LocalDateTime accountLockedUntil;
     
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+    
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "user_permissions", joinColumns = @JoinColumn(name = "user_id"))
@@ -72,7 +71,11 @@ public class User extends BaseEntity {
     private Set<Permission> permissions = new HashSet<>();
     
     public enum UserRole {
-        ADMIN, MANAGER, STAFF, CUSTOMER, SHIPPER
+        ADMIN, MANAGER, STAFF, CUSTOMER, SHIPPER, USER
+    }
+    
+    public enum UserStatus {
+        ACTIVE, INACTIVE, SUSPENDED, DELETED
     }
     
     public enum Permission {

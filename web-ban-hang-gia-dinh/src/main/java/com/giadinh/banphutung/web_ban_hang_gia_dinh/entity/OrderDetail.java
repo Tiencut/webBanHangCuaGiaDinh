@@ -28,6 +28,13 @@ public class OrderDetail extends BaseEntity {
     @JoinColumn(name = "product_id")
     private Product product;
     
+    /**
+     * Nhà cung cấp của sản phẩm trong đơn hàng này
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id")
+    private Supplier supplier;
+    
     @Column(name = "quantity")
     private Integer quantity;
     

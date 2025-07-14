@@ -17,9 +17,6 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     // Tìm supplier theo code
     Optional<Supplier> findByCode(String code);
     
-    // Tìm supplier theo tên chính xác
-    Optional<Supplier> findByName(String name);
-    
     // Tìm supplier theo phone
     Optional<Supplier> findByPhone(String phone);
     
@@ -63,7 +60,9 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     // Tìm supplier theo code (đơn giản)
     List<Supplier> findByCodeContainingIgnoreCase(String code);
     
-
+    // Tìm supplier theo vehicle brands
+    @Query("SELECT s FROM Supplier s WHERE LOWER(s.vehicleBrands) LIKE LOWER(CONCAT('%', :brand, '%'))")
+    List<Supplier> findByVehicleBrandsContainingIgnoreCase(@Param("brand") String brand);
     
     // Tìm top suppliers
     @Query("SELECT s FROM Supplier s WHERE s.status = 'ACTIVE' ORDER BY s.rating DESC, s.name ASC")

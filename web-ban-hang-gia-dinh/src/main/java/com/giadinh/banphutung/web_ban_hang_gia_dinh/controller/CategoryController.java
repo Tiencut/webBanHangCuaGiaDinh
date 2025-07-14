@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Category;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.CategoryService;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -71,9 +73,12 @@ public class CategoryController {
         try {
             Category savedCategory = categoryService.createCategory(category);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedCategory);
-        } catch (RuntimeException e) {
-            log.error("Error creating category: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+        } catch (BusinessException e) {
+            log.error("Business error creating category: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
+        } catch (ResourceNotFoundException e) {
+            log.error("Resource not found creating category: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
         }
     }
     
@@ -86,9 +91,12 @@ public class CategoryController {
         try {
             Category updatedCategory = categoryService.updateCategory(id, category);
             return ResponseEntity.ok(updatedCategory);
-        } catch (RuntimeException e) {
-            log.error("Error updating category: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+        } catch (BusinessException e) {
+            log.error("Business error updating category: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
+        } catch (ResourceNotFoundException e) {
+            log.error("Resource not found updating category: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
         }
     }
     
@@ -101,9 +109,12 @@ public class CategoryController {
         try {
             Category movedCategory = categoryService.moveCategory(id, newParentId);
             return ResponseEntity.ok(movedCategory);
-        } catch (RuntimeException e) {
-            log.error("Error moving category: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+        } catch (BusinessException e) {
+            log.error("Business error moving category: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
+        } catch (ResourceNotFoundException e) {
+            log.error("Resource not found moving category: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
         }
     }
     
@@ -114,9 +125,12 @@ public class CategoryController {
         try {
             categoryService.deleteCategory(id);
             return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            log.error("Error deleting category: {}", e.getMessage());
+        } catch (BusinessException e) {
+            log.error("Business error deleting category: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
+        } catch (ResourceNotFoundException e) {
+            log.error("Resource not found deleting category: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
         }
     }
     

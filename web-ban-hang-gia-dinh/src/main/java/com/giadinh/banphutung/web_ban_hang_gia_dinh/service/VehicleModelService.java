@@ -12,6 +12,8 @@ import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.VehicleModel;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.VehicleModel.VehicleType;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.VehicleModelRepository;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,17 +44,18 @@ public class VehicleModelService {
 
     // ========== CRUD Methods cơ bản ==========
     
+    // Tạo vehicle model mới
     public VehicleModel createVehicleModel(VehicleModel vehicleModel) {
         log.info("Creating new vehicle model: {}", vehicleModel.getName());
         
-        // Kiểm tra mã xe đã tồn tại
+        // Kiểm tra code đã tồn tại
         if (vehicleModel.getCode() != null && vehicleModelRepository.existsByCode(vehicleModel.getCode())) {
-            throw new RuntimeException("Mã xe đã tồn tại: " + vehicleModel.getCode());
+            throw new BusinessException("Mã xe đã tồn tại: " + vehicleModel.getCode());
         }
         
         // Tự động tạo code nếu chưa có
         if (vehicleModel.getCode() == null || vehicleModel.getCode().trim().isEmpty()) {
-            vehicleModel.setCode(generateVehicleCode(vehicleModel.getBrand(), vehicleModel.getName()));
+            vehicleModel.setCode(generateVehicleModelCode(vehicleModel.getName()));
         }
         
         return vehicleModelRepository.save(vehicleModel);
@@ -73,35 +76,37 @@ public class VehicleModelService {
         return vehicleModelRepository.findByIsActiveTrueOrderByBrandAscNameAsc();
     }
     
-    public VehicleModel updateVehicleModel(Long id, VehicleModel vehicleUpdate) {
+    // Cập nhật vehicle model
+    public VehicleModel updateVehicleModel(Long id, VehicleModel vehicleModelUpdate) {
         log.info("Updating vehicle model with id: {}", id);
         
-        VehicleModel existing = vehicleModelRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Vehicle model not found with id: " + id));
+        VehicleModel existingVehicleModel = vehicleModelRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Vehicle model not found with id: " + id));
         
-        // Cập nhật thông tin
-        existing.setName(vehicleUpdate.getName());
-        existing.setBrand(vehicleUpdate.getBrand());
-        existing.setYearFrom(vehicleUpdate.getYearFrom());
-        existing.setYearTo(vehicleUpdate.getYearTo());
-        existing.setVehicleType(vehicleUpdate.getVehicleType());
-        existing.setTonnage(vehicleUpdate.getTonnage());
-        existing.setEngineModel(vehicleUpdate.getEngineModel());
-        existing.setEngineDisplacement(vehicleUpdate.getEngineDisplacement());
-        existing.setEnginePower(vehicleUpdate.getEnginePower());
-        existing.setTransmission(vehicleUpdate.getTransmission());
-        existing.setTireSize(vehicleUpdate.getTireSize());
-        existing.setOrigin(vehicleUpdate.getOrigin());
-        existing.setTechnicalNotes(vehicleUpdate.getTechnicalNotes());
-        existing.setAlternativeNames(vehicleUpdate.getAlternativeNames());
-        existing.setProductionStatus(vehicleUpdate.getProductionStatus());
+        // Cập nhật thông tin cơ bản
+        existingVehicleModel.setName(vehicleModelUpdate.getName());
+        existingVehicleModel.setBrand(vehicleModelUpdate.getBrand());
+        existingVehicleModel.setModel(vehicleModelUpdate.getModel());
+        existingVehicleModel.setYearFrom(vehicleModelUpdate.getYearFrom());
+        existingVehicleModel.setEngineType(vehicleModelUpdate.getEngineType());
+        existingVehicleModel.setTransmissionType(vehicleModelUpdate.getTransmissionType());
+        existingVehicleModel.setFuelType(vehicleModelUpdate.getFuelType());
+        existingVehicleModel.setDescription(vehicleModelUpdate.getDescription());
         
-        return vehicleModelRepository.save(existing);
+        // Cập nhật code nếu khác
+        if (!existingVehicleModel.getCode().equals(vehicleModelUpdate.getCode())) {
+            if (vehicleModelRepository.existsByCode(vehicleModelUpdate.getCode())) {
+                throw new BusinessException("Vehicle model code đã tồn tại: " + vehicleModelUpdate.getCode());
+            }
+            existingVehicleModel.setCode(vehicleModelUpdate.getCode());
+        }
+        
+        return vehicleModelRepository.save(existingVehicleModel);
     }
     
     public void deleteVehicleModel(Long id) {
         VehicleModel vehicleModel = vehicleModelRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Vehicle model not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Vehicle model not found"));
         
         vehicleModel.setIsActive(false);
         vehicleModelRepository.save(vehicleModel);
@@ -144,7 +149,7 @@ public class VehicleModelService {
         log.info("Suggesting products for vehicle model id: {}", vehicleModelId);
         
         VehicleModel vehicleModel = vehicleModelRepository.findById(vehicleModelId)
-            .orElseThrow(() -> new RuntimeException("Vehicle model not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Vehicle model not found"));
         
         // Lấy tất cả sản phẩm tương thích
         List<Product> compatibleProducts = vehicleModel.getCompatibleProducts();
@@ -170,7 +175,7 @@ public class VehicleModelService {
         List<VehicleModel> vehicles = intelligentSearch(vehicleKeyword);
         
         if (vehicles.isEmpty()) {
-            throw new RuntimeException("Không tìm thấy xe phù hợp với: " + vehicleKeyword);
+            throw new BusinessException("Không tìm thấy xe phù hợp với: " + vehicleKeyword);
         }
         
         // 2. Lấy tất cả sản phẩm tương thích
@@ -240,6 +245,25 @@ public class VehicleModelService {
     }
     
     // ========== Helper Methods ==========
+    
+    private String generateVehicleModelCode(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new BusinessException("Tên xe không được để trống");
+        }
+        
+        // Loại bỏ ký tự đặc biệt và chuyển thành uppercase
+        String code = name.replaceAll("[^a-zA-Z0-9]", "").toUpperCase();
+        
+        // Giới hạn độ dài
+        if (code.length() > 20) {
+            code = code.substring(0, 20);
+        }
+        
+        // Thêm timestamp để đảm bảo unique
+        String timestamp = String.valueOf(System.currentTimeMillis()).substring(8);
+        
+        return code + timestamp;
+    }
     
     private String generateVehicleCode(String brand, String name) {
         // Tạo code từ thương hiệu và tên

@@ -21,6 +21,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // Tìm product theo code
     Optional<Product> findByCode(String code);
     
+    // Tìm product theo code với fetch join compatible vehicles
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.compatibleVehicles WHERE p.code = :code")
+    Optional<Product> findByCodeWithCompatibleVehicles(@Param("code") String code);
+    
     // Tìm product theo category
     List<Product> findByCategoryOrderByNameAsc(Category category);
     
@@ -66,11 +70,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT DISTINCT p FROM Product p JOIN p.compatibleVehicles v WHERE LOWER(v.name) LIKE LOWER(CONCAT('%', :vehicleName, '%'))")
     List<Product> findByVehicleNameContaining(@Param("vehicleName") String vehicleName);
     
-    // Tìm product combo thay cho substitutable (đã có ở trên)
-    // List<Product> findByIsComboTrue();
+    // Tìm product có thể thay thế
+    List<Product> findByIsSubstitutableTrue();
     
-    // Tìm product cần nhập thêm (low stock) - sử dụng minStockLevel làm threshold
-    @Query("SELECT p FROM Product p WHERE p.minStockLevel IS NOT NULL AND p.minStockLevel > 0")
+    // Tìm product cần nhập thêm (low stock)
+    @Query("SELECT p FROM Product p, Inventory i WHERE p.id = i.product.id " +
+           "GROUP BY p.id HAVING SUM(i.currentQuantity) <= p.reorderPoint")
     List<Product> findLowStockProducts();
     
     // Tìm product theo tên (không phân biệt hoa thường)

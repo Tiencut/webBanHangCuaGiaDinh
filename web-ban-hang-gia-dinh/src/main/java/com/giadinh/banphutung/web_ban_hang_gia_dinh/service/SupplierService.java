@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Supplier;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Supplier.SupplierStatus;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.SupplierRepository;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,17 +29,17 @@ public class SupplierService {
         
         // Kiểm tra code đã tồn tại
         if (supplier.getCode() != null && supplierRepository.existsByCode(supplier.getCode())) {
-            throw new RuntimeException("Supplier code đã tồn tại: " + supplier.getCode());
+            throw new BusinessException("Supplier code đã tồn tại: " + supplier.getCode());
         }
         
         // Kiểm tra phone đã tồn tại
         if (supplier.getPhone() != null && supplierRepository.existsByPhone(supplier.getPhone())) {
-            throw new RuntimeException("Số điện thoại đã tồn tại: " + supplier.getPhone());
+            throw new BusinessException("Số điện thoại đã tồn tại: " + supplier.getPhone());
         }
         
         // Kiểm tra email đã tồn tại
         if (supplier.getEmail() != null && supplierRepository.existsByEmail(supplier.getEmail())) {
-            throw new RuntimeException("Email đã tồn tại: " + supplier.getEmail());
+            throw new BusinessException("Email đã tồn tại: " + supplier.getEmail());
         }
         
         // Tự động tạo code nếu chưa có
@@ -95,7 +97,7 @@ public class SupplierService {
         log.info("Updating supplier with id: {}", id);
         
         Supplier existingSupplier = supplierRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with id: " + id));
         
         // Cập nhật thông tin cơ bản
         existingSupplier.setName(supplierUpdate.getName());
@@ -112,7 +114,7 @@ public class SupplierService {
         // Cập nhật code nếu khác
         if (!existingSupplier.getCode().equals(supplierUpdate.getCode())) {
             if (supplierRepository.existsByCode(supplierUpdate.getCode())) {
-                throw new RuntimeException("Supplier code đã tồn tại: " + supplierUpdate.getCode());
+                throw new BusinessException("Supplier code đã tồn tại: " + supplierUpdate.getCode());
             }
             existingSupplier.setCode(supplierUpdate.getCode());
         }
@@ -121,7 +123,7 @@ public class SupplierService {
         if (supplierUpdate.getPhone() != null && 
             !supplierUpdate.getPhone().equals(existingSupplier.getPhone())) {
             if (supplierRepository.existsByPhone(supplierUpdate.getPhone())) {
-                throw new RuntimeException("Số điện thoại đã tồn tại: " + supplierUpdate.getPhone());
+                throw new BusinessException("Số điện thoại đã tồn tại: " + supplierUpdate.getPhone());
             }
             existingSupplier.setPhone(supplierUpdate.getPhone());
         }
@@ -130,7 +132,7 @@ public class SupplierService {
         if (supplierUpdate.getEmail() != null && 
             !supplierUpdate.getEmail().equals(existingSupplier.getEmail())) {
             if (supplierRepository.existsByEmail(supplierUpdate.getEmail())) {
-                throw new RuntimeException("Email đã tồn tại: " + supplierUpdate.getEmail());
+                throw new BusinessException("Email đã tồn tại: " + supplierUpdate.getEmail());
             }
             existingSupplier.setEmail(supplierUpdate.getEmail());
         }
@@ -143,11 +145,11 @@ public class SupplierService {
         log.info("Updating rating for supplier id: {} to {}", id, rating);
         
         if (rating < 0.0 || rating > 5.0) {
-            throw new RuntimeException("Rating phải trong khoảng 0.0 - 5.0");
+            throw new BusinessException("Rating phải trong khoảng 0.0 - 5.0");
         }
         
         Supplier supplier = supplierRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Supplier not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Supplier not found"));
         
         supplier.setRating(rating);
         return supplierRepository.save(supplier);
@@ -156,7 +158,7 @@ public class SupplierService {
     // Khóa/mở khóa supplier
     public void toggleSupplierStatus(Long id) {
         Supplier supplier = supplierRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Supplier not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Supplier not found"));
         
         if (supplier.getStatus() == SupplierStatus.ACTIVE) {
             supplier.setStatus(SupplierStatus.INACTIVE);
@@ -171,7 +173,7 @@ public class SupplierService {
     // Blacklist supplier
     public void blacklistSupplier(Long id, String reason) {
         Supplier supplier = supplierRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Supplier not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Supplier not found"));
         
         supplier.setStatus(SupplierStatus.BLACKLISTED);
         supplier.setNotes(supplier.getNotes() + "\n[BLACKLISTED] " + reason);
@@ -246,7 +248,11 @@ public class SupplierService {
         return supplierRepository.findByCodeContainingIgnoreCase(code);
     }
     
-
+    // Tìm supplier theo vehicle brands
+    @Transactional(readOnly = true)
+    public List<Supplier> findByVehicleBrandsContaining(String brand) {
+        return supplierRepository.findByVehicleBrandsContainingIgnoreCase(brand);
+    }
     
     // Tìm supplier active
     @Transactional(readOnly = true)

@@ -85,6 +85,19 @@ public class Order extends BaseEntity {
     @Column(name = "internal_notes", columnDefinition = "TEXT")
     private String internalNotes;
     
+    /**
+     * Đơn hàng có được tạo bằng giọng nói không
+     */
+    @Column(name = "voice_created")
+    private Boolean voiceCreated = false;
+    
+    /**
+     * Phương thức giao hàng
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delivery_method")
+    private DeliveryMethod deliveryMethod = DeliveryMethod.SELF_PICKUP;
+    
     // Thêm các field cần thiết cho OrderService
     @Column(name = "order_code", unique = true)
     private String orderCode;
@@ -139,6 +152,14 @@ public class Order extends BaseEntity {
         VNPAY,          // VNPay
         MOMO,           // MoMo
         CREDIT          // Công nợ
+    }
+    
+    public enum DeliveryMethod {
+        SELF_PICKUP,    // Khách tự đến lấy
+        MOTORBIKE,      // Xe ôm
+        BUS,            // Xe khách
+        TRUCK,          // Xe tải riêng
+        EXPRESS         // Giao hàng nhanh
     }
     
     // Business methods

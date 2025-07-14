@@ -22,9 +22,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Supplier;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Supplier.SupplierStatus;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.SupplierService;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * SupplierController - API quản lý nhà cung cấp
@@ -46,6 +50,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/suppliers")
 @CrossOrigin(origins = "*") // Cho phép frontend gọi API từ domain khác
+@Slf4j
 public class SupplierController {
 
     @Autowired
@@ -66,6 +71,7 @@ public class SupplierController {
             Page<Supplier> suppliers = supplierService.findAll(pageable);
             return ResponseEntity.ok(suppliers);
         } catch (Exception e) {
+            log.error("Error getting all suppliers: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -81,29 +87,32 @@ public class SupplierController {
             return supplier.map(ResponseEntity::ok)
                           .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
+            log.error("Error getting supplier by ID: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
-     * Tạo nhà cung cấp mới
+     * Tạo supplier mới
      * POST /api/suppliers
-     * Body: JSON của Supplier
      */
     @PostMapping
     public ResponseEntity<Supplier> createSupplier(@Valid @RequestBody Supplier supplier) {
         try {
-            Supplier savedSupplier = supplierService.save(supplier);
+            Supplier savedSupplier = supplierService.createSupplier(supplier);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedSupplier);
+        } catch (BusinessException e) {
+            log.error("Business error creating supplier: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            log.error("Error creating supplier: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
-     * Cập nhật thông tin nhà cung cấp
-     * PUT /api/suppliers/1
-     * Body: JSON của Supplier
+     * Cập nhật supplier
+     * PUT /api/suppliers/{id}
      */
     @PutMapping("/{id}")
     public ResponseEntity<Supplier> updateSupplier(
@@ -111,14 +120,80 @@ public class SupplierController {
             @Valid @RequestBody Supplier supplier
     ) {
         try {
-            if (!supplierService.existsById(id)) {
-                return ResponseEntity.notFound().build();
-            }
-            supplier.setId(id);
-            Supplier updatedSupplier = supplierService.save(supplier);
+            Supplier updatedSupplier = supplierService.updateSupplier(id, supplier);
             return ResponseEntity.ok(updatedSupplier);
+        } catch (BusinessException e) {
+            log.error("Business error updating supplier: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
+        } catch (ResourceNotFoundException e) {
+            log.error("Supplier not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            log.error("Error updating supplier: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Cập nhật rating supplier
+     * PUT /api/suppliers/{id}/rating
+     */
+    @PutMapping("/{id}/rating")
+    public ResponseEntity<Supplier> updateSupplierRating(
+            @PathVariable Long id,
+            @RequestParam Double rating
+    ) {
+        try {
+            Supplier updatedSupplier = supplierService.updateSupplierRating(id, rating);
+            return ResponseEntity.ok(updatedSupplier);
+        } catch (BusinessException e) {
+            log.error("Business error updating supplier rating: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
+        } catch (ResourceNotFoundException e) {
+            log.error("Supplier not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("Error updating supplier rating: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Chuyển đổi trạng thái supplier
+     * PUT /api/suppliers/{id}/toggle-status
+     */
+    @PutMapping("/{id}/toggle-status")
+    public ResponseEntity<Void> toggleSupplierStatus(@PathVariable Long id) {
+        try {
+            supplierService.toggleSupplierStatus(id);
+            return ResponseEntity.ok().build();
+        } catch (ResourceNotFoundException e) {
+            log.error("Supplier not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("Error toggling supplier status: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Blacklist supplier
+     * PUT /api/suppliers/{id}/blacklist
+     */
+    @PutMapping("/{id}/blacklist")
+    public ResponseEntity<Void> blacklistSupplier(
+            @PathVariable Long id,
+            @RequestParam String reason
+    ) {
+        try {
+            supplierService.blacklistSupplier(id, reason);
+            return ResponseEntity.ok().build();
+        } catch (ResourceNotFoundException e) {
+            log.error("Supplier not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("Error blacklisting supplier: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -135,6 +210,7 @@ public class SupplierController {
             supplierService.deleteById(id);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
+            log.error("Error deleting supplier: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -161,6 +237,7 @@ public class SupplierController {
             
             return ResponseEntity.ok(suppliers);
         } catch (Exception e) {
+            log.error("Error searching suppliers: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -176,11 +253,25 @@ public class SupplierController {
             return supplier.map(ResponseEntity::ok)
                           .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
+            log.error("Error getting supplier by code: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-
+    /**
+     * Lấy nhà cung cấp theo thương hiệu xe
+     * GET /api/suppliers/vehicle-brand/Toyota
+     */
+    @GetMapping("/vehicle-brand/{brand}")
+    public ResponseEntity<List<Supplier>> getSuppliersByVehicleBrand(@PathVariable String brand) {
+        try {
+            List<Supplier> suppliers = supplierService.findByVehicleBrandsContaining(brand);
+            return ResponseEntity.ok(suppliers);
+        } catch (Exception e) {
+            log.error("Error getting suppliers by vehicle brand: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
     /**
      * Lấy nhà cung cấp active
@@ -192,6 +283,7 @@ public class SupplierController {
             List<Supplier> suppliers = supplierService.findActiveSuppliers();
             return ResponseEntity.ok(suppliers);
         } catch (Exception e) {
+            log.error("Error getting active suppliers: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -206,6 +298,7 @@ public class SupplierController {
             long count = supplierService.count();
             return ResponseEntity.ok(count);
         } catch (Exception e) {
+            log.error("Error getting supplier count: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -222,6 +315,7 @@ public class SupplierController {
             List<Supplier> suppliers = supplierService.findTopSuppliers(limit);
             return ResponseEntity.ok(suppliers);
         } catch (Exception e) {
+            log.error("Error getting top suppliers: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

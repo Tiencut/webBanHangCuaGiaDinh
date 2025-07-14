@@ -3,6 +3,8 @@ package com.giadinh.banphutung.web_ban_hang_gia_dinh.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -55,6 +57,12 @@ public class VehicleModel extends BaseEntity {
     private String name;
 
     /**
+     * Model xe (alias cho name)
+     */
+    @Column(length = 200)
+    private String model;
+
+    /**
      * Thương hiệu xe
      * Ví dụ: THACO, HYUNDAI, HINO, ISUZU, DONGFENG
      */
@@ -74,10 +82,40 @@ public class VehicleModel extends BaseEntity {
     private Integer yearTo;
 
     /**
+     * Năm sản xuất (alias cho yearFrom)
+     */
+    @Column(name = "production_year")
+    private Integer productionYear;
+
+    /**
      * Loại xe
      */
     @Enumerated(EnumType.STRING)
     private VehicleType vehicleType;
+
+    /**
+     * Loại động cơ
+     */
+    @Column(length = 100)
+    private String engineType;
+
+    /**
+     * Loại hộp số
+     */
+    @Column(length = 100)
+    private String transmissionType;
+
+    /**
+     * Loại nhiên liệu
+     */
+    @Column(length = 50)
+    private String fuelType;
+
+    /**
+     * Mô tả chi tiết
+     */
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     /**
      * Tải trọng (tấn)
@@ -169,6 +207,7 @@ public class VehicleModel extends BaseEntity {
      * Đây là quan hệ Many-to-Many với Product
      */
     @ManyToMany(mappedBy = "compatibleVehicles", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "compatibleVehicles"})
     private List<Product> compatibleProducts = new ArrayList<>();
 
     /**

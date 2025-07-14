@@ -14,6 +14,8 @@ import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Customer;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Customer.CustomerStatus;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Customer.CustomerType;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.CustomerRepository;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,17 +34,17 @@ public class CustomerService {
         
         // Kiểm tra code đã tồn tại
         if (customer.getCode() != null && customerRepository.existsByCode(customer.getCode())) {
-            throw new RuntimeException("Customer code đã tồn tại: " + customer.getCode());
+            throw new BusinessException("Customer code đã tồn tại: " + customer.getCode());
         }
         
         // Kiểm tra phone đã tồn tại
         if (customer.getPhone() != null && customerRepository.existsByPhone(customer.getPhone())) {
-            throw new RuntimeException("Số điện thoại đã tồn tại: " + customer.getPhone());
+            throw new BusinessException("Số điện thoại đã tồn tại: " + customer.getPhone());
         }
         
         // Kiểm tra email đã tồn tại
         if (customer.getEmail() != null && customerRepository.existsByEmail(customer.getEmail())) {
-            throw new RuntimeException("Email đã tồn tại: " + customer.getEmail());
+            throw new BusinessException("Email đã tồn tại: " + customer.getEmail());
         }
         
         // Tự động tạo code nếu chưa có
@@ -153,7 +155,7 @@ public class CustomerService {
         log.info("Updating customer with id: {}", id);
         
         Customer existingCustomer = customerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
         
         // Cập nhật thông tin cơ bản
         existingCustomer.setName(customerUpdate.getName());
@@ -170,7 +172,7 @@ public class CustomerService {
         // Cập nhật code nếu khác
         if (!existingCustomer.getCode().equals(customerUpdate.getCode())) {
             if (customerRepository.existsByCode(customerUpdate.getCode())) {
-                throw new RuntimeException("Customer code đã tồn tại: " + customerUpdate.getCode());
+                throw new BusinessException("Customer code đã tồn tại: " + customerUpdate.getCode());
             }
             existingCustomer.setCode(customerUpdate.getCode());
         }
@@ -179,7 +181,7 @@ public class CustomerService {
         if (customerUpdate.getPhone() != null && 
             !customerUpdate.getPhone().equals(existingCustomer.getPhone())) {
             if (customerRepository.existsByPhone(customerUpdate.getPhone())) {
-                throw new RuntimeException("Số điện thoại đã tồn tại: " + customerUpdate.getPhone());
+                throw new BusinessException("Số điện thoại đã tồn tại: " + customerUpdate.getPhone());
             }
             existingCustomer.setPhone(customerUpdate.getPhone());
         }
@@ -188,7 +190,7 @@ public class CustomerService {
         if (customerUpdate.getEmail() != null && 
             !customerUpdate.getEmail().equals(existingCustomer.getEmail())) {
             if (customerRepository.existsByEmail(customerUpdate.getEmail())) {
-                throw new RuntimeException("Email đã tồn tại: " + customerUpdate.getEmail());
+                throw new BusinessException("Email đã tồn tại: " + customerUpdate.getEmail());
             }
             existingCustomer.setEmail(customerUpdate.getEmail());
         }
@@ -198,34 +200,30 @@ public class CustomerService {
     
     // Cập nhật công nợ customer
     public Customer updateCustomerDebt(Long id, BigDecimal debtAmount) {
-        log.info("Updating debt for customer id: {} to {}", id, debtAmount);
-        
         Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
         
-        customer.setCurrentDebt(debtAmount);
+        customer.setCurrentDebt(customer.getCurrentDebt().add(debtAmount));
         return customerRepository.save(customer);
     }
     
     // Thanh toán công nợ
     public Customer payDebt(Long id, BigDecimal paymentAmount) {
-        log.info("Processing debt payment for customer id: {}, amount: {}", id, paymentAmount);
-        
         Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
         
         if (paymentAmount.compareTo(customer.getCurrentDebt()) > 0) {
-            throw new RuntimeException("Số tiền thanh toán không thể lớn hơn công nợ hiện tại");
+            throw new BusinessException("Số tiền thanh toán không thể lớn hơn công nợ hiện tại");
         }
         
         customer.setCurrentDebt(customer.getCurrentDebt().subtract(paymentAmount));
         return customerRepository.save(customer);
     }
     
-    // Cập nhật loyalty points
+    // Cộng điểm tích lũy
     public Customer addLoyaltyPoints(Long id, Integer points) {
         Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
         
         customer.setLoyaltyPoints(customer.getLoyaltyPoints() + points);
         return customerRepository.save(customer);
@@ -234,7 +232,7 @@ public class CustomerService {
     // Cập nhật thống kê mua hàng
     public Customer updatePurchaseStats(Long id, BigDecimal orderAmount) {
         Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
         
         // Cập nhật tổng chi tiêu
         customer.setTotalSpent(customer.getTotalSpent().add(orderAmount));
@@ -260,10 +258,10 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
     
-    // Khóa/mở khóa customer
+    // Chuyển đổi trạng thái customer
     public void toggleCustomerStatus(Long id) {
         Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
         
         if (customer.getStatus() == CustomerStatus.ACTIVE) {
             customer.setStatus(CustomerStatus.INACTIVE);
@@ -278,7 +276,7 @@ public class CustomerService {
     // Blacklist customer
     public void blacklistCustomer(Long id, String reason) {
         Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
         
         customer.setStatus(CustomerStatus.BLACKLISTED);
         customer.setNotes(customer.getNotes() + "\n[BLACKLISTED] " + reason);

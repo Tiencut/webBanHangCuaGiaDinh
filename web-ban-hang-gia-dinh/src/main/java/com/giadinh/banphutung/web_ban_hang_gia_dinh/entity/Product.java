@@ -1,16 +1,29 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.entity;
 
-import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -32,6 +45,7 @@ public class Product extends BaseEntity {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Category category;
     
     @NotNull
@@ -82,6 +96,9 @@ public class Product extends BaseEntity {
     @Column(name = "is_combo")
     private Boolean isCombo = false;
     
+    @Column(name = "is_substitutable")
+    private Boolean isSubstitutable = false;
+    
     @ElementCollection
     @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "image_url")
@@ -107,6 +124,7 @@ public class Product extends BaseEntity {
         joinColumns = @JoinColumn(name = "product_id"),
         inverseJoinColumns = @JoinColumn(name = "vehicle_model_id")
     )
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "compatibleProducts"})
     private List<VehicleModel> compatibleVehicles = new ArrayList<>();
     
     public enum ProductStatus {

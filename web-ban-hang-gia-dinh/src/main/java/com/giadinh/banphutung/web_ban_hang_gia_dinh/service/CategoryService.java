@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Category;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.CategoryRepository;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +28,7 @@ public class CategoryService {
         
         // Kiểm tra code đã tồn tại
         if (category.getCode() != null && categoryRepository.existsByCode(category.getCode())) {
-            throw new RuntimeException("Category code đã tồn tại: " + category.getCode());
+            throw new BusinessException("Category code đã tồn tại: " + category.getCode());
         }
         
         // Tự động tạo code nếu chưa có
@@ -37,7 +39,7 @@ public class CategoryService {
         // Set level và path nếu có parent
         if (category.getParent() != null) {
             Category parent = categoryRepository.findById(category.getParent().getId())
-                .orElseThrow(() -> new RuntimeException("Parent category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Parent category not found"));
             
             category.setLevel(parent.getLevel() + 1);
             category.setParent(parent);
@@ -82,7 +84,7 @@ public class CategoryService {
         log.info("Updating category with id: {}", id);
         
         Category existingCategory = categoryRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
         
         // Cập nhật thông tin cơ bản
         existingCategory.setName(categoryUpdate.getName());
@@ -92,7 +94,7 @@ public class CategoryService {
         // Cập nhật code nếu khác
         if (!existingCategory.getCode().equals(categoryUpdate.getCode())) {
             if (categoryRepository.existsByCode(categoryUpdate.getCode())) {
-                throw new RuntimeException("Category code đã tồn tại: " + categoryUpdate.getCode());
+                throw new BusinessException("Category code đã tồn tại: " + categoryUpdate.getCode());
             }
             existingCategory.setCode(categoryUpdate.getCode());
         }
@@ -105,21 +107,21 @@ public class CategoryService {
         log.info("Moving category {} to parent {}", categoryId, newParentId);
         
         Category category = categoryRepository.findById(categoryId)
-            .orElseThrow(() -> new RuntimeException("Category not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         
         // Kiểm tra không thể di chuyển thành con của chính nó
         if (categoryId.equals(newParentId)) {
-            throw new RuntimeException("Không thể di chuyển category thành con của chính nó");
+            throw new BusinessException("Không thể di chuyển category thành con của chính nó");
         }
         
         Category newParent = null;
         if (newParentId != null) {
             newParent = categoryRepository.findById(newParentId)
-                .orElseThrow(() -> new RuntimeException("Parent category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Parent category not found"));
             
             // Kiểm tra không tạo vòng lặp (newParent không được là con của category)
             if (isDescendant(newParent, category)) {
-                throw new RuntimeException("Không thể di chuyển category thành cha của category cha");
+                throw new BusinessException("Không thể di chuyển category thành cha của category cha");
             }
         }
         
@@ -132,18 +134,18 @@ public class CategoryService {
     // Xóa category (soft delete)
     public void deleteCategory(Long id) {
         Category category = categoryRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Category not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         
         // Kiểm tra có category con không
         Long childrenCount = categoryRepository.countByParentId(id);
         if (childrenCount > 0) {
-            throw new RuntimeException("Không thể xóa category có category con");
+            throw new BusinessException("Không thể xóa category có category con");
         }
         
         // Kiểm tra có sản phẩm không (sẽ implement sau)
         // Long productCount = productRepository.countByCategory(category);
         // if (productCount > 0) {
-        //     throw new RuntimeException("Không thể xóa category có sản phẩm");
+        //     throw new BusinessException("Không thể xóa category có sản phẩm");
         // }
         
         category.setIsActive(false);

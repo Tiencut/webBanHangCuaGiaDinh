@@ -1,18 +1,13 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.entity;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "suppliers")
@@ -31,14 +26,6 @@ public class Supplier extends BaseEntity {
     @Size(max = 500)
     @Column(name = "address")
     private String address;
-    
-    @Size(max = 100)
-    @Column(name = "city")
-    private String city;
-    
-    @Size(max = 100)
-    @Column(name = "district")
-    private String district;
     
     @Size(max = 15)
     @Column(name = "phone")
@@ -70,33 +57,14 @@ public class Supplier extends BaseEntity {
     @Column(name = "delivery_time_days")
     private Integer deliveryTimeDays;
     
+    @Column(name = "vehicle_brands")
+    private String vehicleBrands; // Hino,Isuzu,Hyundai,Thaco
+    
     @Column(name = "rating")
     private Double rating = 0.0;
     
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
-    
-    // KiotViet compatibility fields
-    @Size(max = 100)
-    @Column(name = "region")
-    private String region; // Khu vực
-    
-    @Size(max = 100)
-    @Column(name = "ward")
-    private String ward; // Phường/Xã
-    
-    @Size(max = 100)
-    @Column(name = "supplier_group")
-    private String supplierGroup; // Nhóm nhà cung cấp
-    
-    @Column(name = "total_purchased", precision = 19, scale = 2)
-    private BigDecimal totalPurchased = BigDecimal.ZERO; // Tổng mua
-    
-    @Column(name = "current_debt", precision = 19, scale = 2)
-    private BigDecimal currentDebt = BigDecimal.ZERO; // Nợ cần trả hiện tại
-    
-    @Column(name = "last_transaction_date")
-    private LocalDate lastTransactionDate; // Ngày giao dịch cuối cùng
     
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

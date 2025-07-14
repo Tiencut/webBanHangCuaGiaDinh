@@ -103,4 +103,15 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // Tìm order quá hạn giao hàng
     @Query("SELECT o FROM Order o WHERE o.expectedDeliveryDate < :today AND o.status IN ('CONFIRMED', 'SHIPPED') AND o.isDeleted = false")
     List<Order> findOverdueOrders(@Param("today") LocalDate today);
+
+    // Tìm order theo khoảng thời gian (LocalDateTime)
+    @Query("SELECT o FROM Order o WHERE o.orderDate >= :start AND o.orderDate <= :end")
+    List<Order> findByOrderDateBetween(@Param("start") java.time.LocalDateTime start, @Param("end") java.time.LocalDateTime end);
+
+    // Tìm order theo tổng tiền trong khoảng
+    List<Order> findByTotalAmountBetween(BigDecimal minTotal, BigDecimal maxTotal);
+
+    // Tìm kiếm đơn hàng theo từ khóa (orderCode, customer name, v.v.)
+    @Query("SELECT o FROM Order o WHERE o.orderCode LIKE %:term% OR o.customer.name LIKE %:term%")
+    Page<Order> searchOrders(@Param("term") String term, Pageable pageable);
 }

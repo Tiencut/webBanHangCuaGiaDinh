@@ -1,7 +1,9 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.controller;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.User;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.User.UserRole;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.UserService;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -74,63 +78,109 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
     
-    // POST /api/users - Tạo user mới
+    /**
+     * Tạo user mới
+     * POST /api/users
+     */
     @PostMapping
     public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
-        log.info("Creating new user: {}", user.getUsername());
         try {
             User savedUser = userService.createUser(user);
-            // Ẩn password trong response
-            savedUser.setPassword(null);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
-        } catch (RuntimeException e) {
+        } catch (BusinessException e) {
+            log.error("Business error creating user: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
+        } catch (Exception e) {
             log.error("Error creating user: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
-    // PUT /api/users/{id} - Cập nhật user
+
+    /**
+     * Cập nhật user
+     * PUT /api/users/{id}
+     */
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(
-            @PathVariable Long id,
-            @Valid @RequestBody User user) {
-        log.info("Updating user with id: {}", id);
+            @PathVariable Long id, 
+            @Valid @RequestBody User user
+    ) {
         try {
             User updatedUser = userService.updateUser(id, user);
-            // Ẩn password trong response
-            updatedUser.setPassword(null);
             return ResponseEntity.ok(updatedUser);
-        } catch (RuntimeException e) {
+        } catch (BusinessException e) {
+            log.error("Business error updating user: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
+        } catch (ResourceNotFoundException e) {
+            log.error("User not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
             log.error("Error updating user: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
-    // PUT /api/users/{id}/password - Đổi password
-    @PutMapping("/{id}/password")
+
+    /**
+     * Đổi password
+     * PUT /api/users/{id}/change-password
+     */
+    @PutMapping("/{id}/change-password")
     public ResponseEntity<Void> changePassword(
             @PathVariable Long id,
-            @RequestBody PasswordChangeRequest request) {
-        log.info("Changing password for user id: {}", id);
+            @RequestParam String oldPassword,
+            @RequestParam String newPassword
+    ) {
         try {
-            userService.changePassword(id, request.oldPassword, request.newPassword);
+            userService.changePassword(id, oldPassword, newPassword);
             return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
-            log.error("Error changing password: {}", e.getMessage());
+        } catch (BusinessException e) {
+            log.error("Business error changing password: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
+        } catch (ResourceNotFoundException e) {
+            log.error("User not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("Error changing password: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
-    // PUT /api/users/{id}/toggle-status - Khóa/mở khóa user
+
+    /**
+     * Reset password
+     * PUT /api/users/{id}/reset-password
+     */
+    @PutMapping("/{id}/reset-password")
+    public ResponseEntity<Void> resetPassword(
+            @PathVariable Long id,
+            @RequestParam String newPassword
+    ) {
+        try {
+            userService.resetPassword(id, newPassword);
+            return ResponseEntity.ok().build();
+        } catch (ResourceNotFoundException e) {
+            log.error("User not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("Error resetting password: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Chuyển đổi trạng thái user
+     * PUT /api/users/{id}/toggle-status
+     */
     @PutMapping("/{id}/toggle-status")
     public ResponseEntity<Void> toggleUserStatus(@PathVariable Long id) {
-        log.info("Toggling status for user id: {}", id);
         try {
             userService.toggleUserStatus(id);
             return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
+        } catch (ResourceNotFoundException e) {
+            log.error("User not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
             log.error("Error toggling user status: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     
@@ -141,9 +191,12 @@ public class UserController {
         try {
             userService.deleteUser(id);
             return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
+        } catch (ResourceNotFoundException e) {
+            log.error("User not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
             log.error("Error deleting user: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     

@@ -7,16 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Category;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.User;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.VehicleModel;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.CategoryRepository;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.ProductRepository;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.UserRepository;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.VehicleModelRepository;
 
 /**
@@ -41,14 +38,9 @@ public class DataInitializer {
     
     @Autowired
     private CategoryRepository categoryRepository;
-    
-    @Autowired
-    private UserRepository userRepository;
-    
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @Bean
+    @Transactional
     CommandLineRunner initDatabase() {
         return args -> {
             // Chỉ init nếu chưa có dữ liệu
@@ -57,9 +49,6 @@ public class DataInitializer {
             }
             
             System.out.println("🚀 Initializing sample data...");
-            
-            // 0. Tạo default users trước
-            createDefaultUsers();
             
             // 1. Tạo categories
             initCategories();
@@ -70,8 +59,8 @@ public class DataInitializer {
             // 3. Tạo products
             initProducts();
             
-            // 4. Tạo quan hệ tương thích (tạm thời disable để tránh lỗi LazyInitialization)
-            // initCompatibility();
+            // 4. Tạo quan hệ tương thích
+            initCompatibility();
             
             System.out.println("✅ Sample data initialized successfully!");
         };
@@ -254,11 +243,11 @@ public class DataInitializer {
         VehicleModel hd72 = vehicleModelRepository.findByCode("HD72").orElse(null);
         VehicleModel hino300 = vehicleModelRepository.findByCode("HINO300").orElse(null);
         
-        // Lấy products
-        Product gearbox5 = productRepository.findByCode("GB5_4JB1").orElse(null);
-        Product brakePad = productRepository.findByCode("BP_OLLIN500").orElse(null);
-        Product oilFilter = productRepository.findByCode("OF_4JB1").orElse(null);
-        Product gearbox6 = productRepository.findByCode("GB6_N04C").orElse(null);
+        // Lấy products với fetch join để tránh lazy loading
+        Product gearbox5 = productRepository.findByCodeWithCompatibleVehicles("GB5_4JB1").orElse(null);
+        Product brakePad = productRepository.findByCodeWithCompatibleVehicles("BP_OLLIN500").orElse(null);
+        Product oilFilter = productRepository.findByCodeWithCompatibleVehicles("OF_4JB1").orElse(null);
+        Product gearbox6 = productRepository.findByCodeWithCompatibleVehicles("GB6_N04C").orElse(null);
         
         if (ollin500 != null && gearbox5 != null) {
             // Hộp số 5 cấp tương thích với Ollin 500
@@ -295,53 +284,5 @@ public class DataInitializer {
         }
         
         System.out.println("🔗 Created compatibility relationships");
-    }
-    
-    /**
-     * Tạo tài khoản mặc định cho hệ thống
-     */
-    private void createDefaultUsers() {
-        // Kiểm tra nếu đã có admin thì bỏ qua
-        if (userRepository.count() > 0) {
-            return;
-        }
-        
-        // Tạo Admin user
-        User admin = new User();
-        admin.setUsername("admin");
-        admin.setPassword(passwordEncoder.encode("admin123"));
-        admin.setEmail("admin@giadinh.com");
-        admin.setFullName("Administrator");
-        admin.setRole(User.UserRole.ADMIN);
-        admin.setIsActive(true);
-        admin.setIsEmailVerified(true);
-        userRepository.save(admin);
-        
-        // Tạo Manager user
-        User manager = new User();
-        manager.setUsername("manager");
-        manager.setPassword(passwordEncoder.encode("manager123"));
-        manager.setEmail("manager@giadinh.com");
-        manager.setFullName("Quản lý");
-        manager.setRole(User.UserRole.MANAGER);
-        manager.setIsActive(true);
-        manager.setIsEmailVerified(true);
-        userRepository.save(manager);
-        
-        // Tạo Staff user
-        User staff = new User();
-        staff.setUsername("staff");
-        staff.setPassword(passwordEncoder.encode("staff123"));
-        staff.setEmail("staff@giadinh.com");
-        staff.setFullName("Nhân viên bán hàng");
-        staff.setRole(User.UserRole.STAFF);
-        staff.setIsActive(true);
-        staff.setIsEmailVerified(true);
-        userRepository.save(staff);
-        
-        System.out.println("👥 Created default users:");
-        System.out.println("   - admin/admin123 (ADMIN)");
-        System.out.println("   - manager/manager123 (MANAGER)");
-        System.out.println("   - staff/staff123 (STAFF)");
     }
 }
