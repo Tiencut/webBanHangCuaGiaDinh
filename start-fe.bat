@@ -5,7 +5,7 @@ echo    KHOI DONG FRONTEND (VITE + VUE)
 echo ========================================
 echo.
 
-cd /d %~dp0frontend-web
+cd /d %~dp0FE
 
 echo Dang cai cac goi npm (neu can)...
 npm install

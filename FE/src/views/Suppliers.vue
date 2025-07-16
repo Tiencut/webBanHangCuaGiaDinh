@@ -97,76 +97,53 @@
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nhà cung cấp
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Liên hệ
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Địa chỉ
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Trạng thái
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tổng giá trị
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Thao tác
-              </th>
+              <th>STT</th>
+              <th>Tên nhà cung cấp</th>
+              <th>Mã</th>
+              <th>Địa chỉ</th>
+              <th>Số điện thoại</th>
+              <th>Email</th>
+              <th>Người liên hệ</th>
+              <th>Mã số thuế</th>
+              <th>Số tài khoản</th>
+              <th>Tên ngân hàng</th>
+              <th>Điều khoản thanh toán</th>
+              <th>Hạn mức tín dụng</th>
+              <th>Thời gian giao hàng</th>
+              <th>Thương hiệu xe</th>
+              <th>Đánh giá</th>
+              <th>Ghi chú</th>
+              <th>Trạng thái</th>
+              <th>Thao tác</th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="supplier in filteredSuppliers" :key="supplier.id" class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <div class="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                    <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                  </div>
-                  <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900">{{ supplier.name }}</div>
-                    <div class="text-sm text-gray-500">{{ supplier.code }}</div>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ supplier.phone }}</div>
-                <div class="text-sm text-gray-500">{{ supplier.email }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ supplier.address }}</div>
-                <div class="text-sm text-gray-500">{{ supplier.city }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-medium rounded-full"
-                      :class="supplier.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                  {{ supplier.status === 'active' ? 'Hoạt động' : 'Tạm dừng' }}
+          <tbody>
+            <tr v-for="(supplier, idx) in filteredSuppliers" :key="supplier.id">
+              <td>{{ idx + 1 }}</td>
+              <td>{{ supplier.name }}</td>
+              <td>{{ supplier.code }}</td>
+              <td>{{ supplier.address }}</td>
+              <td>{{ supplier.phone }}</td>
+              <td>{{ supplier.email }}</td>
+              <td>{{ supplier.contactPerson }}</td>
+              <td>{{ supplier.taxCode }}</td>
+              <td>{{ supplier.bankAccount }}</td>
+              <td>{{ supplier.bankName }}</td>
+              <td>{{ supplier.paymentTerms }}</td>
+              <td>{{ supplier.creditLimit }}</td>
+              <td>{{ supplier.deliveryTimeDays }}</td>
+              <td>{{ supplier.vehicleBrands }}</td>
+              <td>{{ supplier.rating }}</td>
+              <td>{{ supplier.notes }}</td>
+              <td>
+                <span :class="supplier.status === 'ACTIVE' ? 'bg-green-100 text-green-800 px-2 py-1 rounded' : 'bg-red-100 text-red-800 px-2 py-1 rounded'">
+                  {{ supplier.status }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                ₫{{ formatCurrency(supplier.totalValue) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex items-center space-x-2">
-                  <button @click="editSupplier(supplier)" class="text-blue-600 hover:text-blue-800">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button @click="viewSupplierDetails(supplier)" class="text-gray-600 hover:text-gray-800">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </button>
-                </div>
+              <td>
+                <!-- Thao tác (sửa/xem/xóa) giữ nguyên -->
+                <button @click="editSupplier(supplier)" class="text-blue-600 hover:text-blue-800">Sửa</button>
+                <button @click="viewSupplierDetails(supplier)" class="text-gray-600 hover:text-gray-800">Xem</button>
               </td>
             </tr>
           </tbody>
@@ -227,6 +204,8 @@
 </template>
 
 <script>
+import { suppliersAPI } from '@/services/suppliers'
+
 export default {
   name: 'Suppliers',
   data() {
@@ -234,78 +213,16 @@ export default {
       searchTerm: '',
       statusFilter: '',
       showAddSupplierModal: false,
-      totalSuppliers: 24,
-      activeSuppliers: 18,
-      totalValue: 450000000,
-      monthlyOrders: 67,
-      suppliers: [
-        {
-          id: 1,
-          name: 'Công ty TNHH Phụ tùng Hà Nội',
-          code: 'SUP001',
-          phone: '024-3456-7890',
-          email: 'info@phutunghanoi.com',
-          address: '123 Đường Láng, Đống Đa',
-          city: 'Hà Nội',
-          status: 'active',
-          totalValue: 85000000
-        },
-        {
-          id: 2,
-          name: 'Công ty Cổ phần Ô tô Thành Công',
-          code: 'SUP002',
-          phone: '028-9876-5432',
-          email: 'sales@thanhcong.com',
-          address: '456 Nguyễn Văn Linh, Quận 7',
-          city: 'TP. Hồ Chí Minh',
-          status: 'active',
-          totalValue: 120000000
-        },
-        {
-          id: 3,
-          name: 'Cửa hàng Phụ tùng Minh Tuấn',
-          code: 'SUP003',
-          phone: '0236-123-4567',
-          email: 'minhtuan@gmail.com',
-          address: '789 Lê Duẩn, Hải Châu',
-          city: 'Đà Nẵng',
-          status: 'inactive',
-          totalValue: 45000000
-        },
-        {
-          id: 4,
-          name: 'Công ty TNHH Phụ tùng Việt Nam',
-          code: 'SUP004',
-          phone: '0225-789-0123',
-          email: 'info@phutungvn.com',
-          address: '321 Trần Phú, Hồng Bàng',
-          city: 'Hải Phòng',
-          status: 'active',
-          totalValue: 75000000
-        },
-        {
-          id: 5,
-          name: 'Cửa hàng Phụ tùng Đại Phát',
-          code: 'SUP005',
-          phone: '0292-654-3210',
-          email: 'daiphat@yahoo.com',
-          address: '654 Nguyễn Văn Cừ, Cái Răng',
-          city: 'Cần Thơ',
-          status: 'active',
-          totalValue: 62000000
-        }
-      ],
-      newSupplier: {
-        name: '',
-        code: '',
-        phone: '',
-        email: '',
-        address: '',
-        city: '',
-        status: 'active',
-        totalValue: 0
-      }
+      suppliers: [],
+      loading: false,
+      totalSuppliers: 0,
+      activeSuppliers: 0,
+      totalValue: 0,
+      monthlyOrders: 0
     }
+  },
+  mounted() {
+    this.fetchSuppliers()
   },
   computed: {
     filteredSuppliers() {
@@ -330,6 +247,23 @@ export default {
   methods: {
     formatCurrency(value) {
       return new Intl.NumberFormat('vi-VN').format(value);
+    },
+    async fetchSuppliers() {
+      this.loading = true
+      try {
+        const response = await suppliersAPI.getAll()
+        // Nếu backend trả về dạng { content: [...], ... } (phân trang)
+        this.suppliers = response.data.content || response.data
+        this.totalSuppliers = response.data.totalElements || response.data.length
+        this.activeSuppliers = response.data.activeSuppliers || 0
+        this.totalValue = response.data.totalValue || 0
+        this.monthlyOrders = response.data.monthlyOrders || 0
+      } catch (error) {
+        alert('Lỗi khi tải danh sách nhà cung cấp')
+        this.suppliers = []
+      } finally {
+        this.loading = false
+      }
     },
     addSupplier() {
       const newSupplier = {
