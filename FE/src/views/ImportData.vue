@@ -337,205 +337,92 @@
 </template>
 
 <script>
-import axios from 'axios'
+import { ref, onMounted } from 'vue'
+import { importApi } from '@/api'
 
 export default {
   name: 'ImportData',
-  data() {
-    return {
-      selectedFile: null,
-      isImporting: false,
-      isDownloading: false,
-      isDragging: false,
-      showGuide: false,
-      message: {
-        show: false,
-        text: '',
-        type: 'info'
-      },
-      importProgress: {
-        show: false,
-        status: '',
-        progress: 0
-      },
-      importResult: null
+  setup() {
+    const selectedFile = ref(null)
+    const isImporting = ref(false)
+    const isDragging = ref(false)
+    const importResult = ref(null)
+    const importProgress = ref({ show: false, status: '', progress: 0 })
+    const importFiles = ref([])
+    const loadingFiles = ref(false)
+    const error = ref('')
+
+    // Lấy danh sách file đã import
+    const loadImportFiles = async () => {
+      try {
+        loadingFiles.value = true
+        error.value = ''
+        const res = await importApi.getAll(0, 20)
+        importFiles.value = res.data.content || []
+      } catch (e) {
+        error.value = 'Lỗi khi tải danh sách file import!'
+        console.error(e)
+      } finally {
+        loadingFiles.value = false
+      }
     }
-  },
-  methods: {
-    handleDrop(e) {
-      e.preventDefault()
-      this.isDragging = false
-      
-      const files = e.dataTransfer.files
-      if (files.length > 0) {
-        this.selectFile(files[0])
-      }
-    },
-    
-    handleFileSelect(e) {
-      const files = e.target.files
-      if (files.length > 0) {
-        this.selectFile(files[0])
-      }
-    },
-    
-    selectFile(file) {
-      if (!file.name.toLowerCase().endsWith('.xlsx')) {
-        alert('Chỉ hỗ trợ file .xlsx')
-        return
-      }
-      
-      if (file.size > 10 * 1024 * 1024) { // 10MB
-        alert('File quá lớn (tối đa 10MB)')
-        return
-      }
-      
-      this.selectedFile = file
-      this.clearResults()
-    },
-    
-    clearFile() {
-      this.selectedFile = null
-      this.$refs.fileInput.value = ''
-    },
-    
-    async importFile() {
-      if (!this.selectedFile) return
-      
-      this.isImporting = true
-      this.importProgress.show = true
-      this.importProgress.status = 'Đang tải file lên...'
-      this.importProgress.progress = 10
-      
+
+    // Upload file
+    const importFile = async () => {
+      if (!selectedFile.value) return
+      isImporting.value = true
+      importProgress.value = { show: true, status: 'Đang upload...', progress: 10 }
       try {
         const formData = new FormData()
-        formData.append('file', this.selectedFile)
-        
-        this.importProgress.status = 'Đang xử lý dữ liệu...'
-        this.importProgress.progress = 30
-        
-        const response = await axios.post('http://localhost:8080/api/import/excel', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          },
-          onUploadProgress: (progressEvent) => {
-            const progress = Math.round((progressEvent.loaded / progressEvent.total) * 50)
-            this.importProgress.progress = 30 + progress
-          }
-        })
-        
-        this.importProgress.status = 'Hoàn thành!'
-        this.importProgress.progress = 100
-        
-        setTimeout(() => {
-          this.importProgress.show = false
-          this.importResult = response.data
-        }, 1000)
-        
-      } catch (error) {
-        console.error('Import error:', error)
-        this.importProgress.show = false
-        
-        let errorMessage = 'Có lỗi xảy ra khi import'
-        if (error.response?.data?.message) {
-          errorMessage = error.response.data.message
-        }
-        
-        this.importResult = {
-          success: false,
-          errors: [errorMessage],
-          warnings: [],
-          successes: []
-        }
+        formData.append('file', selectedFile.value)
+        const res = await importApi.upload(formData)
+        importProgress.value = { show: true, status: 'Đang xử lý...', progress: 80 }
+        // Giả lập kết quả (tùy backend trả về)
+        importResult.value = res.data || { success: true, importTime: 2, successes: [], warnings: [], errors: [] }
+        importProgress.value = { show: false, status: 'Hoàn thành', progress: 100 }
+        loadImportFiles()
+      } catch (e) {
+        importResult.value = { success: false, errors: ['Lỗi khi import file!'] }
+        importProgress.value = { show: false, status: 'Lỗi', progress: 0 }
+        console.error(e)
       } finally {
-        this.isImporting = false
+        isImporting.value = false
       }
-    },
-    
-    clearResults() {
-      this.importResult = null
-      this.importProgress.show = false
-    },
-    
-    async downloadTemplate() {
-      try {
-        this.isDownloading = true
-        
-        const response = await axios.get('http://localhost:8080/api/import/template', {
-          responseType: 'blob'
-        })
-        
-        // Create download link
-        const blob = new Blob([response.data], { 
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-        })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `template-import-data-${new Date().toISOString().slice(0, 10)}.xlsx`
-        a.click()
-        URL.revokeObjectURL(url)
-        
-        // Show success message
-        this.showMessage('✅ Template đã được tải xuống thành công', 'success')
-        
-      } catch (error) {
-        console.error('Download template error:', error)
-        this.showMessage('❌ Không thể tải template: ' + (error.response?.data?.message || error.message), 'error')
-      } finally {
-        this.isDownloading = false
+    }
+
+    // Xử lý chọn file
+    const handleFileSelect = (e) => {
+      selectedFile.value = e.target.files[0]
+    }
+    const handleDrop = (e) => {
+      e.preventDefault()
+      isDragging.value = false
+      if (e.dataTransfer.files.length > 0) {
+        selectedFile.value = e.dataTransfer.files[0]
       }
-    },
-    
-    downloadLog() {
-      if (!this.importResult) return
-      
-      const logContent = {
-        timestamp: new Date().toISOString(),
-        filename: this.selectedFile?.name,
-        result: this.importResult
-      }
-      
-      const blob = new Blob([JSON.stringify(logContent, null, 2)], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `import-log-${new Date().toISOString().slice(0, 10)}.json`
-      a.click()
-      URL.revokeObjectURL(url)
-    },
-    
-    formatFileSize(bytes) {
-      if (bytes === 0) return '0 Bytes'
-      const k = 1024
-      const sizes = ['Bytes', 'KB', 'MB', 'GB']
-      const i = Math.floor(Math.log(bytes) / Math.log(k))
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-    },
-    
-    getTotalSuccesses() {
-      return this.importResult?.successes?.length || 0
-    },
-    
-    getTotalWarnings() {
-      return this.importResult?.warnings?.length || 0
-    },
-    
-    getTotalErrors() {
-      return this.importResult?.errors?.length || 0
-    },
-    
-    showMessage(text, type = 'info') {
-      this.message = {
-        show: true,
-        text,
-        type
-      }
-      
-      // Auto hide after 5 seconds
-      setTimeout(() => {
-        this.message.show = false
-      }, 5000)
+    }
+    const clearFile = () => {
+      selectedFile.value = null
+    }
+
+    onMounted(() => {
+      loadImportFiles()
+    })
+
+    return {
+      selectedFile,
+      isImporting,
+      isDragging,
+      importResult,
+      importProgress,
+      importFiles,
+      loadingFiles,
+      error,
+      importFile,
+      handleFileSelect,
+      handleDrop,
+      clearFile,
+      loadImportFiles
     }
   }
 }
