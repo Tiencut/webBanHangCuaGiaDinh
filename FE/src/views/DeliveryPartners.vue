@@ -218,15 +218,113 @@
 </template>
 
 <script>
+import { ref, computed, onMounted } from 'vue'
+import { deliveryPartnersApi } from '@/api'
+
 export default {
   name: 'DeliveryPartners',
-  data() {
-    return {
-      // Component data
+  setup() {
+    const partners = ref([])
+    const loading = ref(false)
+    const error = ref('')
+    const showAddModal = ref(false)
+    const newPartner = ref({
+      name: '',
+      code: '',
+      phone: '',
+      email: '',
+      serviceType: '',
+      status: 'active',
+      rating: 0,
+      completedOrders: 0
+    })
+    const searchTerm = ref('')
+    const statusFilter = ref('')
+    const typeFilter = ref('')
+
+    // Lấy danh sách đối tác giao hàng
+    const loadPartners = async () => {
+      try {
+        loading.value = true
+        error.value = ''
+        const res = await deliveryPartnersApi.getAll(0, 50, searchTerm.value, typeFilter.value, statusFilter.value)
+        partners.value = res.data.content || []
+      } catch (e) {
+        error.value = 'Lỗi khi tải danh sách đối tác giao hàng!'
+        console.error(e)
+      } finally {
+        loading.value = false
+      }
     }
-  },
-  methods: {
-    // Component methods
+
+    // Thêm mới đối tác giao hàng
+    const createPartner = async () => {
+      try {
+        await deliveryPartnersApi.create(newPartner.value)
+        showAddModal.value = false
+        newPartner.value = { name: '', code: '', phone: '', email: '', serviceType: '', status: 'active', rating: 0, completedOrders: 0 }
+        loadPartners()
+      } catch (e) {
+        alert('Lỗi khi thêm đối tác!')
+        console.error(e)
+      }
+    }
+
+    // Lọc đối tác
+    const filteredPartners = computed(() => {
+      let filtered = partners.value
+      if (searchTerm.value) {
+        filtered = filtered.filter(p =>
+          p.name?.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+          p.phone?.includes(searchTerm.value)
+        )
+      }
+      if (statusFilter.value) {
+        filtered = filtered.filter(p => p.status === statusFilter.value)
+      }
+      if (typeFilter.value) {
+        filtered = filtered.filter(p => p.serviceType === typeFilter.value)
+      }
+      return filtered
+    })
+
+    // Format helpers
+    const getStatusClass = (status) => {
+      const map = {
+        active: 'bg-green-100 text-green-800',
+        inactive: 'bg-gray-100 text-gray-800',
+        suspended: 'bg-red-100 text-red-800'
+      }
+      return map[status] || 'bg-gray-100 text-gray-800'
+    }
+    const getStatusText = (status) => {
+      const map = {
+        active: 'Hoạt động',
+        inactive: 'Tạm dừng',
+        suspended: 'Đình chỉ'
+      }
+      return map[status] || status
+    }
+
+    onMounted(() => {
+      loadPartners()
+    })
+
+    return {
+      partners,
+      loading,
+      error,
+      showAddModal,
+      newPartner,
+      searchTerm,
+      statusFilter,
+      typeFilter,
+      loadPartners,
+      createPartner,
+      filteredPartners,
+      getStatusClass,
+      getStatusText
+    }
   }
 }
 </script>
