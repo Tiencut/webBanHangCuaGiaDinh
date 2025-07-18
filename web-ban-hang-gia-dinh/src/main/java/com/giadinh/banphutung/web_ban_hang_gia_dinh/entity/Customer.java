@@ -2,11 +2,16 @@ package com.giadinh.banphutung.web_ban_hang_gia_dinh.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -86,6 +91,13 @@ public class Customer extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private CustomerStatus status = CustomerStatus.ACTIVE;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Customer parent;
+
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
+    private List<Customer> children;
     
     public enum CustomerType {
         RETAIL,      // Khách lẻ

@@ -204,95 +204,293 @@
 </template>
 
 <script>
-import { suppliersAPI } from '@/services/suppliers'
+import { ref, onMounted, computed } from 'vue'
+import { suppliersApi } from '@/api'
 
 export default {
   name: 'Suppliers',
-  data() {
-    return {
-      searchTerm: '',
-      statusFilter: '',
-      showAddSupplierModal: false,
-      suppliers: [],
-      loading: false,
-      totalSuppliers: 0,
-      activeSuppliers: 0,
-      totalValue: 0,
-      monthlyOrders: 0
-    }
-  },
-  mounted() {
-    this.fetchSuppliers()
-  },
-  computed: {
-    filteredSuppliers() {
-      let filtered = this.suppliers;
-      
-      if (this.searchTerm) {
-        filtered = filtered.filter(supplier => 
-          supplier.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-          supplier.code.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-          supplier.phone.includes(this.searchTerm) ||
-          supplier.email.toLowerCase().includes(this.searchTerm.toLowerCase())
-        );
-      }
-      
-      if (this.statusFilter) {
-        filtered = filtered.filter(supplier => supplier.status === this.statusFilter);
-      }
-      
-      return filtered;
-    }
-  },
-  methods: {
-    formatCurrency(value) {
-      return new Intl.NumberFormat('vi-VN').format(value);
-    },
-    async fetchSuppliers() {
-      this.loading = true
+  setup() {
+    const loading = ref(false)
+    const suppliers = ref([])
+    const currentPage = ref(0)
+    const totalPages = ref(0)
+    const totalElements = ref(0)
+    const pageSize = ref(10)
+
+    // Filters
+    const searchQuery = ref('')
+    const selectedBrand = ref('')
+    const selectedStatus = ref('')
+
+    // Modal states
+    const showAddModal = ref(false)
+    const showEditModal = ref(false)
+    const selectedSupplier = ref(null)
+
+    // New supplier form
+    const newSupplier = ref({
+      name: '',
+      code: '',
+      phone: '',
+      email: '',
+      address: '',
+      contactPerson: '',
+      vehicleBrand: '',
+      rating: 0,
+      status: 'ACTIVE',
+      notes: ''
+    })
+
+    // Load suppliers
+    const loadSuppliers = async () => {
       try {
-        const response = await suppliersAPI.getAll()
-        // Nếu backend trả về dạng { content: [...], ... } (phân trang)
-        this.suppliers = response.data.content || response.data
-        this.totalSuppliers = response.data.totalElements || response.data.length
-        this.activeSuppliers = response.data.activeSuppliers || 0
-        this.totalValue = response.data.totalValue || 0
-        this.monthlyOrders = response.data.monthlyOrders || 0
+        loading.value = true
+        const response = await suppliersApi.getAll(
+          currentPage.value,
+          pageSize.value,
+          searchQuery.value,
+          selectedBrand.value || null,
+          selectedStatus.value || null
+        )
+        
+        suppliers.value = response.data.content || []
+        totalPages.value = response.data.totalPages || 0
+        totalElements.value = response.data.totalElements || 0
       } catch (error) {
-        alert('Lỗi khi tải danh sách nhà cung cấp')
-        this.suppliers = []
+        console.error('Error loading suppliers:', error)
       } finally {
-        this.loading = false
+        loading.value = false
       }
-    },
-    addSupplier() {
-      const newSupplier = {
-        id: Date.now(),
-        ...this.newSupplier
-      };
-      
-      this.suppliers.push(newSupplier);
-      this.showAddSupplierModal = false;
-      
-      // Reset form
-      this.newSupplier = {
+    }
+
+    // Create new supplier
+    const createSupplier = async () => {
+      try {
+        await suppliersApi.create(newSupplier.value)
+        showAddModal.value = false
+        resetNewSupplier()
+        loadSuppliers()
+      } catch (error) {
+        console.error('Error creating supplier:', error)
+      }
+    }
+
+    // Update supplier
+    const updateSupplier = async () => {
+      try {
+        await suppliersApi.update(selectedSupplier.value.id, selectedSupplier.value)
+        showEditModal.value = false
+        selectedSupplier.value = null
+        loadSuppliers()
+      } catch (error) {
+        console.error('Error updating supplier:', error)
+      }
+    }
+
+    // Delete supplier
+    const deleteSupplier = async (supplierId) => {
+      if (confirm('Bạn có chắc chắn muốn xóa nhà cung cấp này?')) {
+        try {
+          await suppliersApi.delete(supplierId)
+          loadSuppliers()
+        } catch (error) {
+          console.error('Error deleting supplier:', error)
+        }
+      }
+    }
+
+    // Update supplier rating
+    const updateRating = async (supplierId, newRating) => {
+      try {
+        await suppliersApi.updateRating(supplierId, newRating)
+        loadSuppliers()
+      } catch (error) {
+        console.error('Error updating rating:', error)
+      }
+    }
+
+    // Toggle supplier status
+    const toggleStatus = async (supplierId) => {
+      try {
+        await suppliersApi.toggleStatus(supplierId)
+        loadSuppliers()
+      } catch (error) {
+        console.error('Error toggling status:', error)
+      }
+    }
+
+    // Blacklist supplier
+    const blacklistSupplier = async (supplierId) => {
+      if (confirm('Bạn có chắc chắn muốn đưa nhà cung cấp này vào danh sách đen?')) {
+        try {
+          await suppliersApi.blacklist(supplierId)
+          loadSuppliers()
+        } catch (error) {
+          console.error('Error blacklisting supplier:', error)
+        }
+      }
+    }
+
+    // Edit supplier
+    const editSupplier = (supplier) => {
+      selectedSupplier.value = { ...supplier }
+      showEditModal.value = true
+    }
+
+    // View supplier details
+    const viewSupplier = (supplier) => {
+      selectedSupplier.value = { ...supplier }
+      // Có thể mở modal chi tiết hoặc navigate đến trang chi tiết
+    }
+
+    // Reset new supplier form
+    const resetNewSupplier = () => {
+      newSupplier.value = {
         name: '',
         code: '',
         phone: '',
         email: '',
         address: '',
-        city: '',
-        status: 'active',
-        totalValue: 0
-      };
+        contactPerson: '',
+        vehicleBrand: '',
+        rating: 0,
+        status: 'ACTIVE',
+        notes: ''
+      }
+    }
+
+    // Apply filters
+    const applyFilters = () => {
+      currentPage.value = 0
+      loadSuppliers()
+    }
+
+    // Clear filters
+    const clearFilters = () => {
+      searchQuery.value = ''
+      selectedBrand.value = ''
+      selectedStatus.value = ''
+      currentPage.value = 0
+      loadSuppliers()
+    }
+
+    // Change page
+    const changePage = (page) => {
+      currentPage.value = page
+      loadSuppliers()
+    }
+
+    // Format currency
+    const formatCurrency = (amount) => {
+      return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+      }).format(amount)
+    }
+
+    // Format date
+    const formatDate = (dateString) => {
+      return new Date(dateString).toLocaleDateString('vi-VN')
+    }
+
+    // Get status class
+    const getStatusClass = (status) => {
+      const classes = {
+        'ACTIVE': 'bg-green-100 text-green-800',
+        'INACTIVE': 'bg-gray-100 text-gray-800',
+        'BLACKLISTED': 'bg-red-100 text-red-800'
+      }
+      return classes[status] || 'bg-gray-100 text-gray-800'
+    }
+
+    // Get status text
+    const getStatusText = (status) => {
+      const texts = {
+        'ACTIVE': 'Hoạt động',
+        'INACTIVE': 'Không hoạt động',
+        'BLACKLISTED': 'Danh sách đen'
+      }
+      return texts[status] || status
+    }
+
+    // Get rating stars
+    const getRatingStars = (rating) => {
+      const stars = []
+      for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+          stars.push('★')
+        } else {
+          stars.push('☆')
+        }
+      }
+      return stars.join('')
+    }
+
+    // Get brand class
+    const getBrandClass = (brand) => {
+      const classes = {
+        'HINO': 'bg-blue-100 text-blue-800',
+        'HYUNDAI': 'bg-green-100 text-green-800',
+        'THACO': 'bg-purple-100 text-purple-800',
+        'DONGFENG': 'bg-orange-100 text-orange-800'
+      }
+      return classes[brand] || 'bg-gray-100 text-gray-800'
+    }
+
+    // Computed properties
+    const paginationInfo = computed(() => {
+      const start = currentPage.value * pageSize.value + 1
+      const end = Math.min((currentPage.value + 1) * pageSize.value, totalElements.value)
+      return `${start}-${end} của ${totalElements.value} nhà cung cấp`
+    })
+
+    // Load data on mount
+    onMounted(() => {
+      loadSuppliers()
+    })
+
+    return {
+      // Data
+      loading,
+      suppliers,
+      currentPage,
+      totalPages,
+      totalElements,
+      pageSize,
       
-      console.log('Đã thêm nhà cung cấp:', newSupplier);
-    },
-    editSupplier(supplier) {
-      console.log('Chỉnh sửa nhà cung cấp:', supplier.name);
-    },
-    viewSupplierDetails(supplier) {
-      console.log('Xem chi tiết nhà cung cấp:', supplier.name);
+      // Filters
+      searchQuery,
+      selectedBrand,
+      selectedStatus,
+      
+      // Modals
+      showAddModal,
+      showEditModal,
+      selectedSupplier,
+      newSupplier,
+      
+      // Methods
+      loadSuppliers,
+      createSupplier,
+      updateSupplier,
+      deleteSupplier,
+      updateRating,
+      toggleStatus,
+      blacklistSupplier,
+      editSupplier,
+      viewSupplier,
+      applyFilters,
+      clearFilters,
+      changePage,
+      formatCurrency,
+      formatDate,
+      getStatusClass,
+      getStatusText,
+      getRatingStars,
+      getBrandClass,
+      
+      // Computed
+      paginationInfo
     }
   }
 }

@@ -22,9 +22,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Customer;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.CustomerService;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.CustomerService;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -206,6 +206,36 @@ public class CustomerController {
             long count = customerService.count();
             return ResponseEntity.ok(count);
         } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Lấy tất cả khách cha (parent_id = null)
+     * GET /api/customers/parents
+     */
+    @GetMapping("/parents")
+    public ResponseEntity<List<Customer>> getAllParents() {
+        try {
+            List<Customer> parents = customerService.findAllParents();
+            return ResponseEntity.ok(parents);
+        } catch (Exception e) {
+            log.error("Error getting parent customers: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Lấy danh sách khách con của một khách cha
+     * GET /api/customers/{parentId}/children
+     */
+    @GetMapping("/{parentId}/children")
+    public ResponseEntity<List<Customer>> getChildren(@PathVariable Long parentId) {
+        try {
+            List<Customer> children = customerService.findChildren(parentId);
+            return ResponseEntity.ok(children);
+        } catch (Exception e) {
+            log.error("Error getting children for parent {}: {}", parentId, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

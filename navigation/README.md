@@ -610,6 +610,15 @@
     * Khách lẻ (giá niêm yết)
     * Khách VIP (chiết khấu)
     * Khách đặc biệt - Chủ garage (giá markup)
+  - **Phân cấp khách hàng (Hierarchy):**
+    * Hệ thống hỗ trợ phân cấp khách hàng dạng cha-con:
+      - **Khách hàng cha**: Thường là chủ garage, đại lý, doanh nghiệp.
+      - **Khách hàng con**: Thợ, nhân viên, cá nhân thuộc garage/doanh nghiệp đó.
+    * Khi thợ (khách con) mua hàng:
+      - Có thể chọn ghi nợ/hóa đơn vào tài khoản của chủ garage (khách cha) hoặc vào chính thợ đó (khách con).
+      - Lịch sử mua hàng, công nợ có thể xem riêng từng thợ hoặc tổng hợp theo chủ garage.
+    * Cho phép chuyển đổi/ghép thợ vào chủ garage, hoặc tách ra thành khách hàng độc lập.
+  - ⚠️ **Lưu ý: Hệ thống KHÔNG yêu cầu phân cấp (hierarchy) khách hàng. Chỉ phân loại theo loại khách, không có quan hệ cha-con giữa các khách hàng.**
   - **Chính sách giá riêng**: 
     * Giá cố định theo từng khách
     * % markup tự động

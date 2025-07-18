@@ -13,9 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Customer;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Customer.CustomerStatus;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Customer.CustomerType;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.CustomerRepository;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.CustomerRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -297,6 +297,18 @@ public class CustomerService {
         BigDecimal totalDebt = customerRepository.getTotalDebt();
         
         return new CustomerStats(totalCustomers, activeCustomers, totalDebt);
+    }
+    
+    // Lấy danh sách khách con theo parentId
+    @Transactional(readOnly = true)
+    public List<Customer> findChildren(Long parentId) {
+        return customerRepository.findByParent_Id(parentId);
+    }
+
+    // Lấy tất cả khách cha (parent_id = null)
+    @Transactional(readOnly = true)
+    public List<Customer> findAllParents() {
+        return customerRepository.findByParentIsNull();
     }
     
     // Helper methods

@@ -186,211 +186,269 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { vehiclesApi } from '@/api'
 
 export default {
   name: 'Vehicles',
   setup() {
-    // Reactive data
+    const loading = ref(false)
+    const vehicles = ref([])
+    const currentPage = ref(0)
+    const totalPages = ref(0)
+    const totalElements = ref(0)
+    const pageSize = ref(10)
+
+    // Filters
     const searchQuery = ref('')
     const selectedBrand = ref('')
-    const selectedType = ref('')
+    const selectedYear = ref('')
+
+    // Modal states
     const showAddModal = ref(false)
-    
-    // Mock data
-    const vehicles = ref([
-      {
-        id: 1,
-        name: 'Hyundai HD65',
-        brand: 'Hyundai',
-        type: 'LIGHT_TRUCK',
-        year: 2023,
-        engine: '3.9L Diesel',
-        payload: 3500,
-        fuelType: 'DIESEL',
-        description: 'Xe tải nhẹ phổ biến, tiết kiệm nhiên liệu',
-        compatiblePartsCount: 156
-      },
-      {
-        id: 2,
-        name: 'Isuzu NPR',
-        brand: 'Isuzu',
-        type: 'MEDIUM_TRUCK',
-        year: 2023,
-        engine: '5.2L Diesel',
-        payload: 5500,
-        fuelType: 'DIESEL',
-        description: 'Xe tải trung bền bỉ, độ tin cậy cao',
-        compatiblePartsCount: 234
-      },
-      {
-        id: 3,
-        name: 'Thaco Forland FD1600',
-        brand: 'Thaco',
-        type: 'MEDIUM_TRUCK',
-        year: 2022,
-        engine: '4.0L Diesel',
-        payload: 7200,
-        fuelType: 'DIESEL',
-        description: 'Xe tải trung giá tốt, phù hợp vận chuyển trong thành phố',
-        compatiblePartsCount: 189
-      },
-      {
-        id: 4,
-        name: 'Dongfeng B180',
-        brand: 'Dongfeng',
-        type: 'HEAVY_TRUCK',
-        year: 2023,
-        engine: '9.0L Diesel',
-        payload: 18000,
-        fuelType: 'DIESEL',
-        description: 'Xe tải nặng cho vận chuyển đường dài',
-        compatiblePartsCount: 312
-      },
-      {
-        id: 5,
-        name: 'Hino 300 Series',
-        brand: 'Hino',
-        type: 'LIGHT_TRUCK',
-        year: 2023,
-        engine: '4.0L Diesel',
-        payload: 4200,
-        fuelType: 'DIESEL',
-        description: 'Dòng xe tải nhẹ chất lượng Nhật Bản',
-        compatiblePartsCount: 198
-      },
-      {
-        id: 6,
-        name: 'Mitsubishi Fuso Canter',
-        brand: 'Mitsubishi',
-        type: 'LIGHT_TRUCK',
-        year: 2022,
-        engine: '3.0L Diesel',
-        payload: 3000,
-        fuelType: 'DIESEL',
-        description: 'Xe tải nhẹ compact, linh hoạt trong thành phố',
-        compatiblePartsCount: 145
-      }
-    ])
+    const showEditModal = ref(false)
+    const selectedVehicle = ref(null)
 
-    // Computed properties
-    const filteredVehicles = computed(() => {
-      let filtered = vehicles.value
+    // New vehicle form
+    const newVehicle = ref({
+      name: '',
+      code: '',
+      brand: '',
+      model: '',
+      engine: '',
+      year: '',
+      description: '',
+      status: 'ACTIVE'
+    })
 
-      if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase()
-        filtered = filtered.filter(vehicle => 
-          vehicle.name.toLowerCase().includes(query) ||
-          vehicle.brand.toLowerCase().includes(query)
+    // Load vehicles
+    const loadVehicles = async () => {
+      try {
+        loading.value = true
+        const response = await vehiclesApi.getAll(
+          currentPage.value,
+          pageSize.value,
+          searchQuery.value,
+          selectedBrand.value || null,
+          selectedYear.value || null
         )
-      }
-
-      if (selectedBrand.value) {
-        filtered = filtered.filter(vehicle => vehicle.brand === selectedBrand.value)
-      }
-
-      if (selectedType.value) {
-        filtered = filtered.filter(vehicle => vehicle.type === selectedType.value)
-      }
-
-      return filtered
-    })
-
-    const brands = computed(() => {
-      return [...new Set(vehicles.value.map(v => v.brand))].sort()
-    })
-
-    const popularBrands = computed(() => {
-      const brandCounts = vehicles.value.reduce((acc, vehicle) => {
-        acc[vehicle.brand] = (acc[vehicle.brand] || 0) + 1
-        return acc
-      }, {})
-
-      return Object.entries(brandCounts)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 6)
-    })
-
-    // Methods
-    const getTypeClass = (type) => {
-      switch (type) {
-        case 'LIGHT_TRUCK': return 'bg-green-100 text-green-800'
-        case 'MEDIUM_TRUCK': return 'bg-blue-100 text-blue-800'
-        case 'HEAVY_TRUCK': return 'bg-red-100 text-red-800'
-        case 'TRAILER': return 'bg-purple-100 text-purple-800'
-        default: return 'bg-gray-100 text-gray-800'
+        
+        vehicles.value = response.data.content || []
+        totalPages.value = response.data.totalPages || 0
+        totalElements.value = response.data.totalElements || 0
+      } catch (error) {
+        console.error('Error loading vehicles:', error)
+      } finally {
+        loading.value = false
       }
     }
 
-    const getTypeText = (type) => {
-      switch (type) {
-        case 'LIGHT_TRUCK': return 'Tải nhẹ'
-        case 'MEDIUM_TRUCK': return 'Tải trung'
-        case 'HEAVY_TRUCK': return 'Tải nặng'
-        case 'TRAILER': return 'Xe kéo'
-        default: return 'Không xác định'
+    // Create new vehicle
+    const createVehicle = async () => {
+      try {
+        await vehiclesApi.create(newVehicle.value)
+        showAddModal.value = false
+        resetNewVehicle()
+        loadVehicles()
+      } catch (error) {
+        console.error('Error creating vehicle:', error)
       }
     }
 
-    const getFuelTypeText = (fuelType) => {
-      switch (fuelType) {
-        case 'DIESEL': return 'Dầu diesel'
-        case 'GASOLINE': return 'Xăng'
-        case 'ELECTRIC': return 'Điện'
-        case 'HYBRID': return 'Hybrid'
-        default: return 'Không xác định'
+    // Update vehicle
+    const updateVehicle = async () => {
+      try {
+        await vehiclesApi.update(selectedVehicle.value.id, selectedVehicle.value)
+        showEditModal.value = false
+        selectedVehicle.value = null
+        loadVehicles()
+      } catch (error) {
+        console.error('Error updating vehicle:', error)
       }
     }
 
+    // Delete vehicle
+    const deleteVehicle = async (vehicleId) => {
+      if (confirm('Bạn có chắc chắn muốn xóa mẫu xe này?')) {
+        try {
+          await vehiclesApi.delete(vehicleId)
+          loadVehicles()
+        } catch (error) {
+          console.error('Error deleting vehicle:', error)
+        }
+      }
+    }
+
+    // Edit vehicle
+    const editVehicle = (vehicle) => {
+      selectedVehicle.value = { ...vehicle }
+      showEditModal.value = true
+    }
+
+    // View vehicle details
+    const viewVehicle = (vehicle) => {
+      selectedVehicle.value = { ...vehicle }
+      // Có thể mở modal chi tiết hoặc navigate đến trang chi tiết
+    }
+
+    // Get compatible products
+    const getCompatibleProducts = async (vehicleId) => {
+      try {
+        const response = await vehiclesApi.getCompatibleProducts(vehicleId)
+        return response.data || []
+      } catch (error) {
+        console.error('Error getting compatible products:', error)
+        return []
+      }
+    }
+
+    // Suggest products for vehicle
+    const suggestProducts = async (vehicleId, keyword) => {
+      try {
+        const response = await vehiclesApi.suggest(vehicleId, keyword)
+        return response.data || []
+      } catch (error) {
+        console.error('Error suggesting products:', error)
+        return []
+      }
+    }
+
+    // Reset new vehicle form
+    const resetNewVehicle = () => {
+      newVehicle.value = {
+        name: '',
+        code: '',
+        brand: '',
+        model: '',
+        engine: '',
+        year: '',
+        description: '',
+        status: 'ACTIVE'
+      }
+    }
+
+    // Apply filters
     const applyFilters = () => {
-      console.log('Applying filters...')
+      currentPage.value = 0
+      loadVehicles()
     }
 
+    // Clear filters
     const clearFilters = () => {
       searchQuery.value = ''
       selectedBrand.value = ''
-      selectedType.value = ''
+      selectedYear.value = ''
+      currentPage.value = 0
+      loadVehicles()
     }
 
-    const viewParts = (vehicle) => {
-      console.log('View compatible parts for:', vehicle)
-      // Logic to view compatible parts
+    // Change page
+    const changePage = (page) => {
+      currentPage.value = page
+      loadVehicles()
     }
 
-    const editVehicle = (vehicle) => {
-      console.log('Edit vehicle:', vehicle)
-      // Logic to edit vehicle
+    // Format date
+    const formatDate = (dateString) => {
+      return new Date(dateString).toLocaleDateString('vi-VN')
     }
 
-    const filterByBrand = (brandName) => {
-      selectedBrand.value = brandName
-      // Scroll to top
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Get status class
+    const getStatusClass = (status) => {
+      const classes = {
+        'ACTIVE': 'bg-green-100 text-green-800',
+        'INACTIVE': 'bg-gray-100 text-gray-800'
+      }
+      return classes[status] || 'bg-gray-100 text-gray-800'
     }
 
-    // Lifecycle
+    // Get status text
+    const getStatusText = (status) => {
+      const texts = {
+        'ACTIVE': 'Hoạt động',
+        'INACTIVE': 'Không hoạt động'
+      }
+      return texts[status] || status
+    }
+
+    // Get brand class
+    const getBrandClass = (brand) => {
+      const classes = {
+        'HINO': 'bg-blue-100 text-blue-800',
+        'HYUNDAI': 'bg-green-100 text-green-800',
+        'THACO': 'bg-purple-100 text-purple-800',
+        'DONGFENG': 'bg-orange-100 text-orange-800',
+        'ISUZU': 'bg-red-100 text-red-800',
+        'MITSUBISHI': 'bg-indigo-100 text-indigo-800'
+      }
+      return classes[brand] || 'bg-gray-100 text-gray-800'
+    }
+
+    // Get brand text
+    const getBrandText = (brand) => {
+      const texts = {
+        'HINO': 'Hino',
+        'HYUNDAI': 'Hyundai',
+        'THACO': 'Thaco',
+        'DONGFENG': 'Dongfeng',
+        'ISUZU': 'Isuzu',
+        'MITSUBISHI': 'Mitsubishi'
+      }
+      return texts[brand] || brand
+    }
+
+    // Computed properties
+    const paginationInfo = computed(() => {
+      const start = currentPage.value * pageSize.value + 1
+      const end = Math.min((currentPage.value + 1) * pageSize.value, totalElements.value)
+      return `${start}-${end} của ${totalElements.value} mẫu xe`
+    })
+
+    // Load data on mount
     onMounted(() => {
-      console.log('Vehicles component mounted')
+      loadVehicles()
     })
 
     return {
+      // Data
+      loading,
+      vehicles,
+      currentPage,
+      totalPages,
+      totalElements,
+      pageSize,
+      
+      // Filters
       searchQuery,
       selectedBrand,
-      selectedType,
+      selectedYear,
+      
+      // Modals
       showAddModal,
-      vehicles,
-      filteredVehicles,
-      brands,
-      popularBrands,
-      getTypeClass,
-      getTypeText,
-      getFuelTypeText,
+      showEditModal,
+      selectedVehicle,
+      newVehicle,
+      
+      // Methods
+      loadVehicles,
+      createVehicle,
+      updateVehicle,
+      deleteVehicle,
+      editVehicle,
+      viewVehicle,
+      getCompatibleProducts,
+      suggestProducts,
       applyFilters,
       clearFilters,
-      viewParts,
-      editVehicle,
-      filterByBrand
+      changePage,
+      formatDate,
+      getStatusClass,
+      getStatusText,
+      getBrandClass,
+      getBrandText,
+      
+      // Computed
+      paginationInfo
     }
   }
 }

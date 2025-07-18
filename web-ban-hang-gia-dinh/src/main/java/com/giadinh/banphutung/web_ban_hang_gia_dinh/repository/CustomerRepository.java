@@ -83,4 +83,10 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     // Tổng công nợ của tất cả customer
     @Query("SELECT SUM(c.currentDebt) FROM Customer c")
     BigDecimal getTotalDebt();
+
+    // Lấy danh sách khách con theo parent
+    List<Customer> findByParent_Id(Long parentId);
+
+    // Lấy tất cả khách cha (parent_id = null)
+    List<Customer> findByParentIsNull();
 }

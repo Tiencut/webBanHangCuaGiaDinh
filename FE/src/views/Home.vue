@@ -6,14 +6,14 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600 mb-1">Tổng doanh thu</p>
-            <p class="text-2xl font-bold text-blue-600">₫125.5M</p>
-            <p class="text-xs text-green-600 mt-1">
+            <p class="text-2xl font-bold text-blue-600">{{ formatCurrency(stats.totalRevenue) }}</p>
+            <p class="text-xs text-green-600 mt-1" v-if="stats.revenueGrowth > 0">
               <span class="inline-flex items-center">
                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M13 7h8m0 0v8m0-8l-8 8-4-4-4 4" />
                 </svg>
-                +12.5%
+                +{{ stats.revenueGrowth }}%
               </span>
               so với tháng trước
             </p>
@@ -31,14 +31,14 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600 mb-1">Đơn hàng</p>
-            <p class="text-2xl font-bold text-gray-900">1,235</p>
-            <p class="text-xs text-green-600 mt-1">
+            <p class="text-2xl font-bold text-gray-900">{{ stats.totalOrders }}</p>
+            <p class="text-xs text-green-600 mt-1" v-if="stats.orderGrowth > 0">
               <span class="inline-flex items-center">
                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M13 7h8m0 0v8m0-8l-8 8-4-4-4 4" />
                 </svg>
-                +8.2%
+                +{{ stats.orderGrowth }}%
               </span>
               so với tháng trước
             </p>
@@ -56,7 +56,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600 mb-1">Sản phẩm</p>
-            <p class="text-2xl font-bold text-gray-900">856</p>
+            <p class="text-2xl font-bold text-gray-900">{{ stats.totalProducts }}</p>
             <p class="text-xs text-gray-500 mt-1">Tổng số mặt hàng</p>
           </div>
           <div class="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
@@ -72,14 +72,14 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600 mb-1">Khách hàng</p>
-            <p class="text-2xl font-bold text-gray-900">342</p>
-            <p class="text-xs text-blue-600 mt-1">
+            <p class="text-2xl font-bold text-gray-900">{{ stats.totalCustomers }}</p>
+            <p class="text-xs text-blue-600 mt-1" v-if="stats.customerGrowth > 0">
               <span class="inline-flex items-center">
                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M13 7h8m0 0v8m0-8l-8 8-4-4-4 4" />
                 </svg>
-                +5.1%
+                +{{ stats.customerGrowth }}%
               </span>
               khách hàng mới
             </p>
@@ -157,7 +157,20 @@
           </div>
         </div>
         <div class="p-6">
-          <div class="space-y-4">
+          <div v-if="loading" class="text-center py-8">
+            <svg class="mx-auto h-8 w-8 text-gray-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="mt-2 text-sm text-gray-500">Đang tải đơn hàng...</p>
+          </div>
+          <div v-else-if="recentOrders.length === 0" class="text-center py-8">
+            <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p class="mt-2 text-sm text-gray-500">Chưa có đơn hàng nào</p>
+          </div>
+          <div v-else class="space-y-4">
             <div v-for="order in recentOrders" :key="order.id"
               class="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
               <div class="flex items-center space-x-4">
@@ -197,14 +210,26 @@
           </div>
         </div>
         <div class="p-6">
-          <div class="space-y-3">
+          <div v-if="loadingStock" class="text-center py-8">
+            <svg class="mx-auto h-8 w-8 text-gray-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="mt-2 text-sm text-gray-500">Đang tải dữ liệu tồn kho...</p>
+          </div>
+          <div v-else-if="lowStockProducts.length === 0" class="text-center py-8">
+            <svg class="mx-auto h-8 w-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="mt-2 text-sm text-gray-500">Tất cả sản phẩm đều có đủ tồn kho</p>
+          </div>
+          <div v-else class="space-y-3">
             <div v-for="product in lowStockProducts" :key="product.id"
               class="flex items-center justify-between p-3 border border-red-100 rounded-lg bg-red-50">
               <div class="flex items-center space-x-3">
                 <div class="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center">
                   <svg class="h-4 w-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
                 </div>
                 <div>
@@ -213,94 +238,80 @@
                 </div>
               </div>
               <div class="text-right">
-                <div class="text-sm font-medium text-red-600">Còn {{ product.quantity }} cái</div>
-                <div class="text-xs text-gray-500">Tối thiểu: {{ product.minQuantity }}</div>
+                <div class="text-sm font-medium text-red-600">{{ product.stock }} còn lại</div>
+                <div class="text-xs text-gray-500">Cần nhập thêm</div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script>
 import { ref, onMounted } from 'vue'
+import { ordersApi, productsAPI } from '@/api'
 
 export default {
   name: 'Home',
   setup() {
-    // Mock data
-    const recentOrders = ref([
-      {
-        id: 1,
-        orderNumber: 'ORD001',
-        customerName: 'Nguyễn Văn An',
-        status: 'PENDING',
-        totalAmount: 1500000,
-        createdAt: '2024-01-15'
-      },
-      {
-        id: 2,
-        orderNumber: 'ORD002',
-        customerName: 'Công ty TNHH Vận tải XYZ',
-        status: 'CONFIRMED',
-        totalAmount: 12000000,
-        createdAt: '2024-01-14'
-      },
-      {
-        id: 3,
-        orderNumber: 'ORD003',
-        customerName: 'Trần Thị Bình',
-        status: 'DELIVERED',
-        totalAmount: 450000,
-        createdAt: '2024-01-13'
-      }
-    ])
+    const loading = ref(false)
+    const loadingStock = ref(false)
+    const recentOrders = ref([])
+    const lowStockProducts = ref([])
+    const stats = ref({
+      totalRevenue: 0,
+      revenueGrowth: 0,
+      totalOrders: 0,
+      orderGrowth: 0,
+      totalProducts: 0,
+      totalCustomers: 0,
+      customerGrowth: 0
+    })
 
-    const lowStockProducts = ref([
-      {
-        id: 1,
-        name: 'Lọc dầu động cơ',
-        sku: 'OIL-FILTER-001',
-        quantity: 3,
-        minQuantity: 10
-      },
-      {
-        id: 2,
-        name: 'Má phanh trước',
-        sku: 'BRAKE-PAD-002',
-        quantity: 1,
-        minQuantity: 5
-      }
-    ])
+    // Load dashboard data
+    const loadDashboardData = async () => {
+      try {
+        loading.value = true
+        loadingStock.value = true
 
-    // Methods
-    const getStatusClass = (status) => {
-      switch (status) {
-        case 'PENDING': return 'bg-yellow-100 text-yellow-800'
-        case 'CONFIRMED': return 'bg-blue-100 text-blue-800'
-        case 'PROCESSING': return 'bg-purple-100 text-purple-800'
-        case 'SHIPPING': return 'bg-indigo-100 text-indigo-800'
-        case 'DELIVERED': return 'bg-green-100 text-green-800'
-        case 'CANCELLED': return 'bg-red-100 text-red-800'
-        default: return 'bg-gray-100 text-gray-800'
+        // Load recent orders
+        const ordersResponse = await ordersApi.getAll(0, 5)
+        recentOrders.value = ordersResponse.data.content || []
+
+        // Load order stats
+        const statsResponse = await ordersApi.getOrderStats()
+        if (statsResponse.data) {
+          stats.value = {
+            ...stats.value,
+            totalOrders: statsResponse.data.totalOrders || 0,
+            orderGrowth: statsResponse.data.orderGrowth || 0,
+            totalRevenue: statsResponse.data.totalRevenue || 0,
+            revenueGrowth: statsResponse.data.revenueGrowth || 0
+          }
+        }
+
+        // Load low stock products
+        const productsResponse = await productsAPI.getProducts(0, 10, '', null, null)
+        lowStockProducts.value = (productsResponse.data.content || [])
+          .filter(product => product.stock < 10) // Sản phẩm có tồn kho < 10
+          .slice(0, 5) // Chỉ lấy 5 sản phẩm đầu
+
+        // Mock data cho stats còn lại (sẽ thay bằng API thực tế)
+        stats.value.totalProducts = productsResponse.data.totalElements || 0
+        stats.value.totalCustomers = 342 // Mock data
+        stats.value.customerGrowth = 5.1 // Mock data
+
+      } catch (error) {
+        console.error('Error loading dashboard data:', error)
+      } finally {
+        loading.value = false
+        loadingStock.value = false
       }
     }
 
-    const getStatusText = (status) => {
-      switch (status) {
-        case 'PENDING': return 'Chờ xử lý'
-        case 'CONFIRMED': return 'Đã xác nhận'
-        case 'PROCESSING': return 'Đang xử lý'
-        case 'SHIPPING': return 'Đang giao'
-        case 'DELIVERED': return 'Đã giao'
-        case 'CANCELLED': return 'Đã hủy'
-        default: return 'Không xác định'
-      }
-    }
-
+    // Format currency
     const formatCurrency = (amount) => {
       return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
@@ -308,21 +319,51 @@ export default {
       }).format(amount)
     }
 
-    const formatDate = (date) => {
-      return new Date(date).toLocaleDateString('vi-VN')
+    // Format date
+    const formatDate = (dateString) => {
+      return new Date(dateString).toLocaleDateString('vi-VN')
+    }
+
+    // Get status class
+    const getStatusClass = (status) => {
+      const classes = {
+        'PENDING': 'bg-yellow-100 text-yellow-800',
+        'CONFIRMED': 'bg-blue-100 text-blue-800',
+        'PROCESSING': 'bg-purple-100 text-purple-800',
+        'SHIPPED': 'bg-indigo-100 text-indigo-800',
+        'DELIVERED': 'bg-green-100 text-green-800',
+        'CANCELLED': 'bg-red-100 text-red-800'
+      }
+      return classes[status] || 'bg-gray-100 text-gray-800'
+    }
+
+    // Get status text
+    const getStatusText = (status) => {
+      const texts = {
+        'PENDING': 'Chờ xác nhận',
+        'CONFIRMED': 'Đã xác nhận',
+        'PROCESSING': 'Đang xử lý',
+        'SHIPPED': 'Đã giao hàng',
+        'DELIVERED': 'Đã nhận',
+        'CANCELLED': 'Đã hủy'
+      }
+      return texts[status] || status
     }
 
     onMounted(() => {
-      console.log('Home component mounted')
+      loadDashboardData()
     })
 
     return {
+      loading,
+      loadingStock,
       recentOrders,
       lowStockProducts,
-      getStatusClass,
-      getStatusText,
+      stats,
       formatCurrency,
-      formatDate
+      formatDate,
+      getStatusClass,
+      getStatusText
     }
   }
 }

@@ -4,7 +4,7 @@
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-gray-800">Quản lý đơn hàng</h1>
       <button 
-        @click="showCreateModal = true"
+        @click="showAddModal = true"
         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
       >
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,7 +119,7 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Từ ngày</label>
           <input 
-            v-model="fromDate"
+            v-model="dateRange.startDate"
             type="date"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
@@ -127,7 +127,7 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Đến ngày</label>
           <input 
-            v-model="toDate"
+            v-model="dateRange.endDate"
             type="date"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
@@ -152,7 +152,7 @@
     <!-- Orders List -->
     <div class="space-y-4">
       <div 
-        v-for="order in filteredOrders" 
+        v-for="order in orders" 
         :key="order.id"
         class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
       >
@@ -167,7 +167,7 @@
             </div>
             <div class="text-right">
               <div class="text-lg font-semibold text-gray-900">{{ formatCurrency(order.totalAmount) }}</div>
-              <div class="text-sm text-gray-500">{{ formatDateTime(order.createdAt) }}</div>
+              <div class="text-sm text-gray-500">{{ formatDate(order.createdAt) }}</div>
             </div>
           </div>
 
@@ -224,14 +224,14 @@
             </button>
             <button 
               v-if="order.status === 'PENDING'"
-              @click="confirmOrder(order.id)"
+              @click="updateOrderStatus(order.id, 'CONFIRMED')"
               class="bg-green-50 text-green-600 hover:bg-green-100 px-4 py-2 rounded-md text-sm font-medium"
             >
               Xác nhận
             </button>
             <button 
               v-if="['PENDING', 'CONFIRMED'].includes(order.status)"
-              @click="cancelOrder(order.id)"
+              @click="updateOrderStatus(order.id, 'CANCELLED')"
               class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-md text-sm font-medium"
             >
               Hủy đơn
@@ -248,7 +248,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-if="filteredOrders.length === 0" class="text-center py-12">
+    <div v-if="orders.length === 0" class="text-center py-12">
       <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
       </svg>
@@ -257,7 +257,7 @@
     </div>
 
     <!-- Load More -->
-    <div class="text-center mt-6" v-if="filteredOrders.length > 0">
+    <div class="text-center mt-6" v-if="orders.length > 0">
       <button class="bg-gray-50 text-gray-600 hover:bg-gray-100 px-6 py-2 rounded-md text-sm font-medium">
         Tải thêm đơn hàng
       </button>
@@ -266,138 +266,169 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { ordersApi, customersApi } from '@/api'
 
 export default {
   name: 'Orders',
   setup() {
-    // Reactive data
+    const loading = ref(false)
+    const orders = ref([])
+    const customers = ref([])
+    const currentPage = ref(0)
+    const totalPages = ref(0)
+    const totalElements = ref(0)
+    const pageSize = ref(10)
+
+    // Filters
     const searchQuery = ref('')
     const selectedStatus = ref('')
-    const fromDate = ref('')
-    const toDate = ref('')
-    const showCreateModal = ref(false)
-    
-    // Mock data
-    const orders = ref([
-      {
-        id: 1,
-        orderNumber: 'ORD001',
-        customerName: 'Nguyễn Văn An',
-        customerPhone: '0901234567',
-        status: 'PENDING',
-        totalAmount: 1500000,
-        createdAt: '2024-01-15T10:30:00',
-        deliveryAddress: '123 Đường ABC, Quận 1, TP.HCM',
-        deliveryNotes: 'Giao hàng giờ hành chính',
-        items: [
-          { id: 1, productName: 'Lọc dầu động cơ', quantity: 2, subtotal: 300000 },
-          { id: 2, productName: 'Má phanh trước', quantity: 1, subtotal: 350000 },
-          { id: 3, productName: 'Dầu nhớt 15W40', quantity: 4, subtotal: 850000 }
-        ]
-      },
-      {
-        id: 2,
-        orderNumber: 'ORD002',
-        customerName: 'Công ty TNHH Vận tải XYZ',
-        customerPhone: '0902345678',
-        status: 'CONFIRMED',
-        totalAmount: 12000000,
-        createdAt: '2024-01-14T14:20:00',
-        deliveryAddress: '456 Đường DEF, Quận Bình Thạnh, TP.HCM',
-        deliveryNotes: null,
-        items: [
-          { id: 4, productName: 'Lốp xe 900R20', quantity: 4, subtotal: 10000000 },
-          { id: 5, productName: 'Vỏ bánh xe', quantity: 4, subtotal: 2000000 }
-        ]
-      },
-      {
-        id: 3,
-        orderNumber: 'ORD003',
-        customerName: 'Trần Thị Bình',
-        customerPhone: '0903456789',
-        status: 'DELIVERED',
-        totalAmount: 450000,
-        createdAt: '2024-01-13T09:15:00',
-        deliveryAddress: '789 Đường GHI, Quận 7, TP.HCM',
-        deliveryNotes: 'Gọi trước khi giao',
-        items: [
-          { id: 6, productName: 'Lọc gió', quantity: 1, subtotal: 200000 },
-          { id: 7, productName: 'Bugi', quantity: 4, subtotal: 250000 }
-        ]
-      }
-    ])
-
-    // Computed properties
-    const filteredOrders = computed(() => {
-      let filtered = orders.value
-
-      if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase()
-        filtered = filtered.filter(order => 
-          order.orderNumber.toLowerCase().includes(query) ||
-          order.customerName.toLowerCase().includes(query) ||
-          order.customerPhone.includes(query)
-        )
-      }
-
-      if (selectedStatus.value) {
-        filtered = filtered.filter(order => order.status === selectedStatus.value)
-      }
-
-      if (fromDate.value) {
-        filtered = filtered.filter(order => 
-          new Date(order.createdAt) >= new Date(fromDate.value)
-        )
-      }
-
-      if (toDate.value) {
-        filtered = filtered.filter(order => 
-          new Date(order.createdAt) <= new Date(toDate.value)
-        )
-      }
-
-      return filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    const selectedCustomer = ref('')
+    const dateRange = ref({
+      startDate: '',
+      endDate: ''
     })
 
-    const totalOrders = computed(() => orders.value.length)
-    const pendingOrders = computed(() => 
-      orders.value.filter(order => order.status === 'PENDING').length
-    )
-    const completedOrders = computed(() => 
-      orders.value.filter(order => order.status === 'DELIVERED').length
-    )
-    const monthlyRevenue = computed(() => 
-      orders.value
-        .filter(order => order.status === 'DELIVERED')
-        .reduce((sum, order) => sum + order.totalAmount, 0)
-    )
+    // Modal states
+    const showAddModal = ref(false)
+    const showEditModal = ref(false)
+    const selectedOrder = ref(null)
 
-    // Methods
-    const getStatusClass = (status) => {
-      switch (status) {
-        case 'PENDING': return 'bg-yellow-100 text-yellow-800'
-        case 'CONFIRMED': return 'bg-blue-100 text-blue-800'
-        case 'PROCESSING': return 'bg-purple-100 text-purple-800'
-        case 'SHIPPING': return 'bg-indigo-100 text-indigo-800'
-        case 'DELIVERED': return 'bg-green-100 text-green-800'
-        case 'CANCELLED': return 'bg-red-100 text-red-800'
-        default: return 'bg-gray-100 text-gray-800'
+    // New order form
+    const newOrder = ref({
+      customerId: '',
+      items: [],
+      totalAmount: 0,
+      status: 'PENDING',
+      notes: '',
+      deliveryMethod: 'SELF_PICKUP'
+    })
+
+    // Load orders
+    const loadOrders = async () => {
+      try {
+        loading.value = true
+        const response = await ordersApi.getAll(
+          currentPage.value,
+          pageSize.value,
+          searchQuery.value,
+          selectedStatus.value || null,
+          selectedCustomer.value || null
+        )
+        
+        orders.value = response.data.content || []
+        totalPages.value = response.data.totalPages || 0
+        totalElements.value = response.data.totalElements || 0
+      } catch (error) {
+        console.error('Error loading orders:', error)
+      } finally {
+        loading.value = false
       }
     }
 
-    const getStatusText = (status) => {
-      switch (status) {
-        case 'PENDING': return 'Chờ xử lý'
-        case 'CONFIRMED': return 'Đã xác nhận'
-        case 'PROCESSING': return 'Đang xử lý'
-        case 'SHIPPING': return 'Đang giao'
-        case 'DELIVERED': return 'Đã giao'
-        case 'CANCELLED': return 'Đã hủy'
-        default: return 'Không xác định'
+    // Load customers for dropdown
+    const loadCustomers = async () => {
+      try {
+        const response = await customersApi.getAll(0, 1000)
+        customers.value = response.data.content || []
+      } catch (error) {
+        console.error('Error loading customers:', error)
       }
     }
 
+    // Create new order
+    const createOrder = async () => {
+      try {
+        await ordersApi.create(newOrder.value)
+        showAddModal.value = false
+        resetNewOrder()
+        loadOrders()
+      } catch (error) {
+        console.error('Error creating order:', error)
+      }
+    }
+
+    // Update order
+    const updateOrder = async () => {
+      try {
+        await ordersApi.update(selectedOrder.value.id, selectedOrder.value)
+        showEditModal.value = false
+        selectedOrder.value = null
+        loadOrders()
+      } catch (error) {
+        console.error('Error updating order:', error)
+      }
+    }
+
+    // Delete order
+    const deleteOrder = async (orderId) => {
+      if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) {
+        try {
+          await ordersApi.delete(orderId)
+          loadOrders()
+        } catch (error) {
+          console.error('Error deleting order:', error)
+        }
+      }
+    }
+
+    // Update order status
+    const updateOrderStatus = async (orderId, newStatus) => {
+      try {
+        await ordersApi.updateOrderStatus(orderId, newStatus)
+        loadOrders()
+      } catch (error) {
+        console.error('Error updating order status:', error)
+      }
+    }
+
+    // Edit order
+    const editOrder = (order) => {
+      selectedOrder.value = { ...order }
+      showEditModal.value = true
+    }
+
+    // View order details
+    const viewOrder = (order) => {
+      selectedOrder.value = { ...order }
+      // Có thể mở modal chi tiết hoặc navigate đến trang chi tiết
+    }
+
+    // Reset new order form
+    const resetNewOrder = () => {
+      newOrder.value = {
+        customerId: '',
+        items: [],
+        totalAmount: 0,
+        status: 'PENDING',
+        notes: '',
+        deliveryMethod: 'SELF_PICKUP'
+      }
+    }
+
+    // Apply filters
+    const applyFilters = () => {
+      currentPage.value = 0
+      loadOrders()
+    }
+
+    // Clear filters
+    const clearFilters = () => {
+      searchQuery.value = ''
+      selectedStatus.value = ''
+      selectedCustomer.value = ''
+      dateRange.value = { startDate: '', endDate: '' }
+      currentPage.value = 0
+      loadOrders()
+    }
+
+    // Change page
+    const changePage = (page) => {
+      currentPage.value = page
+      loadOrders()
+    }
+
+    // Format currency
     const formatCurrency = (amount) => {
       return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
@@ -405,70 +436,110 @@ export default {
       }).format(amount)
     }
 
-    const formatDateTime = (dateTime) => {
-      return new Date(dateTime).toLocaleString('vi-VN')
+    // Format date
+    const formatDate = (dateString) => {
+      return new Date(dateString).toLocaleDateString('vi-VN')
     }
 
-    const applyFilters = () => {
-      console.log('Applying filters...')
-    }
-
-    const clearFilters = () => {
-      searchQuery.value = ''
-      selectedStatus.value = ''
-      fromDate.value = ''
-      toDate.value = ''
-    }
-
-    const viewOrder = (order) => {
-      console.log('View order:', order)
-      // Logic to view order details
-    }
-
-    const confirmOrder = (orderId) => {
-      console.log('Confirm order:', orderId)
-      // Logic to confirm order
-    }
-
-    const cancelOrder = (orderId) => {
-      if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
-        console.log('Cancel order:', orderId)
-        // Logic to cancel order
+    // Get status class
+    const getStatusClass = (status) => {
+      const classes = {
+        'PENDING': 'bg-yellow-100 text-yellow-800',
+        'CONFIRMED': 'bg-blue-100 text-blue-800',
+        'PROCESSING': 'bg-purple-100 text-purple-800',
+        'SHIPPED': 'bg-indigo-100 text-indigo-800',
+        'DELIVERED': 'bg-green-100 text-green-800',
+        'CANCELLED': 'bg-red-100 text-red-800'
       }
+      return classes[status] || 'bg-gray-100 text-gray-800'
     }
 
-    const printOrder = (order) => {
-      console.log('Print order:', order)
-      // Logic to print order
+    // Get status text
+    const getStatusText = (status) => {
+      const texts = {
+        'PENDING': 'Chờ xác nhận',
+        'CONFIRMED': 'Đã xác nhận',
+        'PROCESSING': 'Đang xử lý',
+        'SHIPPED': 'Đã giao hàng',
+        'DELIVERED': 'Đã nhận',
+        'CANCELLED': 'Đã hủy'
+      }
+      return texts[status] || status
     }
 
-    // Lifecycle
+    // Get delivery method text
+    const getDeliveryMethodText = (method) => {
+      const texts = {
+        'SELF_PICKUP': 'Tự đến lấy',
+        'MOTORBIKE': 'Xe ôm',
+        'BUS': 'Xe khách',
+        'TRUCK': 'Xe tải',
+        'EXPRESS': 'Chuyển phát nhanh'
+      }
+      return texts[method] || method
+    }
+
+    // Get customer name by ID
+    const getCustomerName = (customerId) => {
+      const customer = customers.value.find(c => c.id === customerId)
+      return customer ? customer.name : 'N/A'
+    }
+
+    // Computed properties
+    const paginationInfo = computed(() => {
+      const start = currentPage.value * pageSize.value + 1
+      const end = Math.min((currentPage.value + 1) * pageSize.value, totalElements.value)
+      return `${start}-${end} của ${totalElements.value} đơn hàng`
+    })
+
+    // Load data on mount
     onMounted(() => {
-      console.log('Orders component mounted')
+      loadOrders()
+      loadCustomers()
     })
 
     return {
+      // Data
+      loading,
+      orders,
+      customers,
+      currentPage,
+      totalPages,
+      totalElements,
+      pageSize,
+      
+      // Filters
       searchQuery,
       selectedStatus,
-      fromDate,
-      toDate,
-      showCreateModal,
-      orders,
-      filteredOrders,
-      totalOrders,
-      pendingOrders,
-      completedOrders,
-      monthlyRevenue,
-      getStatusClass,
-      getStatusText,
-      formatCurrency,
-      formatDateTime,
+      selectedCustomer,
+      dateRange,
+      
+      // Modals
+      showAddModal,
+      showEditModal,
+      selectedOrder,
+      newOrder,
+      
+      // Methods
+      loadOrders,
+      createOrder,
+      updateOrder,
+      deleteOrder,
+      updateOrderStatus,
+      editOrder,
+      viewOrder,
       applyFilters,
       clearFilters,
-      viewOrder,
-      confirmOrder,
-      cancelOrder,
-      printOrder
+      changePage,
+      formatCurrency,
+      formatDate,
+      getStatusClass,
+      getStatusText,
+      getDeliveryMethodText,
+      getCustomerName,
+      
+      // Computed
+      paginationInfo
     }
   }
 }
