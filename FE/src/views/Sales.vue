@@ -253,222 +253,214 @@
 </template>
 
 <script>
+import { ref, computed, onMounted } from 'vue'
+import { productsAPI, customersApi, ordersApi } from '@/api'
+
 export default {
   name: 'Sales',
-  data() {
-    return {
-      // Stats
-      todayRevenue: 15500000,
-      todayOrders: 23,
-      topSellingItems: 156,
-      newCustomers: 8,
-      
-      // Product filters
-      productSearch: '',
-      categoryFilter: '',
-      
-      // Cart
-      cartItems: [],
-      selectedCustomer: null,
-      paymentMethod: 'cash',
-      discount: 0,
-      
-      // Modals
-      showAddCustomerModal: false,
-      
-      // Data
-      categories: [
-        'Hệ thống phanh',
-        'Hệ thống lọc',
-        'Điện xe',
-        'Truyền động',
-        'Lốp xe',
-        'Đèn xe'
-      ],
-      
-      products: [
-        {
-          id: 1,
-          name: 'Phanh đĩa Hyundai',
-          category: 'Hệ thống phanh',
-          price: 850000,
-          stock: 15
-        },
-        {
-          id: 2,
-          name: 'Lọc dầu động cơ',
-          category: 'Hệ thống lọc',
-          price: 250000,
-          stock: 32
-        },
-        {
-          id: 3,
-          name: 'Bình acquy 12V',
-          category: 'Điện xe',
-          price: 1200000,
-          stock: 8
-        },
-        {
-          id: 4,
-          name: 'Dây curoa',
-          category: 'Truyền động',
-          price: 180000,
-          stock: 25
-        },
-        {
-          id: 5,
-          name: 'Lốp xe tải 825R16',
-          category: 'Lốp xe',
-          price: 2500000,
-          stock: 12
-        },
-        {
-          id: 6,
-          name: 'Đèn pha LED',
-          category: 'Đèn xe',
-          price: 450000,
-          stock: 18
-        },
-        {
-          id: 7,
-          name: 'Má phanh sau',
-          category: 'Hệ thống phanh',
-          price: 650000,
-          stock: 20
-        },
-        {
-          id: 8,
-          name: 'Lọc gió cabin',
-          category: 'Hệ thống lọc',
-          price: 150000,
-          stock: 40
-        }
-      ],
-      
-      customers: [
-        { id: 1, name: 'Nguyễn Văn A', phone: '0123456789', email: 'a@gmail.com' },
-        { id: 2, name: 'Trần Thị B', phone: '0987654321', email: 'b@gmail.com' },
-        { id: 3, name: 'Lê Văn C', phone: '0369852147', email: 'c@gmail.com' }
-      ],
-      
-      newCustomer: {
-        name: '',
-        phone: '',
-        email: ''
+  setup() {
+    // Stats (có thể lấy từ API ordersApi.getOrderStats() nếu muốn)
+    const todayRevenue = ref(0)
+    const todayOrders = ref(0)
+    const topSellingItems = ref(0)
+    const newCustomers = ref(0)
+
+    // Product filters
+    const productSearch = ref('')
+    const categoryFilter = ref('')
+
+    // Cart
+    const cartItems = ref([])
+    const selectedCustomer = ref(null)
+    const paymentMethod = ref('cash')
+    const discount = ref(0)
+
+    // Modals
+    const showAddCustomerModal = ref(false)
+
+    // Data
+    const categories = ref([])
+    const products = ref([])
+    const customers = ref([])
+    const newCustomer = ref({ name: '', phone: '', email: '' })
+
+    // Loading
+    const loadingProducts = ref(false)
+    const loadingCustomers = ref(false)
+    const loadingOrder = ref(false)
+
+    // Load products
+    const loadProducts = async () => {
+      try {
+        loadingProducts.value = true
+        const res = await productsAPI.getProducts(0, 100)
+        products.value = res.data.content || []
+        // Lấy categories unique từ products
+        categories.value = [...new Set(products.value.map(p => p.category))]
+      } catch (e) {
+        console.error('Lỗi tải sản phẩm:', e)
+      } finally {
+        loadingProducts.value = false
       }
     }
-  },
-  
-  computed: {
-    filteredProducts() {
-      let filtered = this.products;
-      
-      if (this.productSearch) {
-        filtered = filtered.filter(product => 
-          product.name.toLowerCase().includes(this.productSearch.toLowerCase())
-        );
+
+    // Load customers
+    const loadCustomers = async () => {
+      try {
+        loadingCustomers.value = true
+        const res = await customersApi.getAll(0, 100)
+        customers.value = res.data.content || []
+      } catch (e) {
+        console.error('Lỗi tải khách hàng:', e)
+      } finally {
+        loadingCustomers.value = false
       }
-      
-      if (this.categoryFilter) {
-        filtered = filtered.filter(product => product.category === this.categoryFilter);
-      }
-      
-      return filtered;
-    },
-    
-    subtotal() {
-      return this.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    },
-    
-    total() {
-      return this.subtotal - this.discount;
     }
-  },
-  
-  methods: {
-    formatCurrency(value) {
-      return new Intl.NumberFormat('vi-VN').format(value);
-    },
-    
-    addToCart(product) {
-      const existingItem = this.cartItems.find(item => item.id === product.id);
-      
+
+    // Add to cart
+    const addToCart = (product) => {
+      const existingItem = cartItems.value.find(item => item.id === product.id)
       if (existingItem) {
         if (existingItem.quantity < product.stock) {
-          existingItem.quantity++;
+          existingItem.quantity++
         } else {
-          alert('Không đủ hàng trong kho!');
+          alert('Không đủ hàng trong kho!')
         }
       } else {
-        this.cartItems.push({
-          ...product,
-          quantity: 1
-        });
+        cartItems.value.push({ ...product, quantity: 1 })
       }
-    },
-    
-    updateQuantity(item, newQuantity) {
+    }
+
+    // Update quantity
+    const updateQuantity = (item, newQuantity) => {
       if (newQuantity <= 0) {
-        this.removeFromCart(item);
+        removeFromCart(item)
       } else if (newQuantity <= item.stock) {
-        item.quantity = newQuantity;
+        item.quantity = newQuantity
       } else {
-        alert('Không đủ hàng trong kho!');
+        alert('Không đủ hàng trong kho!')
       }
-    },
-    
-    removeFromCart(item) {
-      const index = this.cartItems.findIndex(cartItem => cartItem.id === item.id);
-      if (index !== -1) {
-        this.cartItems.splice(index, 1);
+    }
+
+    // Remove from cart
+    const removeFromCart = (item) => {
+      const idx = cartItems.value.findIndex(cartItem => cartItem.id === item.id)
+      if (idx !== -1) cartItems.value.splice(idx, 1)
+    }
+
+    // Clear cart
+    const clearCart = () => {
+      cartItems.value = []
+      selectedCustomer.value = null
+      discount.value = 0
+    }
+
+    // Add customer
+    const addCustomer = async () => {
+      try {
+        const res = await customersApi.create(newCustomer.value)
+        customers.value.push(res.data)
+        selectedCustomer.value = res.data
+        showAddCustomerModal.value = false
+        newCustomer.value = { name: '', phone: '', email: '' }
+      } catch (e) {
+        alert('Lỗi khi thêm khách hàng!')
+        console.error(e)
       }
-    },
-    
-    clearCart() {
-      this.cartItems = [];
-      this.selectedCustomer = null;
-      this.discount = 0;
-    },
-    
-    processPayment() {
-      if (this.cartItems.length === 0) return;
-      
-      const order = {
-        id: Date.now(),
-        customer: this.selectedCustomer || { name: 'Khách lẻ' },
-        items: [...this.cartItems],
-        subtotal: this.subtotal,
-        discount: this.discount,
-        total: this.total,
-        paymentMethod: this.paymentMethod,
-        createdAt: new Date().toISOString()
-      };
-      
-      // Simulate order processing
-      console.log('Đang xử lý đơn hàng:', order);
-      alert(`Thanh toán thành công! Tổng tiền: ₫${this.formatCurrency(this.total)}`);
-      
-      this.clearCart();
-    },
-    
-    addCustomer() {
-      const newCustomer = {
-        id: Date.now(),
-        ...this.newCustomer
-      };
-      
-      this.customers.push(newCustomer);
-      this.selectedCustomer = newCustomer;
-      this.showAddCustomerModal = false;
-      
-      // Reset form
-      this.newCustomer = {
-        name: '',
-        phone: '',
-        email: ''
-      };
-      
-      console.log('Đã thêm khách hàng:', newCustomer);
+    }
+
+    // Process payment (tạo đơn hàng)
+    const processPayment = async () => {
+      if (cartItems.value.length === 0) return
+      loadingOrder.value = true
+      try {
+        const orderPayload = {
+          customerId: selectedCustomer.value?.id || null,
+          items: cartItems.value.map(item => ({
+            productId: item.id,
+            quantity: item.quantity,
+            price: item.price
+          })),
+          totalAmount: total.value,
+          discount: discount.value,
+          paymentMethod: paymentMethod.value,
+          status: 'CONFIRMED',
+          notes: ''
+        }
+        await ordersApi.create(orderPayload)
+        alert(`Thanh toán thành công! Tổng tiền: ₫${formatCurrency(total.value)}`)
+        clearCart()
+      } catch (e) {
+        alert('Lỗi khi tạo đơn hàng!')
+        console.error(e)
+      } finally {
+        loadingOrder.value = false
+      }
+    }
+
+    // Computed
+    const filteredProducts = computed(() => {
+      let filtered = products.value
+      if (productSearch.value) {
+        filtered = filtered.filter(product =>
+          product.name.toLowerCase().includes(productSearch.value.toLowerCase())
+        )
+      }
+      if (categoryFilter.value) {
+        filtered = filtered.filter(product => product.category === categoryFilter.value)
+      }
+      return filtered
+    })
+    const subtotal = computed(() => cartItems.value.reduce((sum, item) => sum + (item.price * item.quantity), 0))
+    const total = computed(() => subtotal.value - discount.value)
+
+    // Format currency
+    const formatCurrency = (value) => {
+      return new Intl.NumberFormat('vi-VN').format(value)
+    }
+
+    onMounted(() => {
+      loadProducts()
+      loadCustomers()
+    })
+
+    return {
+      // Stats
+      todayRevenue,
+      todayOrders,
+      topSellingItems,
+      newCustomers,
+      // Filters
+      productSearch,
+      categoryFilter,
+      // Cart
+      cartItems,
+      selectedCustomer,
+      paymentMethod,
+      discount,
+      // Modals
+      showAddCustomerModal,
+      // Data
+      categories,
+      products,
+      customers,
+      newCustomer,
+      // Loading
+      loadingProducts,
+      loadingCustomers,
+      loadingOrder,
+      // Methods
+      addToCart,
+      updateQuantity,
+      removeFromCart,
+      clearCart,
+      addCustomer,
+      processPayment,
+      formatCurrency,
+      // Computed
+      filteredProducts,
+      subtotal,
+      total
     }
   }
 }

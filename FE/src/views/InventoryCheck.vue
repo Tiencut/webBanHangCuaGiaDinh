@@ -284,20 +284,91 @@
           </div>
         </div>
       </div>
+
+      <!-- Bảng kiểm kê tồn kho -->
+      <div class="mt-10 bg-white shadow rounded-lg p-6">
+        <h3 class="text-lg font-semibold mb-4">Danh sách sản phẩm & tồn kho hiện tại</h3>
+        <div v-if="loading" class="text-center py-8">
+          <svg class="mx-auto h-8 w-8 text-gray-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p class="mt-2 text-sm text-gray-500">Đang tải dữ liệu sản phẩm...</p>
+        </div>
+        <div v-else-if="error" class="text-center text-red-600 py-8">{{ error }}</div>
+        <div v-else>
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tên sản phẩm</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Mã sản phẩm</th>
+                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Tồn kho</th>
+                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="product in products" :key="product.id">
+                <td class="px-4 py-2">{{ product.name }}</td>
+                <td class="px-4 py-2">{{ product.code || '-' }}</td>
+                <td class="px-4 py-2 text-center">{{ product.stock ?? product.quantity ?? 0 }}</td>
+                <td class="px-4 py-2 text-center">
+                  <span :class="'px-2 py-1 rounded-full text-xs font-semibold ' + getStockStatus(product.stock ?? product.quantity ?? 0).color">
+                    {{ getStockStatus(product.stock ?? product.quantity ?? 0).text }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-if="products.length === 0" class="text-center text-gray-500 py-8">Không có sản phẩm nào.</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import { ref, onMounted, computed } from 'vue'
+import { productsAPI } from '@/api'
+
 export default {
   name: 'InventoryCheck',
-  data() {
-    return {
-      // Component data here
+  setup() {
+    const products = ref([])
+    const loading = ref(false)
+    const error = ref('')
+
+    // Gọi API lấy danh sách sản phẩm
+    const loadProducts = async () => {
+      try {
+        loading.value = true
+        error.value = ''
+        const res = await productsAPI.getProducts(0, 200)
+        products.value = res.data.content || []
+      } catch (e) {
+        error.value = 'Lỗi khi tải danh sách sản phẩm!'
+        console.error(e)
+      } finally {
+        loading.value = false
+      }
     }
-  },
-  methods: {
-    // Component methods here
+
+    // Trạng thái tồn kho
+    const getStockStatus = (stock) => {
+      if (stock === 0) return { text: 'Hết hàng', color: 'bg-red-100 text-red-700' }
+      if (stock < 10) return { text: 'Sắp hết', color: 'bg-yellow-100 text-yellow-800' }
+      return { text: 'Còn hàng', color: 'bg-green-100 text-green-700' }
+    }
+
+    onMounted(() => {
+      loadProducts()
+    })
+
+    return {
+      products,
+      loading,
+      error,
+      getStockStatus
+    }
   }
 }
 </script>
