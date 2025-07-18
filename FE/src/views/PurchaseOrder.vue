@@ -261,196 +261,137 @@
 </template>
 
 <script>
+import { ref, computed, onMounted } from 'vue'
+import { purchaseOrdersApi, suppliersApi } from '@/api'
+
 export default {
   name: 'PurchaseOrder',
-  data() {
+  setup() {
+    const orders = ref([])
+    const suppliers = ref([])
+    const loading = ref(false)
+    const error = ref('')
+    const showCreateOrderModal = ref(false)
+    const newOrder = ref({
+      orderCode: '',
+      supplierId: '',
+      orderDate: '',
+      expectedDate: '',
+      totalAmount: 0,
+      status: 'pending',
+      notes: ''
+    })
+    const searchTerm = ref('')
+    const statusFilter = ref('')
+
+    // Stats
+    const totalOrders = computed(() => orders.value.length)
+    const pendingOrders = computed(() => orders.value.filter(o => o.status === 'pending').length)
+    const completedOrders = computed(() => orders.value.filter(o => o.status === 'completed').length)
+    const totalValue = computed(() => orders.value.reduce((sum, o) => sum + (o.totalAmount || 0), 0))
+
+    // Lấy danh sách đơn nhập hàng
+    const loadOrders = async () => {
+      try {
+        loading.value = true
+        error.value = ''
+        const res = await purchaseOrdersApi.getAll(0, 50, searchTerm.value, statusFilter.value)
+        orders.value = res.data.content || []
+      } catch (e) {
+        error.value = 'Lỗi khi tải danh sách đơn nhập hàng!'
+        console.error(e)
+      } finally {
+        loading.value = false
+      }
+    }
+
+    // Lấy danh sách nhà cung cấp
+    const loadSuppliers = async () => {
+      try {
+        const res = await suppliersApi.getAll(0, 100)
+        suppliers.value = res.data.content || []
+      } catch (e) {
+        console.error('Lỗi tải nhà cung cấp:', e)
+      }
+    }
+
+    // Tạo mới đơn nhập hàng
+    const createOrder = async () => {
+      try {
+        await purchaseOrdersApi.create(newOrder.value)
+        showCreateOrderModal.value = false
+        newOrder.value = { orderCode: '', supplierId: '', orderDate: '', expectedDate: '', totalAmount: 0, status: 'pending', notes: '' }
+        loadOrders()
+      } catch (e) {
+        alert('Lỗi khi tạo đơn nhập hàng!')
+        console.error(e)
+      }
+    }
+
+    // Lọc đơn hàng
+    const filteredOrders = computed(() => {
+      let filtered = orders.value
+      if (searchTerm.value) {
+        filtered = filtered.filter(o =>
+          o.orderCode?.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+          o.supplierName?.toLowerCase().includes(searchTerm.value.toLowerCase())
+        )
+      }
+      if (statusFilter.value) {
+        filtered = filtered.filter(o => o.status === statusFilter.value)
+      }
+      return filtered
+    })
+
+    // Format helpers
+    const formatCurrency = (v) => new Intl.NumberFormat('vi-VN').format(v)
+    const formatDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : ''
+    const getStatusClass = (status) => {
+      const map = {
+        pending: 'bg-orange-100 text-orange-800',
+        confirmed: 'bg-blue-100 text-blue-800',
+        received: 'bg-green-100 text-green-800',
+        completed: 'bg-purple-100 text-purple-800',
+        cancelled: 'bg-red-100 text-red-800'
+      }
+      return map[status] || 'bg-gray-100 text-gray-800'
+    }
+    const getStatusText = (status) => {
+      const map = {
+        pending: 'Chờ xác nhận',
+        confirmed: 'Đã xác nhận',
+        received: 'Đã nhận hàng',
+        completed: 'Hoàn thành',
+        cancelled: 'Đã huỷ'
+      }
+      return map[status] || status
+    }
+
+    onMounted(() => {
+      loadOrders()
+      loadSuppliers()
+    })
+
     return {
-      searchTerm: '',
-      statusFilter: '',
-      showCreateOrderModal: false,
-      totalOrders: 156,
-      pendingOrders: 23,
-      completedOrders: 118,
-      totalValue: 850000000,
-      orders: [
-        {
-          id: 1,
-          orderCode: 'PO-2024-001',
-          supplierName: 'Công ty TNHH Phụ tùng Hà Nội',
-          supplierCode: 'SUP001',
-          orderDate: '2024-01-15',
-          expectedDate: '2024-01-20',
-          status: 'pending',
-          totalAmount: 15000000,
-          notes: 'Đơn hàng khẩn cấp'
-        },
-        {
-          id: 2,
-          orderCode: 'PO-2024-002',
-          supplierName: 'Công ty Cổ phần Ô tô Thành Công',
-          supplierCode: 'SUP002',
-          orderDate: '2024-01-14',
-          expectedDate: '2024-01-19',
-          status: 'confirmed',
-          totalAmount: 25000000,
-          notes: 'Đơn hàng thường xuyên'
-        },
-        {
-          id: 3,
-          orderCode: 'PO-2024-003',
-          supplierName: 'Cửa hàng Phụ tùng Minh Tuấn',
-          supplierCode: 'SUP003',
-          orderDate: '2024-01-13',
-          expectedDate: '2024-01-18',
-          status: 'received',
-          totalAmount: 8000000,
-          notes: ''
-        },
-        {
-          id: 4,
-          orderCode: 'PO-2024-004',
-          supplierName: 'Công ty TNHH Phụ tùng Việt Nam',
-          supplierCode: 'SUP004',
-          orderDate: '2024-01-12',
-          expectedDate: '2024-01-17',
-          status: 'completed',
-          totalAmount: 18000000,
-          notes: 'Đã hoàn thành'
-        },
-        {
-          id: 5,
-          orderCode: 'PO-2024-005',
-          supplierName: 'Cửa hàng Phụ tùng Đại Phát',
-          supplierCode: 'SUP005',
-          orderDate: '2024-01-11',
-          expectedDate: '2024-01-16',
-          status: 'cancelled',
-          totalAmount: 12000000,
-          notes: 'Hủy do không đúng yêu cầu'
-        }
-      ],
-      suppliers: [
-        { id: 1, name: 'Công ty TNHH Phụ tùng Hà Nội' },
-        { id: 2, name: 'Công ty Cổ phần Ô tô Thành Công' },
-        { id: 3, name: 'Cửa hàng Phụ tùng Minh Tuấn' },
-        { id: 4, name: 'Công ty TNHH Phụ tùng Việt Nam' },
-        { id: 5, name: 'Cửa hàng Phụ tùng Đại Phát' }
-      ],
-      products: [
-        { id: 1, name: 'Phanh đĩa Hyundai' },
-        { id: 2, name: 'Lọc dầu động cơ' },
-        { id: 3, name: 'Bình acquy 12V' },
-        { id: 4, name: 'Dây curoa' },
-        { id: 5, name: 'Lốp xe tải 825R16' },
-        { id: 6, name: 'Đèn pha LED' }
-      ],
-      newOrder: {
-        orderCode: '',
-        supplierId: '',
-        orderDate: new Date().toISOString().substr(0, 10),
-        expectedDate: '',
-        notes: '',
-        items: []
-      }
-    }
-  },
-  computed: {
-    filteredOrders() {
-      let filtered = this.orders;
-      
-      if (this.searchTerm) {
-        filtered = filtered.filter(order => 
-          order.orderCode.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-          order.supplierName.toLowerCase().includes(this.searchTerm.toLowerCase())
-        );
-      }
-      
-      if (this.statusFilter) {
-        filtered = filtered.filter(order => order.status === this.statusFilter);
-      }
-      
-      return filtered;
-    }
-  },
-  methods: {
-    formatCurrency(value) {
-      return new Intl.NumberFormat('vi-VN').format(value);
-    },
-    formatDate(date) {
-      return new Date(date).toLocaleDateString('vi-VN');
-    },
-    getStatusClass(status) {
-      switch (status) {
-        case 'pending': return 'bg-yellow-100 text-yellow-800';
-        case 'confirmed': return 'bg-blue-100 text-blue-800';
-        case 'received': return 'bg-purple-100 text-purple-800';
-        case 'completed': return 'bg-green-100 text-green-800';
-        case 'cancelled': return 'bg-red-100 text-red-800';
-        default: return 'bg-gray-100 text-gray-800';
-      }
-    },
-    getStatusText(status) {
-      switch (status) {
-        case 'pending': return 'Chờ xác nhận';
-        case 'confirmed': return 'Đã xác nhận';
-        case 'received': return 'Đã nhận hàng';
-        case 'completed': return 'Hoàn thành';
-        case 'cancelled': return 'Đã hủy';
-        default: return 'Không xác định';
-      }
-    },
-    addOrderItem() {
-      this.newOrder.items.push({
-        productId: '',
-        quantity: 1,
-        price: 0
-      });
-    },
-    removeOrderItem(index) {
-      this.newOrder.items.splice(index, 1);
-    },
-    createOrder() {
-      const newOrder = {
-        id: Date.now(),
-        orderCode: this.newOrder.orderCode,
-        supplierName: this.suppliers.find(s => s.id == this.newOrder.supplierId)?.name || '',
-        supplierCode: `SUP${this.newOrder.supplierId.toString().padStart(3, '0')}`,
-        orderDate: this.newOrder.orderDate,
-        expectedDate: this.newOrder.expectedDate,
-        status: 'pending',
-        totalAmount: this.newOrder.items.reduce((sum, item) => sum + (item.quantity * item.price), 0),
-        notes: this.newOrder.notes
-      };
-      
-      this.orders.unshift(newOrder);
-      this.showCreateOrderModal = false;
-      
-      // Reset form
-      this.newOrder = {
-        orderCode: '',
-        supplierId: '',
-        orderDate: new Date().toISOString().substr(0, 10),
-        expectedDate: '',
-        notes: '',
-        items: []
-      };
-      
-      console.log('Đã tạo đơn nhập hàng:', newOrder);
-    },
-    viewOrderDetails(order) {
-      console.log('Xem chi tiết đơn hàng:', order.orderCode);
-    },
-    editOrder(order) {
-      console.log('Chỉnh sửa đơn hàng:', order.orderCode);
-    },
-    deleteOrder(order) {
-      if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) {
-        const index = this.orders.findIndex(o => o.id === order.id);
-        if (index !== -1) {
-          this.orders.splice(index, 1);
-          console.log('Đã xóa đơn hàng:', order.orderCode);
-        }
-      }
+      orders,
+      suppliers,
+      loading,
+      error,
+      showCreateOrderModal,
+      newOrder,
+      searchTerm,
+      statusFilter,
+      totalOrders,
+      pendingOrders,
+      completedOrders,
+      totalValue,
+      loadOrders,
+      createOrder,
+      filteredOrders,
+      formatCurrency,
+      formatDate,
+      getStatusClass,
+      getStatusText
     }
   }
 }
