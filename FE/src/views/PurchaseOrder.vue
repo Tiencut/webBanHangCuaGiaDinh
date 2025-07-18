@@ -273,10 +273,10 @@ export default {
     const error = ref('')
     const showCreateOrderModal = ref(false)
     const newOrder = ref({
-      orderCode: '',
-      supplierId: '',
+        orderCode: '',
+        supplierId: '',
       orderDate: '',
-      expectedDate: '',
+        expectedDate: '',
       totalAmount: 0,
       status: 'pending',
       notes: ''

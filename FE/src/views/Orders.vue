@@ -299,7 +299,7 @@ export default {
       customerId: '',
       items: [],
       totalAmount: 0,
-      status: 'PENDING',
+        status: 'PENDING',
       notes: '',
       deliveryMethod: 'SELF_PICKUP'
     })

@@ -229,11 +229,11 @@ export default {
 
     // New supplier form
     const newSupplier = ref({
-      name: '',
-      code: '',
-      phone: '',
-      email: '',
-      address: '',
+        name: '',
+        code: '',
+        phone: '',
+        email: '',
+        address: '',
       contactPerson: '',
       vehicleBrand: '',
       rating: 0,
