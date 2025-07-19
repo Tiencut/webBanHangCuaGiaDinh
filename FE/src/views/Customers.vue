@@ -235,8 +235,10 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { customersApi } from '../api/customers.js'
+import { removeVietnameseTones } from '../utils/removeVietnameseTones'
 
 export default {
   name: 'Customers',
@@ -265,6 +267,30 @@ export default {
       preferredVehicleBrands: '',
       notes: '',
       status: 'ACTIVE'
+    })
+
+    const router = useRouter()
+
+    // Computed properties
+    const filteredCustomers = computed(() => {
+      let filtered = customers.value
+      if (searchQuery.value) {
+        const search = removeVietnameseTones(searchQuery.value.toLowerCase())
+        filtered = filtered.filter(customer =>
+          removeVietnameseTones(customer.name?.toLowerCase() || '').includes(search) ||
+          removeVietnameseTones(customer.phone?.toLowerCase() || '').includes(search) ||
+          removeVietnameseTones(customer.email?.toLowerCase() || '').includes(search)
+        )
+      }
+      // Apply type filter
+      if (selectedType.value) {
+        filtered = filtered.filter(customer => customer.type === selectedType.value)
+      }
+      // Apply status filter
+      if (selectedStatus.value) {
+        filtered = filtered.filter(customer => customer.status === selectedStatus.value)
+      }
+      return filtered
     })
 
     // Methods
@@ -382,8 +408,7 @@ export default {
     }
 
     const viewCustomer = (customer) => {
-      console.log('View customer:', customer)
-      // Logic to view customer details
+      router.push(`/customers/${customer.id}`)
     }
 
     const editCustomer = (customer) => {

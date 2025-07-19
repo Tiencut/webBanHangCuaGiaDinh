@@ -182,6 +182,118 @@
         </div>
       </div>
     </div>
+
+    <!-- Add Vehicle Modal -->
+    <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Thêm mẫu xe mới</h3>
+          <button @click="showAddModal = false" class="text-gray-400 hover:text-gray-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <form @submit.prevent="createVehicle" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tên mẫu xe *</label>
+              <input v-model="newVehicle.name" type="text" class="form-input w-full" required>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Mã mẫu xe</label>
+              <input v-model="newVehicle.code" type="text" class="form-input w-full">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Hãng xe *</label>
+              <select v-model="newVehicle.brand" class="form-input w-full" required>
+                <option value="">Chọn hãng xe</option>
+                <option value="HINO">Hino</option>
+                <option value="HYUNDAI">Hyundai</option>
+                <option value="THACO">Thaco</option>
+                <option value="DONGFENG">Dongfeng</option>
+                <option value="ISUZU">Isuzu</option>
+                <option value="MITSUBISHI">Mitsubishi</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Dòng xe</label>
+              <input v-model="newVehicle.model" type="text" class="form-input w-full">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Động cơ</label>
+              <input v-model="newVehicle.engine" type="text" class="form-input w-full" placeholder="VD: 4.0L Diesel">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Năm sản xuất</label>
+              <input v-model="newVehicle.year" type="number" min="1900" max="2030" class="form-input w-full">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Loại xe</label>
+              <select v-model="newVehicle.type" class="form-input w-full">
+                <option value="">Chọn loại xe</option>
+                <option value="LIGHT_TRUCK">Xe tải nhẹ</option>
+                <option value="MEDIUM_TRUCK">Xe tải trung</option>
+                <option value="HEAVY_TRUCK">Xe tải nặng</option>
+                <option value="TRAILER">Xe kéo</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+              <select v-model="newVehicle.status" class="form-input w-full">
+                <option value="ACTIVE">Hoạt động</option>
+                <option value="INACTIVE">Không hoạt động</option>
+              </select>
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+            <textarea v-model="newVehicle.description" rows="3" class="form-input w-full"></textarea>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tải trọng (kg)</label>
+              <input v-model.number="newVehicle.payload" type="number" min="0" class="form-input w-full">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Loại nhiên liệu</label>
+              <select v-model="newVehicle.fuelType" class="form-input w-full">
+                <option value="">Chọn nhiên liệu</option>
+                <option value="DIESEL">Diesel</option>
+                <option value="GASOLINE">Xăng</option>
+                <option value="ELECTRIC">Điện</option>
+                <option value="HYBRID">Hybrid</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Số chỗ ngồi</label>
+              <input v-model.number="newVehicle.seats" type="number" min="1" class="form-input w-full">
+            </div>
+          </div>
+          
+          <div class="flex justify-end space-x-3 pt-4">
+            <button @click="showAddModal = false" type="button" class="btn-secondary">
+              Hủy
+            </button>
+            <button type="submit" class="btn-primary">
+              Thêm mẫu xe
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 

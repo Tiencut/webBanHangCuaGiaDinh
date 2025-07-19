@@ -268,6 +268,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue'
 import { ordersApi, customersApi } from '@/api'
+import { removeVietnameseTones } from '../utils/removeVietnameseTones'
 
 export default {
   name: 'Orders',
@@ -492,6 +493,18 @@ export default {
       return `${start}-${end} của ${totalElements.value} đơn hàng`
     })
 
+    const filteredOrders = computed(() => {
+      let filtered = orders.value
+      if (searchQuery.value) {
+        const search = removeVietnameseTones(searchQuery.value.toLowerCase())
+        filtered = filtered.filter(order =>
+          removeVietnameseTones(order.orderNumber?.toLowerCase() || '').includes(search) ||
+          removeVietnameseTones(order.customerName?.toLowerCase() || '').includes(search)
+        )
+      }
+      return filtered
+    })
+
     // Load data on mount
     onMounted(() => {
       loadOrders()
@@ -539,7 +552,8 @@ export default {
       getCustomerName,
       
       // Computed
-      paginationInfo
+      paginationInfo,
+      filteredOrders
     }
   }
 }

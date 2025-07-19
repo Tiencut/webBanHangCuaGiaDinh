@@ -1,9 +1,7 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.controller;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,17 +19,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.OrderStatsResponse;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Order;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.OrderDetail;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Order.OrderStatus;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.OrderService;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.OrderService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -146,6 +142,20 @@ public class OrderController {
         Pageable pageable = PageRequest.of(page, size);
         Page<Order> orders = orderService.searchOrders(term, pageable);
         return ResponseEntity.ok(orders);
+    }
+
+    @Operation(summary = "Lấy thống kê đơn hàng", 
+               description = "Trả về thống kê tổng số đơn hàng và doanh thu")
+    @GetMapping("/stats")
+    public ResponseEntity<OrderStatsResponse> getOrderStats() {
+        // Lấy tổng số đơn hàng và tổng doanh thu toàn bộ
+        int totalOrders = orderService.getTotalOrderCount();
+        java.math.BigDecimal totalRevenue = orderService.getTotalRevenue();
+        OrderStatsResponse stats = new OrderStatsResponse();
+        stats.setTotalOrders(totalOrders);
+        stats.setTotalRevenue(totalRevenue);
+        // Có thể bổ sung các trường khác nếu muốn
+        return ResponseEntity.ok(stats);
     }
     
     @Operation(summary = "Tạo đơn hàng mới", 

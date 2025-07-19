@@ -407,11 +407,89 @@
     <div v-if="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden">
     </div>
   </div>
+  
+  <!-- Global Components -->
+  <Toast />
+  <ConfirmDialog 
+    :show="showConfirmDialog"
+    :title="confirmDialog.title"
+    :message="confirmDialog.message"
+    :type="confirmDialog.type"
+    :confirm-text="confirmDialog.confirmText"
+    :cancel-text="confirmDialog.cancelText"
+    @confirm="handleConfirm"
+    @cancel="handleCancel"
+  />
 </template>
 
 <script>
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
+import Toast from '@/components/Toast.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
+
 export default {
   name: 'App',
+  components: {
+    Toast,
+    ConfirmDialog
+  },
+  setup() {
+    const route = useRoute()
+    const isMobileMenuOpen = ref(false)
+    const isProductsDropdownOpen = ref(false)
+    const isOrdersDropdownOpen = ref(false)
+    const isPurchaseDropdownOpen = ref(false)
+    
+    // Confirm dialog state
+    const showConfirmDialog = ref(false)
+    const confirmDialog = ref({
+      title: '',
+      message: '',
+      type: 'warning',
+      confirmText: 'Xác nhận',
+      cancelText: 'Hủy',
+      onConfirm: null,
+      onCancel: null
+    })
+
+    // Global confirm dialog function
+    const showConfirm = (options) => {
+      return new Promise((resolve) => {
+        confirmDialog.value = {
+          title: options.title || 'Xác nhận',
+          message: options.message || 'Bạn có chắc chắn muốn thực hiện hành động này?',
+          type: options.type || 'warning',
+          confirmText: options.confirmText || 'Xác nhận',
+          cancelText: options.cancelText || 'Hủy',
+          onConfirm: () => resolve(true),
+          onCancel: () => resolve(false)
+        }
+        showConfirmDialog.value = true
+      })
+    }
+
+    const handleConfirm = () => {
+      showConfirmDialog.value = false
+      if (confirmDialog.value.onConfirm) {
+        confirmDialog.value.onConfirm()
+      }
+    }
+
+    const handleCancel = () => {
+      showConfirmDialog.value = false
+      if (confirmDialog.value.onCancel) {
+        confirmDialog.value.onCancel()
+      }
+    }
+
+    // Expose globally
+    onMounted(() => {
+      window.$confirm = showConfirm
+    })
+
+    // ... existing code ...
+  },
   data() {
     return {
       sidebarOpen: false

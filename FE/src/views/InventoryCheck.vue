@@ -328,46 +328,119 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue'
-import { productsAPI } from '@/api'
+import { inventoryApi } from '@/api'
 
 export default {
   name: 'InventoryCheck',
   setup() {
-    const products = ref([])
     const loading = ref(false)
     const error = ref('')
+    const stats = ref({
+      totalProducts: 0,
+      lowStock: 0,
+      outOfStock: 0,
+      checksToday: 0
+    })
+    const recentChecks = ref([])
+    const showCreateCheckModal = ref(false)
+    const newCheck = ref({
+      name: '',
+      description: '',
+      warehouse: '',
+      items: []
+    })
 
-    // Gọi API lấy danh sách sản phẩm
-    const loadProducts = async () => {
+    // Load inventory stats
+    const loadStats = async () => {
       try {
         loading.value = true
         error.value = ''
-        const res = await productsAPI.getProducts(0, 200)
-        products.value = res.data.content || []
-      } catch (e) {
-        error.value = 'Lỗi khi tải danh sách sản phẩm!'
-        console.error(e)
+        const response = await inventoryApi.getStats()
+        stats.value = response.data
+      } catch (err) {
+        error.value = 'Lỗi khi tải thống kê tồn kho'
+        console.error('Error loading inventory stats:', err)
       } finally {
         loading.value = false
       }
     }
 
-    // Trạng thái tồn kho
-    const getStockStatus = (stock) => {
-      if (stock === 0) return { text: 'Hết hàng', color: 'bg-red-100 text-red-700' }
-      if (stock < 10) return { text: 'Sắp hết', color: 'bg-yellow-100 text-yellow-800' }
-      return { text: 'Còn hàng', color: 'bg-green-100 text-green-700' }
+    // Load recent inventory checks
+    const loadRecentChecks = async () => {
+      try {
+        const response = await inventoryApi.getChecks(0, 10)
+        recentChecks.value = response.data.content || []
+      } catch (err) {
+        console.error('Error loading recent checks:', err)
+      }
     }
 
+    // Create new inventory check
+    const createCheck = async () => {
+      try {
+        await inventoryApi.createCheck(newCheck.value)
+        showCreateCheckModal.value = false
+        resetNewCheck()
+        loadRecentChecks() // reload list
+      } catch (err) {
+        alert('Lỗi khi tạo phiếu kiểm kho')
+        console.error('Error creating check:', err)
+      }
+    }
+
+    // Reset new check form
+    const resetNewCheck = () => {
+      newCheck.value = {
+        name: '',
+        description: '',
+        warehouse: '',
+        items: []
+      }
+    }
+
+    // Get status class
+    const getStatusClass = (status) => {
+      const classes = {
+        'COMPLETED': 'bg-green-100 text-green-800',
+        'IN_PROGRESS': 'bg-yellow-100 text-yellow-800',
+        'DISCREPANCY': 'bg-red-100 text-red-800'
+      }
+      return classes[status] || 'bg-gray-100 text-gray-800'
+    }
+
+    // Get status text
+    const getStatusText = (status) => {
+      const texts = {
+        'COMPLETED': 'Hoàn thành',
+        'IN_PROGRESS': 'Đang kiểm tra',
+        'DISCREPANCY': 'Có sai lệch'
+      }
+      return texts[status] || status
+    }
+
+    // Format date
+    const formatDate = (dateString) => {
+      return new Date(dateString).toLocaleDateString('vi-VN')
+    }
+
+    // Lifecycle
     onMounted(() => {
-      loadProducts()
+      loadStats()
+      loadRecentChecks()
     })
 
     return {
-      products,
       loading,
       error,
-      getStockStatus
+      stats,
+      recentChecks,
+      showCreateCheckModal,
+      newCheck,
+      createCheck,
+      resetNewCheck,
+      getStatusClass,
+      getStatusText,
+      formatDate
     }
   }
 }

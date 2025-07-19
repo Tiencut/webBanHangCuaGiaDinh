@@ -201,7 +201,7 @@
                       {{ inventory.reservedQuantity || 0 }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {{ formatCurrency(inventory.costPrice) }}
+                      {{ formatCurrency(inventory.costPrice || 0) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {{ inventory.location || 'N/A' }}
@@ -218,6 +218,114 @@
         </div>
       </div>
     </div>
+
+    <!-- Add Product Modal -->
+    <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Thêm sản phẩm mới</h3>
+          <button @click="showAddModal = false" class="text-gray-400 hover:text-gray-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <form @submit.prevent="createProduct" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm *</label>
+              <input v-model="newProduct.name" type="text" class="form-input w-full" required>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Mã SKU *</label>
+              <input v-model="newProduct.sku" type="text" class="form-input w-full" required>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
+              <select v-model="newProduct.categoryId" class="form-input w-full">
+                <option value="">Chọn danh mục</option>
+                <option v-for="category in categories" :key="category.id" :value="category.id">
+                  {{ category.name }}
+                </option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Nhà cung cấp</label>
+              <select v-model="newProduct.supplierId" class="form-input w-full">
+                <option value="">Chọn nhà cung cấp</option>
+                <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id">
+                  {{ supplier.name }}
+                </option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Giá bán *</label>
+              <input v-model.number="newProduct.price" type="number" min="0" class="form-input w-full" required>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Giá vốn</label>
+              <input v-model.number="newProduct.costPrice" type="number" min="0" class="form-input w-full">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Đơn vị</label>
+              <input v-model="newProduct.unit" type="text" class="form-input w-full" placeholder="Cái, Bộ, Kg...">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+              <select v-model="newProduct.status" class="form-input w-full">
+                <option value="ACTIVE">Hoạt động</option>
+                <option value="INACTIVE">Không hoạt động</option>
+                <option value="DISCONTINUED">Ngừng kinh doanh</option>
+              </select>
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+            <textarea v-model="newProduct.description" rows="3" class="form-input w-full"></textarea>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Thông số kỹ thuật</label>
+            <textarea v-model="newProduct.specifications" rows="3" class="form-input w-full" placeholder="Kích thước, trọng lượng, chất liệu..."></textarea>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tồn kho tối thiểu</label>
+              <input v-model.number="newProduct.minStock" type="number" min="0" class="form-input w-full">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tồn kho tối đa</label>
+              <input v-model.number="newProduct.maxStock" type="number" min="0" class="form-input w-full">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Vị trí lưu trữ</label>
+              <input v-model="newProduct.location" type="text" class="form-input w-full" placeholder="Kệ A, Tủ B...">
+            </div>
+          </div>
+          
+          <div class="flex justify-end space-x-3 pt-4">
+            <button @click="showAddModal = false" type="button" class="btn-secondary">
+              Hủy
+            </button>
+            <button type="submit" class="btn-primary">
+              Thêm sản phẩm
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -228,6 +336,7 @@ import { formatCurrency, debounce } from '../utils/helpers'
 import { productsAPI, inventoryAPI } from '@/services'
 import TrainingAssistant from '@/components/TrainingAssistant.vue'
 import DataTable from '@/components/DataTable.vue'
+import { removeVietnameseTones } from '../utils/removeVietnameseTones'
 
 export default {
   name: 'Products',
@@ -245,6 +354,22 @@ export default {
     const showStockModal = ref(false)
     const selectedProductForStock = ref(null)
     const loading = ref(false)
+    
+    const newProduct = ref({
+      name: '',
+      sku: '',
+      categoryId: '',
+      supplierId: '',
+      price: 0,
+      costPrice: 0,
+      unit: '',
+      status: 'ACTIVE',
+      description: '',
+      specifications: '',
+      minStock: 0,
+      maxStock: 0,
+      location: ''
+    })
     
     // Column definitions for DataTable
     const columns = ref([
@@ -408,9 +533,10 @@ export default {
       let filtered = products.value
 
       if (searchQuery.value) {
+        const search = removeVietnameseTones(searchQuery.value.toLowerCase())
         filtered = filtered.filter(product => 
-          product.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-          product.sku.toLowerCase().includes(searchQuery.value.toLowerCase())
+          removeVietnameseTones(product.name.toLowerCase()).includes(search) ||
+          removeVietnameseTones(product.sku?.toLowerCase() || '').includes(search)
         )
       }
 
@@ -502,6 +628,36 @@ export default {
       showAddModal.value = true
     }
 
+    const createProduct = async () => {
+      try {
+        await productsAPI.create(newProduct.value)
+        showAddModal.value = false
+        resetNewProduct()
+        fetchProductsWithInventory() // reload list
+      } catch (error) {
+        console.error('Error creating product:', error)
+        alert('Lỗi khi thêm sản phẩm')
+      }
+    }
+
+    const resetNewProduct = () => {
+      newProduct.value = {
+        name: '',
+        sku: '',
+        categoryId: '',
+        supplierId: '',
+        price: 0,
+        costPrice: 0,
+        unit: '',
+        status: 'ACTIVE',
+        description: '',
+        specifications: '',
+        minStock: 0,
+        maxStock: 0,
+        location: ''
+      }
+    }
+
     const handleEdit = (product) => {
       console.log('Edit product:', product)
       // Logic to edit product
@@ -567,6 +723,7 @@ export default {
       showStockModal,
       selectedProductForStock,
       loading,
+      newProduct,
       
       // Table config
       columns,
@@ -585,6 +742,8 @@ export default {
       fetchProductsWithInventory,
       fetchProductInventory,
       formatCurrency,
+      createProduct,
+      resetNewProduct,
       
       // DataTable handlers
       handleCreate,

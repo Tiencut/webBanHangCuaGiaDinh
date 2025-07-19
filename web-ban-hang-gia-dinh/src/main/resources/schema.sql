@@ -106,6 +106,40 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 -- ===========================================
+-- 4.1 BẢNG PRODUCT_BUNDLES (Sản phẩm combo)
+-- ===========================================
+CREATE TABLE IF NOT EXISTS product_bundles (
+    id BIGSERIAL PRIMARY KEY,
+    parent_product_id BIGINT NOT NULL,
+    child_product_id BIGINT NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    bundle_price DECIMAL(19,2),
+    is_substitutable BOOLEAN DEFAULT TRUE,
+    sort_order INTEGER DEFAULT 0,
+    notes TEXT,
+    compatibility_group VARCHAR(100),
+    default_substitute_id BIGINT,
+    status VARCHAR(20) DEFAULT 'ACTIVE',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (parent_product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (child_product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (default_substitute_id) REFERENCES products(id) ON DELETE SET NULL,
+    UNIQUE(parent_product_id, child_product_id)
+);
+
+-- ===========================================
+-- 4.2 BẢNG BUNDLE_SUBSTITUTE_PRODUCTS (Sản phẩm thay thế)
+-- ===========================================
+CREATE TABLE IF NOT EXISTS bundle_substitute_products (
+    bundle_id BIGINT NOT NULL,
+    substitute_product_id BIGINT NOT NULL,
+    PRIMARY KEY (bundle_id, substitute_product_id),
+    FOREIGN KEY (bundle_id) REFERENCES product_bundles(id) ON DELETE CASCADE,
+    FOREIGN KEY (substitute_product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+-- ===========================================
 -- 5. BẢNG INVENTORY (Tồn kho)
 -- ===========================================
 CREATE TABLE IF NOT EXISTS inventory (

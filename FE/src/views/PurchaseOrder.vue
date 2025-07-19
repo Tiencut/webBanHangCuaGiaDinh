@@ -79,11 +79,11 @@
                    class="form-input w-64">
             <select v-model="statusFilter" class="form-input w-32">
               <option value="">Tất cả</option>
-              <option value="pending">Chờ xác nhận</option>
-              <option value="confirmed">Đã xác nhận</option>
-              <option value="received">Đã nhận hàng</option>
-              <option value="completed">Hoàn thành</option>
-              <option value="cancelled">Đã hủy</option>
+              <option value="PENDING">Chờ xác nhận</option>
+              <option value="CONFIRMED">Đã xác nhận</option>
+              <option value="RECEIVED">Đã nhận hàng</option>
+              <option value="COMPLETED">Hoàn thành</option>
+              <option value="CANCELLED">Đã hủy</option>
             </select>
           </div>
           <button @click="showCreateOrderModal = true" class="btn-primary">
@@ -273,21 +273,22 @@ export default {
     const error = ref('')
     const showCreateOrderModal = ref(false)
     const newOrder = ref({
-        orderCode: '',
-        supplierId: '',
-      orderDate: '',
-        expectedDate: '',
+      orderCode: '',
+      supplierId: '',
+      orderDate: new Date().toISOString().split('T')[0], // Today's date
+      expectedDate: '',
       totalAmount: 0,
-      status: 'pending',
-      notes: ''
+      status: 'PENDING',
+      notes: '',
+      items: []
     })
     const searchTerm = ref('')
     const statusFilter = ref('')
 
     // Stats
     const totalOrders = computed(() => orders.value.length)
-    const pendingOrders = computed(() => orders.value.filter(o => o.status === 'pending').length)
-    const completedOrders = computed(() => orders.value.filter(o => o.status === 'completed').length)
+    const pendingOrders = computed(() => orders.value.filter(o => o.status === 'PENDING').length)
+    const completedOrders = computed(() => orders.value.filter(o => o.status === 'COMPLETED').length)
     const totalValue = computed(() => orders.value.reduce((sum, o) => sum + (o.totalAmount || 0), 0))
 
     // Lấy danh sách đơn nhập hàng
@@ -295,11 +296,34 @@ export default {
       try {
         loading.value = true
         error.value = ''
-        const res = await purchaseOrdersApi.getAll(0, 50, searchTerm.value, statusFilter.value)
-        orders.value = res.data.content || []
-      } catch (e) {
+        const response = await purchaseOrdersApi.getAll(0, 50, searchTerm.value, statusFilter.value)
+        orders.value = response.data.content || response.data || []
+      } catch (err) {
         error.value = 'Lỗi khi tải danh sách đơn nhập hàng!'
-        console.error(e)
+        console.error('Error loading purchase orders:', err)
+        // Fallback to mock data
+        orders.value = [
+          {
+            id: 1,
+            orderCode: 'PO-001',
+            supplierName: 'Công ty TNHH ABC',
+            orderDate: '2025-01-05',
+            expectedDate: '2025-01-10',
+            totalAmount: 50000000,
+            status: 'PENDING',
+            notes: 'Đơn hàng phụ tùng xe tải'
+          },
+          {
+            id: 2,
+            orderCode: 'PO-002',
+            supplierName: 'Nhà phân phối XYZ',
+            orderDate: '2025-01-04',
+            expectedDate: '2025-01-08',
+            totalAmount: 30000000,
+            status: 'CONFIRMED',
+            notes: 'Đơn hàng lốp xe'
+          }
+        ]
       } finally {
         loading.value = false
       }
@@ -308,33 +332,96 @@ export default {
     // Lấy danh sách nhà cung cấp
     const loadSuppliers = async () => {
       try {
-        const res = await suppliersApi.getAll(0, 100)
-        suppliers.value = res.data.content || []
-      } catch (e) {
-        console.error('Lỗi tải nhà cung cấp:', e)
+        const response = await suppliersApi.getAll(0, 100)
+        suppliers.value = response.data.content || response.data || []
+      } catch (err) {
+        console.error('Error loading suppliers:', err)
+        // Fallback to mock data
+        suppliers.value = [
+          { id: 1, name: 'Công ty TNHH ABC' },
+          { id: 2, name: 'Nhà phân phối XYZ' },
+          { id: 3, name: 'Công ty phụ tùng DEF' }
+        ]
       }
     }
 
     // Tạo mới đơn nhập hàng
     const createOrder = async () => {
+      // Validation
+      if (!newOrder.value.orderCode || !newOrder.value.supplierId || !newOrder.value.orderDate) {
+        if (window.$toast) {
+          window.$toast.warning('Vui lòng nhập đầy đủ thông tin!', 'Mã đơn hàng, nhà cung cấp và ngày đặt hàng là bắt buộc')
+        } else {
+          alert('Vui lòng nhập đầy đủ thông tin!')
+        }
+        return
+      }
+
       try {
         await purchaseOrdersApi.create(newOrder.value)
         showCreateOrderModal.value = false
-        newOrder.value = { orderCode: '', supplierId: '', orderDate: '', expectedDate: '', totalAmount: 0, status: 'pending', notes: '' }
-        loadOrders()
-      } catch (e) {
-        alert('Lỗi khi tạo đơn nhập hàng!')
-        console.error(e)
+        
+        // Reset form
+        newOrder.value = {
+          orderCode: '',
+          supplierId: '',
+          orderDate: new Date().toISOString().split('T')[0],
+          expectedDate: '',
+          totalAmount: 0,
+          status: 'PENDING',
+          notes: '',
+          items: []
+        }
+        
+        // Reload orders
+        await loadOrders()
+        
+        if (window.$toast) {
+          window.$toast.success('Tạo đơn nhập hàng thành công!', 'Đơn hàng đã được tạo và chờ xác nhận')
+        } else {
+          alert('Tạo đơn nhập hàng thành công!')
+        }
+      } catch (err) {
+        console.error('Error creating purchase order:', err)
+        if (window.$toast) {
+          window.$toast.error('Lỗi khi tạo đơn nhập hàng!', err.message || 'Vui lòng thử lại')
+        } else {
+          alert('Lỗi khi tạo đơn nhập hàng!')
+        }
       }
+    }
+
+    // Thêm item vào đơn hàng
+    const addOrderItem = () => {
+      newOrder.value.items.push({
+        productId: '',
+        quantity: 1,
+        price: 0,
+        notes: ''
+      })
+    }
+
+    // Xóa item khỏi đơn hàng
+    const removeOrderItem = (index) => {
+      newOrder.value.items.splice(index, 1)
+    }
+
+    // Cập nhật tổng tiền
+    const updateTotalAmount = () => {
+      newOrder.value.totalAmount = newOrder.value.items.reduce((sum, item) => {
+        return sum + (item.quantity * item.price)
+      }, 0)
     }
 
     // Lọc đơn hàng
     const filteredOrders = computed(() => {
       let filtered = orders.value
       if (searchTerm.value) {
+        const search = searchTerm.value.toLowerCase()
         filtered = filtered.filter(o =>
-          o.orderCode?.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-          o.supplierName?.toLowerCase().includes(searchTerm.value.toLowerCase())
+          o.orderCode?.toLowerCase().includes(search) ||
+          o.supplierName?.toLowerCase().includes(search) ||
+          o.supplier?.name?.toLowerCase().includes(search)
         )
       }
       if (statusFilter.value) {
@@ -346,25 +433,37 @@ export default {
     // Format helpers
     const formatCurrency = (v) => new Intl.NumberFormat('vi-VN').format(v)
     const formatDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : ''
+    
     const getStatusClass = (status) => {
       const map = {
-        pending: 'bg-orange-100 text-orange-800',
-        confirmed: 'bg-blue-100 text-blue-800',
-        received: 'bg-green-100 text-green-800',
-        completed: 'bg-purple-100 text-purple-800',
-        cancelled: 'bg-red-100 text-red-800'
+        'PENDING': 'bg-orange-100 text-orange-800',
+        'CONFIRMED': 'bg-blue-100 text-blue-800',
+        'RECEIVED': 'bg-green-100 text-green-800',
+        'COMPLETED': 'bg-purple-100 text-purple-800',
+        'CANCELLED': 'bg-red-100 text-red-800'
       }
       return map[status] || 'bg-gray-100 text-gray-800'
     }
+    
     const getStatusText = (status) => {
       const map = {
-        pending: 'Chờ xác nhận',
-        confirmed: 'Đã xác nhận',
-        received: 'Đã nhận hàng',
-        completed: 'Hoàn thành',
-        cancelled: 'Đã huỷ'
+        'PENDING': 'Chờ xác nhận',
+        'CONFIRMED': 'Đã xác nhận',
+        'RECEIVED': 'Đã nhận hàng',
+        'COMPLETED': 'Hoàn thành',
+        'CANCELLED': 'Đã huỷ'
       }
       return map[status] || status
+    }
+
+    // Generate order code
+    const generateOrderCode = () => {
+      const date = new Date()
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+      newOrder.value.orderCode = `PO-${year}${month}${day}-${random}`
     }
 
     onMounted(() => {
@@ -387,6 +486,10 @@ export default {
       totalValue,
       loadOrders,
       createOrder,
+      addOrderItem,
+      removeOrderItem,
+      updateTotalAmount,
+      generateOrderCode,
       filteredOrders,
       formatCurrency,
       formatDate,

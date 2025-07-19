@@ -57,6 +57,12 @@ const routes = [
     meta: { title: 'Quản lý khách hàng' }
   },
   {
+    path: '/customers/:id',
+    name: 'CustomerDetail',
+    component: () => import('../views/CustomerDetail.vue'),
+    meta: { title: 'Chi tiết khách hàng' }
+  },
+  {
     path: '/orders',
     name: 'Orders',
     component: () => import('../views/Orders.vue'),
@@ -103,6 +109,12 @@ const routes = [
     name: 'Sales',
     component: () => import('../views/Sales.vue'),
     meta: { title: 'Bán hàng' }
+  },
+  {
+    path: '/product-list-debug',
+    name: 'ProductListDebug',
+    component: () => import('../views/ProductListDebug.vue'),
+    meta: { title: 'Debug Danh sách sản phẩm' }
   }
 ]
 

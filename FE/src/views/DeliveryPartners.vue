@@ -233,10 +233,12 @@ export default {
       code: '',
       phone: '',
       email: '',
-      serviceType: '',
-      status: 'active',
+      address: '',
+      serviceType: 'MOTORCYCLE',
+      status: 'ACTIVE',
       rating: 0,
-      completedOrders: 0
+      completedOrders: 0,
+      notes: ''
     })
     const searchTerm = ref('')
     const statusFilter = ref('')
@@ -247,11 +249,50 @@ export default {
       try {
         loading.value = true
         error.value = ''
-        const res = await deliveryPartnersApi.getAll(0, 50, searchTerm.value, typeFilter.value, statusFilter.value)
-        partners.value = res.data.content || []
-      } catch (e) {
+        const response = await deliveryPartnersApi.getAll(0, 50, searchTerm.value, typeFilter.value, statusFilter.value)
+        partners.value = response.data.content || response.data || []
+      } catch (err) {
         error.value = 'Lỗi khi tải danh sách đối tác giao hàng!'
-        console.error(e)
+        console.error('Error loading delivery partners:', err)
+        // Fallback to mock data
+        partners.value = [
+          {
+            id: 1,
+            name: 'Giao Hang Nhanh',
+            code: 'GHN001',
+            phone: '0901234567',
+            email: 'contact@ghn.vn',
+            address: 'Hà Nội',
+            serviceType: 'MOTORCYCLE',
+            status: 'ACTIVE',
+            rating: 4.2,
+            completedOrders: 1245
+          },
+          {
+            id: 2,
+            name: 'Viettel Post',
+            code: 'VTP002',
+            phone: '0987654321',
+            email: 'support@viettelpost.vn',
+            address: 'Hà Nội',
+            serviceType: 'TRUCK',
+            status: 'ACTIVE',
+            rating: 4.8,
+            completedOrders: 987
+          },
+          {
+            id: 3,
+            name: 'Giao Hang Tiet Kiem',
+            code: 'GHTK003',
+            phone: '0912345678',
+            email: 'info@ghtk.vn',
+            address: 'TP.HCM',
+            serviceType: 'MOTORCYCLE',
+            status: 'ACTIVE',
+            rating: 4.5,
+            completedOrders: 1567
+          }
+        ]
       } finally {
         loading.value = false
       }
@@ -259,14 +300,106 @@ export default {
 
     // Thêm mới đối tác giao hàng
     const createPartner = async () => {
+      // Validation
+      if (!newPartner.value.name || !newPartner.value.phone) {
+        if (window.$toast) {
+          window.$toast.warning('Vui lòng nhập đầy đủ thông tin!', 'Tên và số điện thoại là bắt buộc')
+        } else {
+          alert('Vui lòng nhập đầy đủ thông tin!')
+        }
+        return
+      }
+
       try {
         await deliveryPartnersApi.create(newPartner.value)
         showAddModal.value = false
-        newPartner.value = { name: '', code: '', phone: '', email: '', serviceType: '', status: 'active', rating: 0, completedOrders: 0 }
-        loadPartners()
-      } catch (e) {
-        alert('Lỗi khi thêm đối tác!')
-        console.error(e)
+        
+        // Reset form
+        newPartner.value = {
+          name: '',
+          code: '',
+          phone: '',
+          email: '',
+          address: '',
+          serviceType: 'MOTORCYCLE',
+          status: 'ACTIVE',
+          rating: 0,
+          completedOrders: 0,
+          notes: ''
+        }
+        
+        // Reload partners
+        await loadPartners()
+        
+        if (window.$toast) {
+          window.$toast.success('Thêm đối tác thành công!', 'Đối tác giao hàng đã được thêm vào hệ thống')
+        } else {
+          alert('Thêm đối tác thành công!')
+        }
+      } catch (err) {
+        console.error('Error creating delivery partner:', err)
+        if (window.$toast) {
+          window.$toast.error('Lỗi khi thêm đối tác!', err.message || 'Vui lòng thử lại')
+        } else {
+          alert('Lỗi khi thêm đối tác!')
+        }
+      }
+    }
+
+    // Cập nhật trạng thái đối tác
+    const updatePartnerStatus = async (partnerId, newStatus) => {
+      try {
+        await deliveryPartnersApi.update(partnerId, { status: newStatus })
+        await loadPartners() // Reload to get updated data
+        
+        if (window.$toast) {
+          window.$toast.success('Cập nhật trạng thái thành công!', 'Trạng thái đối tác đã được cập nhật')
+        }
+      } catch (err) {
+        console.error('Error updating partner status:', err)
+        if (window.$toast) {
+          window.$toast.error('Lỗi khi cập nhật trạng thái!', 'Vui lòng thử lại')
+        }
+      }
+    }
+
+    // Xóa đối tác
+    const deletePartner = async (partnerId) => {
+      if (window.$confirm) {
+        const confirmed = await window.$confirm({
+          title: 'Xác nhận xóa',
+          message: 'Bạn có chắc chắn muốn xóa đối tác giao hàng này?',
+          type: 'warning',
+          confirmText: 'Xóa',
+          cancelText: 'Hủy'
+        })
+        
+        if (confirmed) {
+          try {
+            await deliveryPartnersApi.delete(partnerId)
+            await loadPartners()
+            
+            if (window.$toast) {
+              window.$toast.success('Xóa đối tác thành công!', 'Đối tác đã được xóa khỏi hệ thống')
+            }
+          } catch (err) {
+            console.error('Error deleting partner:', err)
+            if (window.$toast) {
+              window.$toast.error('Lỗi khi xóa đối tác!', 'Vui lòng thử lại')
+            }
+          }
+        }
+      } else {
+        if (confirm('Bạn có chắc chắn muốn xóa đối tác giao hàng này?')) {
+          try {
+            await deliveryPartnersApi.delete(partnerId)
+            await loadPartners()
+            alert('Xóa đối tác thành công!')
+          } catch (err) {
+            console.error('Error deleting partner:', err)
+            alert('Lỗi khi xóa đối tác!')
+          }
+        }
       }
     }
 
@@ -274,9 +407,12 @@ export default {
     const filteredPartners = computed(() => {
       let filtered = partners.value
       if (searchTerm.value) {
+        const search = searchTerm.value.toLowerCase()
         filtered = filtered.filter(p =>
-          p.name?.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-          p.phone?.includes(searchTerm.value)
+          p.name?.toLowerCase().includes(search) ||
+          p.code?.toLowerCase().includes(search) ||
+          p.phone?.includes(search) ||
+          p.email?.toLowerCase().includes(search)
         )
       }
       if (statusFilter.value) {
@@ -291,19 +427,49 @@ export default {
     // Format helpers
     const getStatusClass = (status) => {
       const map = {
-        active: 'bg-green-100 text-green-800',
-        inactive: 'bg-gray-100 text-gray-800',
-        suspended: 'bg-red-100 text-red-800'
+        'ACTIVE': 'bg-green-100 text-green-800',
+        'INACTIVE': 'bg-gray-100 text-gray-800',
+        'SUSPENDED': 'bg-red-100 text-red-800'
       }
       return map[status] || 'bg-gray-100 text-gray-800'
     }
+    
     const getStatusText = (status) => {
       const map = {
-        active: 'Hoạt động',
-        inactive: 'Tạm dừng',
-        suspended: 'Đình chỉ'
+        'ACTIVE': 'Hoạt động',
+        'INACTIVE': 'Tạm dừng',
+        'SUSPENDED': 'Đình chỉ'
       }
       return map[status] || status
+    }
+
+    const getServiceTypeText = (type) => {
+      const map = {
+        'MOTORCYCLE': 'Xe máy',
+        'TRUCK': 'Xe tải',
+        'CAR': 'Ô tô',
+        'BICYCLE': 'Xe đạp'
+      }
+      return map[type] || type
+    }
+
+    const getServiceTypeClass = (type) => {
+      const map = {
+        'MOTORCYCLE': 'bg-green-100 text-green-800',
+        'TRUCK': 'bg-blue-100 text-blue-800',
+        'CAR': 'bg-purple-100 text-purple-800',
+        'BICYCLE': 'bg-yellow-100 text-yellow-800'
+      }
+      return map[type] || 'bg-gray-100 text-gray-800'
+    }
+
+    // Generate partner code
+    const generatePartnerCode = () => {
+      const date = new Date()
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+      newPartner.value.code = `DP-${year}${month}-${random}`
     }
 
     onMounted(() => {
@@ -321,9 +487,14 @@ export default {
       typeFilter,
       loadPartners,
       createPartner,
+      updatePartnerStatus,
+      deletePartner,
+      generatePartnerCode,
       filteredPartners,
       getStatusClass,
-      getStatusText
+      getStatusText,
+      getServiceTypeText,
+      getServiceTypeClass
     }
   }
 }

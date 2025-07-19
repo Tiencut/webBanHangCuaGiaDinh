@@ -466,4 +466,20 @@ public class OrderService {
         
         return prefix + String.format("%03d", orderCount + 1);
     }
+
+    // Tổng số đơn hàng toàn bộ
+    @Transactional(readOnly = true)
+    public int getTotalOrderCount() {
+        return (int) orderRepository.count();
+    }
+
+    // Tổng doanh thu toàn bộ
+    @Transactional(readOnly = true)
+    public BigDecimal getTotalRevenue() {
+        // Lấy doanh thu tất cả thời gian
+        java.time.LocalDate minDate = java.time.LocalDate.of(2000, 1, 1); // hoặc ngày nhỏ nhất trong db
+        java.time.LocalDate maxDate = java.time.LocalDate.now();
+        BigDecimal total = orderRepository.sumTotalAmountByDateRange(minDate, maxDate);
+        return total != null ? total : BigDecimal.ZERO;
+    }
 }
