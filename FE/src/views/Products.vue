@@ -99,6 +99,19 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </button>
+          
+          <!-- Combo management button -->
+          <button
+            v-if="item.isCombo"
+            @click="manageCombo(item)"
+            class="text-purple-600 hover:text-purple-900 transition-colors"
+            title="Quản lý combo"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </button>
+          
           <button
             @click="handleEdit(item)"
             class="text-blue-600 hover:text-blue-900 transition-colors"
@@ -315,6 +328,19 @@
             </div>
           </div>
           
+          <!-- Combo checkbox -->
+          <div class="flex items-center space-x-2">
+            <input 
+              v-model="newProduct.isCombo" 
+              type="checkbox" 
+              id="isCombo" 
+              class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            >
+            <label for="isCombo" class="text-sm font-medium text-gray-700">
+              Sản phẩm combo (gồm nhiều linh kiện)
+            </label>
+          </div>
+          
           <div class="flex justify-end space-x-3 pt-4">
             <button @click="showAddModal = false" type="button" class="btn-secondary">
               Hủy
@@ -324,6 +350,129 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Combo Management Modal -->
+    <div v-if="showComboModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Quản lý combo: {{ selectedComboProduct?.name }}</h3>
+          <button @click="showComboModal = false" class="text-gray-400 hover:text-gray-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <div v-if="selectedComboProduct" class="space-y-6">
+          <!-- Combo Summary -->
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <h4 class="font-medium text-gray-900 mb-2">Thông tin combo</h4>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <span class="text-gray-600">Tổng giá combo:</span>
+                <div class="font-medium">{{ formatCurrency(comboTotalPrice) }}</div>
+              </div>
+              <div>
+                <span class="text-gray-600">Số linh kiện:</span>
+                <div class="font-medium">{{ comboComponents.length }}</div>
+              </div>
+              <div>
+                <span class="text-gray-600">Có thể thay thế:</span>
+                <div class="font-medium">{{ substitutableCount }} linh kiện</div>
+              </div>
+              <div>
+                <span class="text-gray-600">Trạng thái:</span>
+                <div class="font-medium text-green-600">Hoạt động</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Combo Components Table -->
+          <div>
+            <div class="flex justify-between items-center mb-3">
+              <h5 class="font-medium text-gray-900">Linh kiện trong combo</h5>
+              <button 
+                @click="addComponentToCombo"
+                class="btn-primary text-sm"
+              >
+                Thêm linh kiện
+              </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Linh kiện
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Số lượng
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Giá trong combo
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Có thể thay thế
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Thao tác
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr v-for="component in comboComponents" :key="component.id">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div class="text-sm font-medium text-gray-900">{{ component.childProduct.name }}</div>
+                        <div class="text-sm text-gray-500">{{ component.childProduct.sku }}</div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{ component.quantity }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{ formatCurrency(component.bundlePrice) }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span 
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                        :class="component.isSubstitutable ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
+                      >
+                        {{ component.isSubstitutable ? 'Có' : 'Không' }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div class="flex space-x-2">
+                        <button 
+                          @click="editComponent(component)"
+                          class="text-blue-600 hover:text-blue-900"
+                        >
+                          Sửa
+                        </button>
+                        <button 
+                          @click="removeComponent(component)"
+                          class="text-red-600 hover:text-red-900"
+                        >
+                          Xóa
+                        </button>
+                        <button 
+                          v-if="component.isSubstitutable"
+                          @click="showSubstitutes(component)"
+                          class="text-purple-600 hover:text-purple-900"
+                        >
+                          Thay thế
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -354,7 +503,11 @@ export default {
     const showStockModal = ref(false)
     const selectedProductForStock = ref(null)
     const loading = ref(false)
-    
+    const showComboModal = ref(false)
+    const selectedComboProduct = ref(null)
+    const comboComponents = ref([])
+    const comboTotalPrice = ref(0)
+
     const newProduct = ref({
       name: '',
       sku: '',
@@ -368,7 +521,8 @@ export default {
       specifications: '',
       minStock: 0,
       maxStock: 0,
-      location: ''
+      location: '',
+      isCombo: false
     })
     
     // Column definitions for DataTable
@@ -448,6 +602,18 @@ export default {
         }
       },
       {
+        key: 'isCombo',
+        label: 'Loại',
+        sortable: true,
+        type: 'badge',
+        align: 'center',
+        width: '80px',
+        badgeMap: {
+          true: { text: 'Combo', class: 'bg-purple-100 text-purple-800' },
+          false: { text: 'Đơn lẻ', class: 'bg-blue-100 text-blue-800' }
+        }
+      },
+      {
         key: 'actions',
         label: 'Thao tác',
         sortable: false,
@@ -481,7 +647,8 @@ export default {
         supplierStocks: [
           { supplierId: 1, quantity: 30 },
           { supplierId: 2, quantity: 20 }
-        ]
+        ],
+        isCombo: false
       },
       {
         id: 2,
@@ -498,7 +665,8 @@ export default {
         imageUrl: null,
         supplierStocks: [
           { supplierId: 2, quantity: 5 }
-        ]
+        ],
+        isCombo: false
       },
       {
         id: 3,
@@ -513,7 +681,26 @@ export default {
         salePrice: 2500000,
         status: 'OUT_OF_STOCK',
         imageUrl: null,
-        supplierStocks: []
+        supplierStocks: [],
+        isCombo: false
+      },
+      {
+        id: 4,
+        name: 'Combo lọc dầu + má phanh',
+        sku: 'OIL-BRAKE-004',
+        categoryId: 1,
+        category: { id: 1, name: 'Hệ thống động cơ' },
+        supplierId: 1,
+        supplier: { id: 1, name: 'Công ty TNHH ABC' },
+        totalStock: 10,
+        costPrice: 180000,
+        salePrice: 220000,
+        status: 'ACTIVE',
+        imageUrl: null,
+        supplierStocks: [
+          { supplierId: 1, quantity: 10 }
+        ],
+        isCombo: true
       }
     ])
 
@@ -549,6 +736,10 @@ export default {
       }
 
       return filtered
+    })
+
+    const substitutableCount = computed(() => {
+      return comboComponents.value.filter(component => component.isSubstitutable).length
     })
 
     // API Methods
@@ -654,7 +845,8 @@ export default {
         specifications: '',
         minStock: 0,
         maxStock: 0,
-        location: ''
+        location: '',
+        isCombo: false
       }
     }
 
@@ -689,6 +881,57 @@ export default {
       console.log('View history for product:', product)
       // Logic to view product history
     }
+
+    const manageCombo = (product) => {
+      console.log('Manage combo for product:', product)
+      selectedComboProduct.value = product
+      comboComponents.value = []
+      comboTotalPrice.value = 0
+      if (product.isCombo) {
+        product.components.forEach(component => {
+          comboComponents.value.push({
+            id: component.id,
+            childProduct: component.childProduct,
+            quantity: component.quantity,
+            bundlePrice: component.bundlePrice,
+            isSubstitutable: component.isSubstitutable
+          })
+          comboTotalPrice.value += component.bundlePrice * component.quantity
+        })
+      }
+      showComboModal.value = true
+    }
+
+    const addComponentToCombo = () => {
+      const newComponent = {
+        id: Date.now(), // Simple unique ID
+        childProduct: null,
+        quantity: 1,
+        bundlePrice: 0,
+        isSubstitutable: false
+      }
+      comboComponents.value.push(newComponent)
+      // Optionally, you can pre-select a product for the new component
+      // newComponent.childProduct = { id: 1, name: 'Lọc dầu động cơ', sku: 'OIL-FILTER-001', price: 120000, costPrice: 100000, unit: 'Cái' }
+    }
+
+    const editComponent = (component) => {
+      console.log('Edit component:', component)
+      // Logic to edit component
+    }
+
+    const removeComponent = (component) => {
+      if (confirm(`Bạn có chắc chắn muốn xóa linh kiện "${component.childProduct?.name || 'N/A'}" khỏi combo?`)) {
+        comboComponents.value = comboComponents.value.filter(c => c.id !== component.id)
+        comboTotalPrice.value = comboComponents.value.reduce((sum, c) => sum + c.bundlePrice * c.quantity, 0)
+      }
+    }
+
+    const showSubstitutes = (component) => {
+      console.log('Show substitutes for component:', component)
+      // Logic to show substitutes for a component
+    }
+
     // Training Assistant Methods
     const handleSearchSuggestion = (suggestion) => {
       searchQuery.value = suggestion.query || suggestion
@@ -724,6 +967,10 @@ export default {
       selectedProductForStock,
       loading,
       newProduct,
+      showComboModal,
+      selectedComboProduct,
+      comboComponents,
+      comboTotalPrice,
       
       // Table config
       columns,
@@ -753,6 +1000,11 @@ export default {
       handleExport,
       duplicateProduct,
       viewHistory,
+      manageCombo,
+      addComponentToCombo,
+      editComponent,
+      removeComponent,
+      showSubstitutes,
       
       // Training Assistant
       handleSearchSuggestion,

@@ -1,324 +1,175 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.VehicleModelDto;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.VehicleModel;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.mapper.VehicleModelMapper;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.VehicleModelRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.VehicleModel;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.VehicleModel.VehicleType;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.VehicleModelRepository;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
+import java.util.List;
+import java.util.Optional;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-/**
- * VehicleModelService - Service xử lý logic nghiệp vụ mẫu xe
- * 
- * Đây là service quan trọng nhất để hỗ trợ nhân viên bán hàng.
- * Khi khách hàng nói tên xe, service này sẽ:
- * 
- * 1. Tìm mẫu xe chính xác
- * 2. Gợi ý tất cả sản phẩm tương thích  
- * 3. Hiển thị thông tin kỹ thuật
- * 4. Đưa ra giá tham khảo
- * 
- * Ví dụ: "hộp số xe Thaco Ollin" 
- * -> Tìm Thaco Ollin models
- * -> Gợi ý các hộp số tương thích
- * -> Hiển thị thông tin động cơ, năm sản xuất
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class VehicleModelService {
-    
-    private final VehicleModelRepository vehicleModelRepository;
 
-    // ========== CRUD Methods cơ bản ==========
-    
-    // Tạo vehicle model mới
-    public VehicleModel createVehicleModel(VehicleModel vehicleModel) {
-        log.info("Creating new vehicle model: {}", vehicleModel.getName());
-        
-        // Kiểm tra code đã tồn tại
-        if (vehicleModel.getCode() != null && vehicleModelRepository.existsByCode(vehicleModel.getCode())) {
-            throw new BusinessException("Mã xe đã tồn tại: " + vehicleModel.getCode());
-        }
-        
-        // Tự động tạo code nếu chưa có
-        if (vehicleModel.getCode() == null || vehicleModel.getCode().trim().isEmpty()) {
-            vehicleModel.setCode(generateVehicleModelCode(vehicleModel.getName()));
-        }
-        
-        return vehicleModelRepository.save(vehicleModel);
+    private final VehicleModelRepository vehicleModelRepository;
+    private final VehicleModelMapper vehicleModelMapper;
+
+    public List<VehicleModelDto> getAllVehicleModels() {
+        log.info("Fetching all vehicle models");
+        List<VehicleModel> vehicleModels = vehicleModelRepository.findByIsActiveTrue();
+        return vehicleModelMapper.toDtoList(vehicleModels);
     }
-    
-    @Transactional(readOnly = true)
-    public Optional<VehicleModel> findById(Long id) {
-        return vehicleModelRepository.findById(id);
+
+    public Page<VehicleModelDto> getVehicleModelsWithPagination(Pageable pageable) {
+        log.info("Fetching vehicle models with pagination: {}", pageable);
+        Page<VehicleModel> vehicleModels = vehicleModelRepository.findByIsActiveTrue(pageable);
+        return vehicleModels.map(vehicleModelMapper::toDto);
     }
-    
-    @Transactional(readOnly = true)
-    public Optional<VehicleModel> findByCode(String code) {
-        return vehicleModelRepository.findByCode(code);
+
+    public VehicleModelDto getVehicleModelById(Long id) {
+        log.info("Fetching vehicle model by id: {}", id);
+        VehicleModel vehicleModel = vehicleModelRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle model not found with id: " + id));
+        return vehicleModelMapper.toDto(vehicleModel);
     }
-    
-    @Transactional(readOnly = true)
-    public List<VehicleModel> findAll() {
-        return vehicleModelRepository.findByIsActiveTrueOrderByBrandAscNameAsc();
+
+    public VehicleModelDto getVehicleModelByCode(String code) {
+        log.info("Fetching vehicle model by code: {}", code);
+        VehicleModel vehicleModel = vehicleModelRepository.findByCodeAndIsActiveTrue(code)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle model not found with code: " + code));
+        return vehicleModelMapper.toDto(vehicleModel);
     }
-    
-    // Cập nhật vehicle model
-    public VehicleModel updateVehicleModel(Long id, VehicleModel vehicleModelUpdate) {
-        log.info("Updating vehicle model with id: {}", id);
+
+    public VehicleModelDto createVehicleModel(VehicleModelDto vehicleModelDto) {
+        log.info("Creating new vehicle model: {} {}", vehicleModelDto.getBrand(), vehicleModelDto.getModel());
         
-        VehicleModel existingVehicleModel = vehicleModelRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Vehicle model not found with id: " + id));
-        
-        // Cập nhật thông tin cơ bản
-        existingVehicleModel.setName(vehicleModelUpdate.getName());
-        existingVehicleModel.setBrand(vehicleModelUpdate.getBrand());
-        existingVehicleModel.setModel(vehicleModelUpdate.getModel());
-        existingVehicleModel.setYearFrom(vehicleModelUpdate.getYearFrom());
-        existingVehicleModel.setEngineType(vehicleModelUpdate.getEngineType());
-        existingVehicleModel.setTransmissionType(vehicleModelUpdate.getTransmissionType());
-        existingVehicleModel.setFuelType(vehicleModelUpdate.getFuelType());
-        existingVehicleModel.setDescription(vehicleModelUpdate.getDescription());
-        
-        // Cập nhật code nếu khác
-        if (!existingVehicleModel.getCode().equals(vehicleModelUpdate.getCode())) {
-            if (vehicleModelRepository.existsByCode(vehicleModelUpdate.getCode())) {
-                throw new BusinessException("Vehicle model code đã tồn tại: " + vehicleModelUpdate.getCode());
+        // Check if vehicle model code already exists
+        if (vehicleModelDto.getCode() != null && !vehicleModelDto.getCode().trim().isEmpty()) {
+            Optional<VehicleModel> existingVehicleModel = vehicleModelRepository.findByCodeAndIsActiveTrue(vehicleModelDto.getCode());
+            if (existingVehicleModel.isPresent()) {
+                throw new BusinessException("Vehicle model code already exists: " + vehicleModelDto.getCode());
             }
-            existingVehicleModel.setCode(vehicleModelUpdate.getCode());
         }
-        
-        return vehicleModelRepository.save(existingVehicleModel);
+
+        VehicleModel vehicleModel = new VehicleModel();
+        vehicleModelMapper.updateEntityFromDto(vehicleModelDto, vehicleModel);
+        vehicleModel.setIsActive(true);
+
+        VehicleModel savedVehicleModel = vehicleModelRepository.save(vehicleModel);
+        log.info("Vehicle model created successfully with id: {}", savedVehicleModel.getId());
+        return vehicleModelMapper.toDto(savedVehicleModel);
     }
-    
+
+    public VehicleModelDto updateVehicleModel(Long id, VehicleModelDto vehicleModelDto) {
+        log.info("Updating vehicle model with id: {}", id);
+        VehicleModel vehicleModel = vehicleModelRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle model not found with id: " + id));
+
+        // Check if new code conflicts with existing vehicle model
+        if (vehicleModelDto.getCode() != null && !vehicleModelDto.getCode().trim().isEmpty() && 
+            !vehicleModelDto.getCode().equals(vehicleModel.getCode())) {
+            Optional<VehicleModel> existingVehicleModel = vehicleModelRepository.findByCodeAndIsActiveTrue(vehicleModelDto.getCode());
+            if (existingVehicleModel.isPresent()) {
+                throw new BusinessException("Vehicle model code already exists: " + vehicleModelDto.getCode());
+            }
+        }
+
+        vehicleModelMapper.updateEntityFromDto(vehicleModelDto, vehicleModel);
+        VehicleModel updatedVehicleModel = vehicleModelRepository.save(vehicleModel);
+        log.info("Vehicle model updated successfully with id: {}", updatedVehicleModel.getId());
+        return vehicleModelMapper.toDto(updatedVehicleModel);
+    }
+
     public void deleteVehicleModel(Long id) {
-        VehicleModel vehicleModel = vehicleModelRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Vehicle model not found"));
+        log.info("Deleting vehicle model with id: {}", id);
+        VehicleModel vehicleModel = vehicleModelRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle model not found with id: " + id));
         
         vehicleModel.setIsActive(false);
         vehicleModelRepository.save(vehicleModel);
-        
-        log.info("Vehicle model {} has been deactivated", vehicleModel.getName());
+        log.info("Vehicle model deleted successfully with id: {}", id);
     }
-    
-    // ========== Tính năng gợi ý thông minh ==========
-    
-    /**
-     * Tìm kiếm xe thông minh - Core function!
-     * 
-     * Khi khách hàng nói: "hộp số xe Thaco Ollin"
-     * -> keyword = "Thaco Ollin"
-     * -> Trả về tất cả model Thaco Ollin
-     */
-    @Transactional(readOnly = true)
-    public List<VehicleModel> intelligentSearch(String keyword) {
-        log.info("Intelligent search for: {}", keyword);
-        
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return new ArrayList<>();
-        }
-        
-        // Tìm kiếm theo tên, thương hiệu, mã, tên gọi khác
-        List<VehicleModel> results = vehicleModelRepository.searchVehicles(keyword.trim());
-        
-        log.info("Found {} vehicle models for keyword: {}", results.size(), keyword);
-        return results;
+
+    public List<VehicleModelDto> getVehicleModelsByBrand(String brand) {
+        log.info("Fetching vehicle models by brand: {}", brand);
+        List<VehicleModel> vehicleModels = vehicleModelRepository.findByBrandContainingIgnoreCaseAndIsActiveTrue(brand);
+        return vehicleModelMapper.toDtoList(vehicleModels);
     }
-    
-    /**
-     * Gợi ý sản phẩm theo mẫu xe - Core function!
-     * 
-     * Sau khi tìm được xe, gợi ý tất cả sản phẩm tương thích
-     * Ví dụ: Thaco Ollin -> hộp số, má phanh, lọc dầu, v.v.
-     */
-    @Transactional(readOnly = true)
-    public List<Product> suggestProductsForVehicle(Long vehicleModelId) {
-        log.info("Suggesting products for vehicle model id: {}", vehicleModelId);
-        
-        VehicleModel vehicleModel = vehicleModelRepository.findById(vehicleModelId)
-            .orElseThrow(() -> new ResourceNotFoundException("Vehicle model not found"));
-        
-        // Lấy tất cả sản phẩm tương thích
-        List<Product> compatibleProducts = vehicleModel.getCompatibleProducts();
-        
-        log.info("Found {} compatible products for {}", 
-                compatibleProducts.size(), vehicleModel.getName());
-        
-        return compatibleProducts;
+
+    public List<VehicleModelDto> getVehicleModelsByYear(String year) {
+        log.info("Fetching vehicle models by year: {}", year);
+        List<VehicleModel> vehicleModels = vehicleModelRepository.findByYearAndIsActiveTrue(year);
+        return vehicleModelMapper.toDtoList(vehicleModels);
     }
-    
-    /**
-     * Gợi ý sản phẩm theo từ khóa và xe
-     * 
-     * Ví dụ: keyword="hộp số", vehicleName="Thaco Ollin"
-     * -> Tìm xe Thaco Ollin
-     * -> Lọc chỉ sản phẩm hộp số
-     */
-    @Transactional(readOnly = true)
-    public VehicleProductSuggestion suggestProductsByKeywordAndVehicle(String productKeyword, String vehicleKeyword) {
-        log.info("Suggesting products by keyword '{}' for vehicle '{}'", productKeyword, vehicleKeyword);
-        
-        // 1. Tìm xe
-        List<VehicleModel> vehicles = intelligentSearch(vehicleKeyword);
-        
-        if (vehicles.isEmpty()) {
-            throw new BusinessException("Không tìm thấy xe phù hợp với: " + vehicleKeyword);
-        }
-        
-        // 2. Lấy tất cả sản phẩm tương thích
-        List<Product> allProducts = vehicles.stream()
-            .flatMap(v -> v.getCompatibleProducts().stream())
-            .distinct()
-            .collect(Collectors.toList());
-        
-        // 3. Lọc sản phẩm theo từ khóa
-        List<Product> filteredProducts = allProducts.stream()
-            .filter(p -> matchesProductKeyword(p, productKeyword))
-            .collect(Collectors.toList());
-        
-        VehicleProductSuggestion suggestion = new VehicleProductSuggestion();
-        suggestion.setVehicles(vehicles);
-        suggestion.setAllCompatibleProducts(allProducts);
-        suggestion.setSuggestedProducts(filteredProducts);
-        suggestion.setSearchKeyword(productKeyword + " " + vehicleKeyword);
-        
-        log.info("Suggestion result: {} vehicles, {} total products, {} filtered products", 
-                vehicles.size(), allProducts.size(), filteredProducts.size());
-        
-        return suggestion;
+
+    public List<VehicleModelDto> getVehicleModelsByEngine(String engine) {
+        log.info("Fetching vehicle models by engine: {}", engine);
+        List<VehicleModel> vehicleModels = vehicleModelRepository.findByEngineContainingIgnoreCaseAndIsActiveTrue(engine);
+        return vehicleModelMapper.toDtoList(vehicleModels);
     }
-    
-    /**
-     * Gợi ý xe theo sản phẩm
-     * 
-     * Ví dụ: Có sản phẩm "Hộp số 5 cấp ABC"
-     * -> Gợi ý tất cả xe tương thích
-     */
-    @Transactional(readOnly = true)
-    public List<VehicleModel> suggestVehiclesForProduct(Long productId) {
-        log.info("Suggesting vehicles for product id: {}", productId);
-        
-        return vehicleModelRepository.findCompatibleWithProduct(productId);
+
+    public List<VehicleModelDto> getVehicleModelsByFuelType(String fuelType) {
+        log.info("Fetching vehicle models by fuel type: {}", fuelType);
+        List<VehicleModel> vehicleModels = vehicleModelRepository.findByFuelTypeAndIsActiveTrue(fuelType);
+        return vehicleModelMapper.toDtoList(vehicleModels);
     }
-    
-    // ========== Search Methods ==========
-    
-    @Transactional(readOnly = true)
-    public List<VehicleModel> findByBrand(String brand) {
-        return vehicleModelRepository.findByBrandIgnoreCase(brand);
+
+    public List<VehicleModelDto> getVehicleModelsByBodyType(String bodyType) {
+        log.info("Fetching vehicle models by body type: {}", bodyType);
+        List<VehicleModel> vehicleModels = vehicleModelRepository.findByBodyTypeAndIsActiveTrue(bodyType);
+        return vehicleModelMapper.toDtoList(vehicleModels);
     }
-    
-    @Transactional(readOnly = true)
-    public List<VehicleModel> findByVehicleType(VehicleType vehicleType) {
-        return vehicleModelRepository.findByVehicleType(vehicleType);
+
+    public List<VehicleModelDto> searchVehicleModels(String keyword) {
+        log.info("Searching vehicle models with keyword: {}", keyword);
+        List<VehicleModel> vehicleModels = vehicleModelRepository.searchVehicleModels(keyword);
+        return vehicleModelMapper.toDtoList(vehicleModels);
     }
-    
-    @Transactional(readOnly = true)
-    public List<VehicleModel> findByProductionYear(int year) {
-        return vehicleModelRepository.findByProductionYear(year);
+
+    public List<String> getAllBrands() {
+        log.info("Fetching all vehicle brands");
+        return vehicleModelRepository.findAllBrands();
     }
-    
-    @Transactional(readOnly = true)
-    public List<VehicleModel> findByEngine(String engine) {
-        return vehicleModelRepository.findByEngineContaining(engine);
+
+    public List<String> getAllYears() {
+        log.info("Fetching all vehicle years");
+        return vehicleModelRepository.findAllYears();
     }
-    
-    @Transactional(readOnly = true)
-    public List<VehicleModel> findPopularVehicles() {
-        List<Object[]> results = vehicleModelRepository.findPopularVehicles();
-        return results.stream()
-                .map(row -> (VehicleModel) row[0])
-                .collect(Collectors.toList());
+
+    public List<String> getAllFuelTypes() {
+        log.info("Fetching all fuel types");
+        return vehicleModelRepository.findAllFuelTypes();
     }
-    
-    // ========== Helper Methods ==========
-    
-    private String generateVehicleModelCode(String name) {
-        if (name == null || name.trim().isEmpty()) {
-            throw new BusinessException("Tên xe không được để trống");
-        }
-        
-        // Loại bỏ ký tự đặc biệt và chuyển thành uppercase
-        String code = name.replaceAll("[^a-zA-Z0-9]", "").toUpperCase();
-        
-        // Giới hạn độ dài
-        if (code.length() > 20) {
-            code = code.substring(0, 20);
-        }
-        
-        // Thêm timestamp để đảm bảo unique
-        String timestamp = String.valueOf(System.currentTimeMillis()).substring(8);
-        
-        return code + timestamp;
+
+    public List<String> getAllBodyTypes() {
+        log.info("Fetching all body types");
+        return vehicleModelRepository.findAllBodyTypes();
     }
-    
-    private String generateVehicleCode(String brand, String name) {
-        // Tạo code từ thương hiệu và tên
-        String brandCode = brand.toUpperCase().replaceAll("[^A-Z0-9]", "").substring(0, Math.min(4, brand.length()));
-        String nameCode = name.toUpperCase().replaceAll("[^A-Z0-9]", "").substring(0, Math.min(6, name.length()));
-        
-        String code = brandCode + nameCode;
-        
-        // Đảm bảo unique
-        int counter = 1;
-        String originalCode = code;
-        while (vehicleModelRepository.existsByCode(code)) {
-            code = originalCode + counter++;
-        }
-        
-        return code;
+
+    public List<VehicleModelDto> getVehicleModelsBySortOrder() {
+        log.info("Fetching vehicle models ordered by sort order");
+        List<VehicleModel> vehicleModels = vehicleModelRepository.findByIsActiveTrueOrderBySortOrderAsc();
+        return vehicleModelMapper.toDtoList(vehicleModels);
     }
-    
-    private boolean matchesProductKeyword(Product product, String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return true;
-        }
+
+    public void updateVehicleModelSortOrder(Long vehicleModelId, Integer newSortOrder) {
+        log.info("Updating sort order for vehicle model id: {} to {}", vehicleModelId, newSortOrder);
+        VehicleModel vehicleModel = vehicleModelRepository.findByIdAndIsActiveTrue(vehicleModelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle model not found with id: " + vehicleModelId));
         
-        String lowerKeyword = keyword.toLowerCase();
-        
-        return (product.getName() != null && product.getName().toLowerCase().contains(lowerKeyword)) ||
-               (product.getDescription() != null && product.getDescription().toLowerCase().contains(lowerKeyword)) ||
-               (product.getTags() != null && product.getTags().stream()
-                   .anyMatch(tag -> tag.toLowerCase().contains(lowerKeyword))) ||
-               (product.getCategory() != null && product.getCategory().getName() != null && 
-                   product.getCategory().getName().toLowerCase().contains(lowerKeyword));
-    }
-    
-    // ========== Inner Classes ==========
-    
-    /**
-     * Class chứa kết quả gợi ý sản phẩm theo xe
-     */
-    public static class VehicleProductSuggestion {
-        private List<VehicleModel> vehicles;
-        private List<Product> allCompatibleProducts;
-        private List<Product> suggestedProducts;
-        private String searchKeyword;
-        
-        // Getters and setters
-        public List<VehicleModel> getVehicles() { return vehicles; }
-        public void setVehicles(List<VehicleModel> vehicles) { this.vehicles = vehicles; }
-        
-        public List<Product> getAllCompatibleProducts() { return allCompatibleProducts; }
-        public void setAllCompatibleProducts(List<Product> allCompatibleProducts) { this.allCompatibleProducts = allCompatibleProducts; }
-        
-        public List<Product> getSuggestedProducts() { return suggestedProducts; }
-        public void setSuggestedProducts(List<Product> suggestedProducts) { this.suggestedProducts = suggestedProducts; }
-        
-        public String getSearchKeyword() { return searchKeyword; }
-        public void setSearchKeyword(String searchKeyword) { this.searchKeyword = searchKeyword; }
+        vehicleModel.setSortOrder(newSortOrder);
+        vehicleModelRepository.save(vehicleModel);
+        log.info("Vehicle model sort order updated successfully");
     }
 }

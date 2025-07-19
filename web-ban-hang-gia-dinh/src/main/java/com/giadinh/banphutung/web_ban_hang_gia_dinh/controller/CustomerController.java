@@ -1,242 +1,148 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.controller;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CreateCustomerRequest;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CustomerDto;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Customer;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.CustomerService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Customer;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.CustomerService;
+import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
 
-/**
- * CustomerController - API quản lý khách hàng
- * 
- * Đây là controller xử lý các API liên quan đến khách hàng:
- * - CRUD khách hàng (Create, Read, Update, Delete)
- * - Tìm kiếm khách hàng theo tên, số điện thoại
- * - Phân trang danh sách khách hàng
- * - Thống kê khách hàng VIP
- * 
- * Các endpoint chính:
- * - GET /api/customers - Lấy danh sách khách hàng
- * - GET /api/customers/{id} - Lấy thông tin 1 khách hàng
- * - POST /api/customers - Tạo khách hàng mới
- * - PUT /api/customers/{id} - Cập nhật khách hàng
- * - DELETE /api/customers/{id} - Xóa khách hàng
- * - GET /api/customers/search - Tìm kiếm khách hàng
- */
 @RestController
 @RequestMapping("/api/customers")
-@CrossOrigin(origins = "*") // Cho phép frontend gọi API từ domain khác
+@RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Customer Management", description = "APIs for managing customers")
 public class CustomerController {
 
-    @Autowired
-    private CustomerService customerService;
+    private final CustomerService customerService;
 
-    /**
-     * Lấy danh sách tất cả khách hàng với phân trang
-     * GET /api/customers?page=0&size=10&sort=name
-     */
     @GetMapping
-    public ResponseEntity<Page<Customer>> getAllCustomers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sort
-    ) {
-        try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
-            Page<Customer> customers = customerService.findAll(pageable);
-            return ResponseEntity.ok(customers);
-        } catch (Exception e) {
-            log.error("Error getting customers: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Get all customers", description = "Retrieve a list of all active customers")
+    public ResponseEntity<List<CustomerDto>> getAllCustomers() {
+        log.info("GET /api/customers - Fetching all customers");
+        List<CustomerDto> customers = customerService.getAllCustomers();
+        return ResponseEntity.ok(customers);
     }
 
-    /**
-     * Lấy thông tin 1 khách hàng theo ID
-     * GET /api/customers/1
-     */
+    @GetMapping("/page")
+    @Operation(summary = "Get customers with pagination", description = "Retrieve customers with pagination support")
+    public ResponseEntity<Page<CustomerDto>> getCustomersWithPagination(Pageable pageable) {
+        log.info("GET /api/customers/page - Fetching customers with pagination: {}", pageable);
+        Page<CustomerDto> customers = customerService.getCustomersWithPagination(pageable);
+        return ResponseEntity.ok(customers);
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<Customer> getCustomerById(@PathVariable Long id) {
-        try {
-            Optional<Customer> customer = customerService.findById(id);
-            return customer.map(ResponseEntity::ok)
-                          .orElse(ResponseEntity.notFound().build());
-        } catch (ResourceNotFoundException e) {
-            log.error("Customer not found: {}", e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            log.error("Error getting customer: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Get customer by ID", description = "Retrieve a specific customer by their ID")
+    public ResponseEntity<CustomerDto> getCustomerById(@PathVariable Long id) {
+        log.info("GET /api/customers/{} - Fetching customer by id", id);
+        CustomerDto customer = customerService.getCustomerById(id);
+        return ResponseEntity.ok(customer);
     }
 
-    /**
-     * Tạo khách hàng mới
-     * POST /api/customers
-     * Body: JSON của Customer
-     */
+    @GetMapping("/code/{code}")
+    @Operation(summary = "Get customer by code", description = "Retrieve a specific customer by their code")
+    public ResponseEntity<CustomerDto> getCustomerByCode(@PathVariable String code) {
+        log.info("GET /api/customers/code/{} - Fetching customer by code", code);
+        CustomerDto customer = customerService.getCustomerByCode(code);
+        return ResponseEntity.ok(customer);
+    }
+
     @PostMapping
-    public ResponseEntity<Customer> createCustomer(@Valid @RequestBody Customer customer) {
-        try {
-            Customer savedCustomer = customerService.createCustomer(customer);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedCustomer);
-        } catch (BusinessException e) {
-            log.error("Business error creating customer: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(null);
-        } catch (Exception e) {
-            log.error("Error creating customer: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Create new customer", description = "Create a new customer")
+    public ResponseEntity<CustomerDto> createCustomer(@Valid @RequestBody CreateCustomerRequest request) {
+        log.info("POST /api/customers - Creating new customer: {}", request.getName());
+        CustomerDto customer = customerService.createCustomer(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(customer);
     }
 
-    /**
-     * Cập nhật thông tin khách hàng
-     * PUT /api/customers/1
-     * Body: JSON của Customer
-     */
     @PutMapping("/{id}")
-    public ResponseEntity<Customer> updateCustomer(
-            @PathVariable Long id, 
-            @Valid @RequestBody Customer customer
-    ) {
-        try {
-            Customer updatedCustomer = customerService.updateCustomer(id, customer);
-            return ResponseEntity.ok(updatedCustomer);
-        } catch (BusinessException e) {
-            log.error("Business error updating customer: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(null);
-        } catch (ResourceNotFoundException e) {
-            log.error("Customer not found: {}", e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            log.error("Error updating customer: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Update customer", description = "Update an existing customer")
+    public ResponseEntity<CustomerDto> updateCustomer(@PathVariable Long id, @Valid @RequestBody CreateCustomerRequest request) {
+        log.info("PUT /api/customers/{} - Updating customer", id);
+        CustomerDto customer = customerService.updateCustomer(id, request);
+        return ResponseEntity.ok(customer);
     }
 
-    /**
-     * Xóa khách hàng
-     * DELETE /api/customers/1
-     */
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete customer", description = "Delete a customer (soft delete)")
     public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
-        try {
-            customerService.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } catch (ResourceNotFoundException e) {
-            log.error("Customer not found: {}", e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            log.error("Error deleting customer: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("DELETE /api/customers/{} - Deleting customer", id);
+        customerService.deleteCustomer(id);
+        return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Tìm kiếm khách hàng theo tên
-     * GET /api/customers/search?name=Nguyen
-     */
     @GetMapping("/search")
-    public ResponseEntity<List<Customer>> searchCustomers(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String phone
-    ) {
-        try {
-            List<Customer> customers;
-            
-            if (name != null && !name.isEmpty()) {
-                customers = customerService.findByNameContaining(name);
-            } else if (phone != null && !phone.isEmpty()) {
-                customers = customerService.findByPhoneContaining(phone);
-            } else {
-                customers = customerService.findAll();
-            }
-            
-            return ResponseEntity.ok(customers);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Search customers", description = "Search customers by keyword")
+    public ResponseEntity<List<CustomerDto>> searchCustomers(@RequestParam String keyword) {
+        log.info("GET /api/customers/search - Searching customers with keyword: {}", keyword);
+        List<CustomerDto> customers = customerService.searchCustomers(keyword);
+        return ResponseEntity.ok(customers);
     }
 
-    /**
-     * Lấy danh sách khách hàng VIP (theo tổng tiền mua)
-     * GET /api/customers/vip
-     */
-    @GetMapping("/vip")
-    public ResponseEntity<List<Customer>> getVipCustomers() {
-        try {
-            List<Customer> vipCustomers = customerService.findVipCustomers();
-            return ResponseEntity.ok(vipCustomers);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @GetMapping("/type/{customerType}")
+    @Operation(summary = "Get customers by type", description = "Retrieve customers by customer type")
+    public ResponseEntity<List<CustomerDto>> getCustomersByType(@PathVariable Customer.CustomerType customerType) {
+        log.info("GET /api/customers/type/{} - Fetching customers by type", customerType);
+        List<CustomerDto> customers = customerService.getCustomersByType(customerType);
+        return ResponseEntity.ok(customers);
     }
 
-    /**
-     * Lấy số lượng khách hàng
-     * GET /api/customers/count
-     */
-    @GetMapping("/count")
-    public ResponseEntity<Long> getCustomerCount() {
-        try {
-            long count = customerService.count();
-            return ResponseEntity.ok(count);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @GetMapping("/status/{status}")
+    @Operation(summary = "Get customers by status", description = "Retrieve customers by status")
+    public ResponseEntity<List<CustomerDto>> getCustomersByStatus(@PathVariable Customer.CustomerStatus status) {
+        log.info("GET /api/customers/status/{} - Fetching customers by status", status);
+        List<CustomerDto> customers = customerService.getCustomersByStatus(status);
+        return ResponseEntity.ok(customers);
     }
 
-    /**
-     * Lấy tất cả khách cha (parent_id = null)
-     * GET /api/customers/parents
-     */
-    @GetMapping("/parents")
-    public ResponseEntity<List<Customer>> getAllParents() {
-        try {
-            List<Customer> parents = customerService.findAllParents();
-            return ResponseEntity.ok(parents);
-        } catch (Exception e) {
-            log.error("Error getting parent customers: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    /**
-     * Lấy danh sách khách con của một khách cha
-     * GET /api/customers/{parentId}/children
-     */
     @GetMapping("/{parentId}/children")
-    public ResponseEntity<List<Customer>> getChildren(@PathVariable Long parentId) {
-        try {
-            List<Customer> children = customerService.findChildren(parentId);
-            return ResponseEntity.ok(children);
-        } catch (Exception e) {
-            log.error("Error getting children for parent {}: {}", parentId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Get child customers", description = "Retrieve child customers for a parent customer")
+    public ResponseEntity<List<CustomerDto>> getChildCustomers(@PathVariable Long parentId) {
+        log.info("GET /api/customers/{}/children - Fetching child customers", parentId);
+        List<CustomerDto> children = customerService.getChildCustomers(parentId);
+        return ResponseEntity.ok(children);
+    }
+
+    @GetMapping("/{childId}/parent")
+    @Operation(summary = "Get parent customer", description = "Retrieve parent customer for a child customer")
+    public ResponseEntity<CustomerDto> getParentCustomer(@PathVariable Long childId) {
+        log.info("GET /api/customers/{}/parent - Fetching parent customer", childId);
+        CustomerDto parent = customerService.getParentCustomer(childId);
+        return ResponseEntity.ok(parent);
+    }
+
+    @PutMapping("/{id}/debt")
+    @Operation(summary = "Update customer debt", description = "Update customer's current debt")
+    public ResponseEntity<Void> updateCustomerDebt(@PathVariable Long id, @RequestParam Double amount) {
+        log.info("PUT /api/customers/{}/debt - Updating customer debt by amount: {}", id, amount);
+        customerService.updateCustomerDebt(id, amount);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/loyalty-points")
+    @Operation(summary = "Update customer loyalty points", description = "Update customer's loyalty points")
+    public ResponseEntity<Void> updateCustomerLoyaltyPoints(@PathVariable Long id, @RequestParam Integer points) {
+        log.info("PUT /api/customers/{}/loyalty-points - Updating customer loyalty points by: {}", id, points);
+        customerService.updateCustomerLoyaltyPoints(id, points);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/purchase-history")
+    @Operation(summary = "Update customer purchase history", description = "Update customer's purchase history")
+    public ResponseEntity<Void> updateCustomerPurchaseHistory(@PathVariable Long id) {
+        log.info("PUT /api/customers/{}/purchase-history - Updating customer purchase history", id);
+        customerService.updateCustomerPurchaseHistory(id);
+        return ResponseEntity.ok().build();
     }
 }

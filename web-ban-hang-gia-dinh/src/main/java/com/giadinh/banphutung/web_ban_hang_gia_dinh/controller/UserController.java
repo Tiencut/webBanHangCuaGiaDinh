@@ -1,208 +1,163 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.controller;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.UserDto;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.User;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.User.UserRole;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.UserService;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
-
-import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "*")
+@Tag(name = "User Management", description = "APIs for managing users")
 public class UserController {
-    
+
     private final UserService userService;
-    
-    // GET /api/users - Lấy tất cả user active
+
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        log.info("Getting all active users");
-        List<User> users = userService.findAllActiveUsers();
+    @Operation(summary = "Get all users", description = "Retrieve a list of all active users")
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        log.info("GET /api/users - Fetching all users");
+        List<UserDto> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
-    
-    // GET /api/users/{id} - Lấy user theo ID
+
+    @GetMapping("/page")
+    @Operation(summary = "Get users with pagination", description = "Retrieve users with pagination support")
+    public ResponseEntity<Page<UserDto>> getUsersWithPagination(Pageable pageable) {
+        log.info("GET /api/users/page - Fetching users with pagination: {}", pageable);
+        Page<UserDto> users = userService.getUsersWithPagination(pageable);
+        return ResponseEntity.ok(users);
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        log.info("Getting user with id: {}", id);
-        return userService.findById(id)
-            .map(user -> ResponseEntity.ok(user))
-            .orElse(ResponseEntity.notFound().build());
+    @Operation(summary = "Get user by ID", description = "Retrieve a specific user by their ID")
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
+        log.info("GET /api/users/{} - Fetching user by id", id);
+        UserDto user = userService.getUserById(id);
+        return ResponseEntity.ok(user);
     }
-    
-    // GET /api/users/username/{username} - Lấy user theo username
+
     @GetMapping("/username/{username}")
-    public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
-        log.info("Getting user with username: {}", username);
-        return userService.findByUsername(username)
-            .map(user -> ResponseEntity.ok(user))
-            .orElse(ResponseEntity.notFound().build());
+    @Operation(summary = "Get user by username", description = "Retrieve a specific user by their username")
+    public ResponseEntity<UserDto> getUserByUsername(@PathVariable String username) {
+        log.info("GET /api/users/username/{} - Fetching user by username", username);
+        UserDto user = userService.getUserByUsername(username);
+        return ResponseEntity.ok(user);
     }
-    
-    // GET /api/users/role/{role} - Lấy user theo role
-    @GetMapping("/role/{role}")
-    public ResponseEntity<List<User>> getUsersByRole(@PathVariable UserRole role) {
-        log.info("Getting users with role: {}", role);
-        List<User> users = userService.findByRole(role);
-        return ResponseEntity.ok(users);
+
+    @GetMapping("/email/{email}")
+    @Operation(summary = "Get user by email", description = "Retrieve a specific user by their email")
+    public ResponseEntity<UserDto> getUserByEmail(@PathVariable String email) {
+        log.info("GET /api/users/email/{} - Fetching user by email", email);
+        UserDto user = userService.getUserByEmail(email);
+        return ResponseEntity.ok(user);
     }
-    
-    // GET /api/users/search - Tìm kiếm user theo tên
-    @GetMapping("/search")
-    public ResponseEntity<List<User>> searchUsers(@RequestParam String name) {
-        log.info("Searching users with name: {}", name);
-        List<User> users = userService.searchUsersByName(name);
-        return ResponseEntity.ok(users);
-    }
-    
-    /**
-     * Tạo user mới
-     * POST /api/users
-     */
+
     @PostMapping
-    public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
-        try {
-            User savedUser = userService.createUser(user);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
-        } catch (BusinessException e) {
-            log.error("Business error creating user: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(null);
-        } catch (Exception e) {
-            log.error("Error creating user: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Create new user", description = "Create a new user")
+    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto, @RequestParam String password) {
+        log.info("POST /api/users - Creating new user: {}", userDto.getUsername());
+        UserDto user = userService.createUser(userDto, password);
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
-    /**
-     * Cập nhật user
-     * PUT /api/users/{id}
-     */
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(
-            @PathVariable Long id, 
-            @Valid @RequestBody User user
-    ) {
-        try {
-            User updatedUser = userService.updateUser(id, user);
-            return ResponseEntity.ok(updatedUser);
-        } catch (BusinessException e) {
-            log.error("Business error updating user: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(null);
-        } catch (ResourceNotFoundException e) {
-            log.error("User not found: {}", e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            log.error("Error updating user: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Update user", description = "Update an existing user")
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @Valid @RequestBody UserDto userDto) {
+        log.info("PUT /api/users/{} - Updating user", id);
+        UserDto user = userService.updateUser(id, userDto);
+        return ResponseEntity.ok(user);
     }
 
-    /**
-     * Đổi password
-     * PUT /api/users/{id}/change-password
-     */
-    @PutMapping("/{id}/change-password")
-    public ResponseEntity<Void> changePassword(
-            @PathVariable Long id,
-            @RequestParam String oldPassword,
-            @RequestParam String newPassword
-    ) {
-        try {
-            userService.changePassword(id, oldPassword, newPassword);
-            return ResponseEntity.ok().build();
-        } catch (BusinessException e) {
-            log.error("Business error changing password: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
-        } catch (ResourceNotFoundException e) {
-            log.error("User not found: {}", e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            log.error("Error changing password: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    /**
-     * Reset password
-     * PUT /api/users/{id}/reset-password
-     */
-    @PutMapping("/{id}/reset-password")
-    public ResponseEntity<Void> resetPassword(
-            @PathVariable Long id,
-            @RequestParam String newPassword
-    ) {
-        try {
-            userService.resetPassword(id, newPassword);
-            return ResponseEntity.ok().build();
-        } catch (ResourceNotFoundException e) {
-            log.error("User not found: {}", e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            log.error("Error resetting password: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    /**
-     * Chuyển đổi trạng thái user
-     * PUT /api/users/{id}/toggle-status
-     */
-    @PutMapping("/{id}/toggle-status")
-    public ResponseEntity<Void> toggleUserStatus(@PathVariable Long id) {
-        try {
-            userService.toggleUserStatus(id);
-            return ResponseEntity.ok().build();
-        } catch (ResourceNotFoundException e) {
-            log.error("User not found: {}", e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            log.error("Error toggling user status: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-    
-    // DELETE /api/users/{id} - Xóa user (soft delete)
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete user", description = "Delete a user (soft delete)")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        log.info("Deleting user with id: {}", id);
-        try {
-            userService.deleteUser(id);
-            return ResponseEntity.noContent().build();
-        } catch (ResourceNotFoundException e) {
-            log.error("User not found: {}", e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            log.error("Error deleting user: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("DELETE /api/users/{} - Deleting user", id);
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
-    
-    // DTO cho đổi password
-    public static class PasswordChangeRequest {
-        public String oldPassword;
-        public String newPassword;
+
+    @PutMapping("/{id}/change-password")
+    @Operation(summary = "Change password", description = "Change user password")
+    public ResponseEntity<Void> changePassword(@PathVariable Long id, @RequestParam String oldPassword, @RequestParam String newPassword) {
+        log.info("PUT /api/users/{}/change-password - Changing password", id);
+        userService.changePassword(id, oldPassword, newPassword);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/reset-password")
+    @Operation(summary = "Reset password", description = "Reset user password")
+    public ResponseEntity<Void> resetPassword(@PathVariable Long id, @RequestParam String newPassword) {
+        log.info("PUT /api/users/{}/reset-password - Resetting password", id);
+        userService.resetPassword(id, newPassword);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/update-last-login")
+    @Operation(summary = "Update last login", description = "Update user's last login timestamp")
+    public ResponseEntity<Void> updateLastLogin(@PathVariable Long id) {
+        log.info("PUT /api/users/{}/update-last-login - Updating last login", id);
+        userService.updateLastLogin(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/role/{role}")
+    @Operation(summary = "Get users by role", description = "Retrieve users by role")
+    public ResponseEntity<List<UserDto>> getUsersByRole(@PathVariable User.Role role) {
+        log.info("GET /api/users/role/{} - Fetching users by role", role);
+        List<UserDto> users = userService.getUsersByRole(role);
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/status/{status}")
+    @Operation(summary = "Get users by status", description = "Retrieve users by status")
+    public ResponseEntity<List<UserDto>> getUsersByStatus(@PathVariable User.UserStatus status) {
+        log.info("GET /api/users/status/{} - Fetching users by status", status);
+        List<UserDto> users = userService.getUsersByStatus(status);
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "Search users", description = "Search users by keyword")
+    public ResponseEntity<List<UserDto>> searchUsers(@RequestParam String keyword) {
+        log.info("GET /api/users/search - Searching users with keyword: {}", keyword);
+        List<UserDto> users = userService.searchUsers(keyword);
+        return ResponseEntity.ok(users);
+    }
+
+    @PutMapping("/{id}/activate")
+    @Operation(summary = "Activate user", description = "Activate a user")
+    public ResponseEntity<Void> activateUser(@PathVariable Long id) {
+        log.info("PUT /api/users/{}/activate - Activating user", id);
+        userService.activateUser(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/deactivate")
+    @Operation(summary = "Deactivate user", description = "Deactivate a user")
+    public ResponseEntity<Void> deactivateUser(@PathVariable Long id) {
+        log.info("PUT /api/users/{}/deactivate - Deactivating user", id);
+        userService.deactivateUser(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/validate-credentials")
+    @Operation(summary = "Validate credentials", description = "Validate user credentials")
+    public ResponseEntity<Boolean> validateCredentials(@RequestParam String username, @RequestParam String password) {
+        log.info("POST /api/users/validate-credentials - Validating credentials for username: {}", username);
+        boolean isValid = userService.validateCredentials(username, password);
+        return ResponseEntity.ok(isValid);
     }
 }

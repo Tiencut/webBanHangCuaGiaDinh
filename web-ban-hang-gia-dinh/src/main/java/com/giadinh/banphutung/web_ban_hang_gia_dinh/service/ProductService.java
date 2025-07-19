@@ -16,6 +16,9 @@ import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.CategoryRepositor
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.ProductRepository;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CreateProductRequest;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.ProductDto;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.mapper.ProductMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,46 +31,36 @@ public class ProductService {
     
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductMapper productMapper;
     
-    // Tạo product mới
-    public Product createProduct(Product product) {
-        log.info("Creating new product: {}", product.getName());
-        
-        // Kiểm tra code đã tồn tại
-        if (product.getCode() != null && productRepository.existsByCode(product.getCode())) {
-            throw new BusinessException("Product code đã tồn tại: " + product.getCode());
-        }
-        
-        // Tự động tạo code nếu chưa có
-        if (product.getCode() == null || product.getCode().trim().isEmpty()) {
-            product.setCode(generateProductCode(product.getName()));
-        }
-        
-        // Kiểm tra part number đã tồn tại
-        if (product.getPartNumber() != null && 
-            productRepository.existsByPartNumber(product.getPartNumber())) {
-            throw new BusinessException("Part number đã tồn tại: " + product.getPartNumber());
-        }
+    // Tạo product mới từ DTO
+    public ProductDto createProduct(CreateProductRequest request) {
+        log.info("Creating new product: {}", request.getName());
         
         // Validate category
-        if (product.getCategory() != null) {
-            Category category = categoryRepository.findById(product.getCategory().getId())
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-            product.setCategory(category);
         }
+        
+        // Map request to entity
+        Product product = productMapper.toEntity(request);
         
         // Set default values
         if (product.getSellingPrice() == null) {
             product.setSellingPrice(product.getBasePrice());
         }
         
-        return productRepository.save(product);
+        // Save and return DTO
+        Product savedProduct = productRepository.save(product);
+        return productMapper.toDto(savedProduct);
     }
     
-    // Tìm product theo ID
+    // Tìm product theo ID và trả về DTO
     @Transactional(readOnly = true)
-    public Optional<Product> findById(Long id) {
-        return productRepository.findById(id);
+    public Optional<ProductDto> findByIdAsDto(Long id) {
+        return productRepository.findById(id)
+                .map(productMapper::toDto);
     }
     
     // Tìm product theo code
@@ -82,10 +75,11 @@ public class ProductService {
         return productRepository.findByPartNumber(partNumber);
     }
     
-    // Tìm tất cả product active
+    // Tìm tất cả product active và trả về DTO list
     @Transactional(readOnly = true)
-    public List<Product> findAllActiveProducts() {
-        return productRepository.findByStatusAndIsActiveTrueOrderByNameAsc(ProductStatus.ACTIVE);
+    public List<ProductDto> findAllActiveProductsAsDto() {
+        List<Product> products = productRepository.findByStatusAndIsActiveTrueOrderByNameAsc(ProductStatus.ACTIVE);
+        return productMapper.toDtoList(products);
     }
     
     // Tìm product theo category

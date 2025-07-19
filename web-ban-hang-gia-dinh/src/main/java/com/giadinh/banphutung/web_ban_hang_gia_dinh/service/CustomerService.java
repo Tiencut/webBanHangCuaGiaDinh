@@ -1,346 +1,192 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.service;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CreateCustomerRequest;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CustomerDto;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Customer;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.mapper.CustomerMapper;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.CustomerRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Customer;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Customer.CustomerStatus;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Customer.CustomerType;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.CustomerRepository;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class CustomerService {
-    
+
     private final CustomerRepository customerRepository;
-    
-    // Tạo customer mới
-    public Customer createCustomer(Customer customer) {
-        log.info("Creating new customer: {}", customer.getName());
-        
-        // Kiểm tra code đã tồn tại
-        if (customer.getCode() != null && customerRepository.existsByCode(customer.getCode())) {
-            throw new BusinessException("Customer code đã tồn tại: " + customer.getCode());
-        }
-        
-        // Kiểm tra phone đã tồn tại
-        if (customer.getPhone() != null && customerRepository.existsByPhone(customer.getPhone())) {
-            throw new BusinessException("Số điện thoại đã tồn tại: " + customer.getPhone());
-        }
-        
-        // Kiểm tra email đã tồn tại
-        if (customer.getEmail() != null && customerRepository.existsByEmail(customer.getEmail())) {
-            throw new BusinessException("Email đã tồn tại: " + customer.getEmail());
-        }
-        
-        // Tự động tạo code nếu chưa có
-        if (customer.getCode() == null || customer.getCode().trim().isEmpty()) {
-            customer.setCode(generateCustomerCode(customer.getName()));
-        }
-        
-        // Set default values
-        if (customer.getCreditLimit() == null) {
-            customer.setCreditLimit(BigDecimal.ZERO);
-        }
-        if (customer.getCurrentDebt() == null) {
-            customer.setCurrentDebt(BigDecimal.ZERO);
-        }
-        
-        return customerRepository.save(customer);
-    }
-    
-    // Tìm customer theo ID
-    @Transactional(readOnly = true)
-    public Optional<Customer> findById(Long id) {
-        return customerRepository.findById(id);
-    }
-    
-    // Tìm customer theo code
-    @Transactional(readOnly = true)
-    public Optional<Customer> findByCode(String code) {
-        return customerRepository.findByCode(code);
-    }
-    
-    // Tìm customer theo phone
-    @Transactional(readOnly = true)
-    public Optional<Customer> findByPhone(String phone) {
-        return customerRepository.findByPhone(phone);
-    }
-    
-    // Tìm tất cả customer active
-    @Transactional(readOnly = true)
-    public List<Customer> findAllActiveCustomers() {
-        return customerRepository.findByStatusOrderByNameAsc(CustomerStatus.ACTIVE);
-    }
-    
-    // Tìm customer theo type
-    @Transactional(readOnly = true)
-    public List<Customer> findByCustomerType(CustomerType type) {
-        return customerRepository.findByCustomerType(type);
-    }
-    
-    // Tìm customer VIP
-    @Transactional(readOnly = true)
-    public List<Customer> findVipCustomers() {
-        return customerRepository.findByCustomerTypeOrTotalSpentGreaterThanEqual(
-            CustomerType.VIP, new BigDecimal("50000000"));
-    }
-    
-    // ========== CRUD Methods cơ bản ==========
-    
-    // Lấy tất cả customers
-    @Transactional(readOnly = true)
-    public List<Customer> findAll() {
-        return customerRepository.findAll();
-    }
-    
-    // Lấy customers với phân trang
-    @Transactional(readOnly = true)
-    public Page<Customer> findAll(Pageable pageable) {
-        return customerRepository.findAll(pageable);
-    }
-    
-    // Lưu customer (create/update)
-    public Customer save(Customer customer) {
-        return customerRepository.save(customer);
-    }
-    
-    // Kiểm tra customer tồn tại
-    @Transactional(readOnly = true)
-    public boolean existsById(Long id) {
-        return customerRepository.existsById(id);
-    }
-    
-    // Xóa customer theo ID
-    public void deleteById(Long id) {
-        customerRepository.deleteById(id);
-    }
-    
-    // Đếm số lượng customer
-    @Transactional(readOnly = true)
-    public long count() {
-        return customerRepository.count();
-    }
-    
-    // Tìm kiếm customer theo tên
-    @Transactional(readOnly = true)
-    public List<Customer> findByNameContaining(String name) {
-        return customerRepository.findByNameContainingIgnoreCase(name);
-    }
-    
-    // Tìm kiếm customer theo phone
-    @Transactional(readOnly = true)
-    public List<Customer> findByPhoneContaining(String phone) {
-        return customerRepository.findByPhoneContaining(phone);
-    }
-    
-    // ========== End CRUD Methods ==========
-    
-    // Cập nhật customer
-    public Customer updateCustomer(Long id, Customer customerUpdate) {
-        log.info("Updating customer with id: {}", id);
-        
-        Customer existingCustomer = customerRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
-        
-        // Cập nhật thông tin cơ bản
-        existingCustomer.setName(customerUpdate.getName());
-        existingCustomer.setAddress(customerUpdate.getAddress());
-        existingCustomer.setContactPerson(customerUpdate.getContactPerson());
-        existingCustomer.setTaxCode(customerUpdate.getTaxCode());
-        existingCustomer.setCompanyName(customerUpdate.getCompanyName());
-        existingCustomer.setCustomerType(customerUpdate.getCustomerType());
-        existingCustomer.setCreditLimit(customerUpdate.getCreditLimit());
-        existingCustomer.setDiscountPercentage(customerUpdate.getDiscountPercentage());
-        existingCustomer.setPreferredVehicleBrands(customerUpdate.getPreferredVehicleBrands());
-        existingCustomer.setNotes(customerUpdate.getNotes());
-        
-        // Cập nhật code nếu khác
-        if (!existingCustomer.getCode().equals(customerUpdate.getCode())) {
-            if (customerRepository.existsByCode(customerUpdate.getCode())) {
-                throw new BusinessException("Customer code đã tồn tại: " + customerUpdate.getCode());
-            }
-            existingCustomer.setCode(customerUpdate.getCode());
-        }
-        
-        // Cập nhật phone nếu khác
-        if (customerUpdate.getPhone() != null && 
-            !customerUpdate.getPhone().equals(existingCustomer.getPhone())) {
-            if (customerRepository.existsByPhone(customerUpdate.getPhone())) {
-                throw new BusinessException("Số điện thoại đã tồn tại: " + customerUpdate.getPhone());
-            }
-            existingCustomer.setPhone(customerUpdate.getPhone());
-        }
-        
-        // Cập nhật email nếu khác
-        if (customerUpdate.getEmail() != null && 
-            !customerUpdate.getEmail().equals(existingCustomer.getEmail())) {
-            if (customerRepository.existsByEmail(customerUpdate.getEmail())) {
-                throw new BusinessException("Email đã tồn tại: " + customerUpdate.getEmail());
-            }
-            existingCustomer.setEmail(customerUpdate.getEmail());
-        }
-        
-        return customerRepository.save(existingCustomer);
-    }
-    
-    // Cập nhật công nợ customer
-    public Customer updateCustomerDebt(Long id, BigDecimal debtAmount) {
-        Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
-        
-        customer.setCurrentDebt(customer.getCurrentDebt().add(debtAmount));
-        return customerRepository.save(customer);
-    }
-    
-    // Thanh toán công nợ
-    public Customer payDebt(Long id, BigDecimal paymentAmount) {
-        Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
-        
-        if (paymentAmount.compareTo(customer.getCurrentDebt()) > 0) {
-            throw new BusinessException("Số tiền thanh toán không thể lớn hơn công nợ hiện tại");
-        }
-        
-        customer.setCurrentDebt(customer.getCurrentDebt().subtract(paymentAmount));
-        return customerRepository.save(customer);
-    }
-    
-    // Cộng điểm tích lũy
-    public Customer addLoyaltyPoints(Long id, Integer points) {
-        Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
-        
-        customer.setLoyaltyPoints(customer.getLoyaltyPoints() + points);
-        return customerRepository.save(customer);
-    }
-    
-    // Cập nhật thống kê mua hàng
-    public Customer updatePurchaseStats(Long id, BigDecimal orderAmount) {
-        Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
-        
-        // Cập nhật tổng chi tiêu
-        customer.setTotalSpent(customer.getTotalSpent().add(orderAmount));
-        
-        // Cập nhật số đơn hàng
-        customer.setTotalOrders(customer.getTotalOrders() + 1);
-        
-        // Cập nhật ngày mua hàng
-        LocalDate today = LocalDate.now();
-        customer.setLastPurchaseDate(today);
-        
-        if (customer.getFirstPurchaseDate() == null) {
-            customer.setFirstPurchaseDate(today);
-        }
-        
-        // Tự động nâng cấp lên VIP nếu đủ điều kiện
-        if (customer.getTotalSpent().compareTo(new BigDecimal("50000000")) >= 0 && 
-            customer.getCustomerType() != CustomerType.VIP) {
-            customer.setCustomerType(CustomerType.VIP);
-            log.info("Customer {} upgraded to VIP", customer.getName());
-        }
-        
-        return customerRepository.save(customer);
-    }
-    
-    // Chuyển đổi trạng thái customer
-    public void toggleCustomerStatus(Long id) {
-        Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
-        
-        if (customer.getStatus() == CustomerStatus.ACTIVE) {
-            customer.setStatus(CustomerStatus.INACTIVE);
-        } else if (customer.getStatus() == CustomerStatus.INACTIVE) {
-            customer.setStatus(CustomerStatus.ACTIVE);
-        }
-        
-        customerRepository.save(customer);
-        log.info("Customer {} status changed to: {}", customer.getName(), customer.getStatus());
-    }
-    
-    // Blacklist customer
-    public void blacklistCustomer(Long id, String reason) {
-        Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
-        
-        customer.setStatus(CustomerStatus.BLACKLISTED);
-        customer.setNotes(customer.getNotes() + "\n[BLACKLISTED] " + reason);
-        
-        customerRepository.save(customer);
-        log.warn("Customer {} has been blacklisted: {}", customer.getName(), reason);
-    }
-    
-    // Lấy thống kê customer
-    @Transactional(readOnly = true)
-    public CustomerStats getCustomerStats() {
-        Long totalCustomers = customerRepository.count();
-        Long activeCustomers = customerRepository.countByCustomerType(CustomerType.RETAIL) +
-                              customerRepository.countByCustomerType(CustomerType.WHOLESALE) +
-                              customerRepository.countByCustomerType(CustomerType.GARAGE) +
-                              customerRepository.countByCustomerType(CustomerType.DEALER) +
-                              customerRepository.countByCustomerType(CustomerType.VIP);
-        BigDecimal totalDebt = customerRepository.getTotalDebt();
-        
-        return new CustomerStats(totalCustomers, activeCustomers, totalDebt);
-    }
-    
-    // Lấy danh sách khách con theo parentId
-    @Transactional(readOnly = true)
-    public List<Customer> findChildren(Long parentId) {
-        return customerRepository.findByParent_Id(parentId);
+    private final CustomerMapper customerMapper;
+
+    public List<CustomerDto> getAllCustomers() {
+        log.info("Fetching all customers");
+        List<Customer> customers = customerRepository.findByIsActiveTrue();
+        return customerMapper.toDtoList(customers);
     }
 
-    // Lấy tất cả khách cha (parent_id = null)
-    @Transactional(readOnly = true)
-    public List<Customer> findAllParents() {
-        return customerRepository.findByParentIsNull();
+    public Page<CustomerDto> getCustomersWithPagination(Pageable pageable) {
+        log.info("Fetching customers with pagination: {}", pageable);
+        Page<Customer> customers = customerRepository.findByIsActiveTrue(pageable);
+        return customers.map(customerMapper::toDto);
     }
-    
-    // Helper methods
-    private String generateCustomerCode(String name) {
-        // Tạo code từ tên (lấy 3 ký tự đầu + số)
-        String prefix = name.toLowerCase()
-                           .replaceAll("[^a-z0-9]", "")
-                           .substring(0, Math.min(3, name.length()));
+
+    public CustomerDto getCustomerById(Long id) {
+        log.info("Fetching customer by id: {}", id);
+        Customer customer = customerRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
+        return customerMapper.toDto(customer);
+    }
+
+    public CustomerDto getCustomerByCode(String code) {
+        log.info("Fetching customer by code: {}", code);
+        Customer customer = customerRepository.findByCodeAndIsActiveTrue(code)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with code: " + code));
+        return customerMapper.toDto(customer);
+    }
+
+    public CustomerDto createCustomer(CreateCustomerRequest request) {
+        log.info("Creating new customer: {}", request.getName());
         
-        String code = "KH" + prefix.toUpperCase() + String.format("%04d", 
-            customerRepository.count() + 1);
+        // Check if customer code already exists
+        if (request.getCode() != null && !request.getCode().trim().isEmpty()) {
+            Optional<Customer> existingCustomer = customerRepository.findByCodeAndIsActiveTrue(request.getCode());
+            if (existingCustomer.isPresent()) {
+                throw new BusinessException("Customer code already exists: " + request.getCode());
+            }
+        }
+
+        Customer customer = customerMapper.toEntity(request);
         
-        // Đảm bảo unique
-        int counter = 1;
-        String originalCode = code;
-        while (customerRepository.existsByCode(code)) {
-            code = originalCode + "_" + counter++;
+        // Set parent if provided
+        if (request.getParentId() != null) {
+            Customer parent = customerRepository.findByIdAndIsActiveTrue(request.getParentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Parent customer not found with id: " + request.getParentId()));
+            customer.setParent(parent);
+        }
+
+        Customer savedCustomer = customerRepository.save(customer);
+        log.info("Customer created successfully with id: {}", savedCustomer.getId());
+        return customerMapper.toDto(savedCustomer);
+    }
+
+    public CustomerDto updateCustomer(Long id, CreateCustomerRequest request) {
+        log.info("Updating customer with id: {}", id);
+        Customer customer = customerRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
+
+        // Check if new code conflicts with existing customer
+        if (request.getCode() != null && !request.getCode().trim().isEmpty() && 
+            !request.getCode().equals(customer.getCode())) {
+            Optional<Customer> existingCustomer = customerRepository.findByCodeAndIsActiveTrue(request.getCode());
+            if (existingCustomer.isPresent()) {
+                throw new BusinessException("Customer code already exists: " + request.getCode());
+            }
+        }
+
+        customerMapper.updateEntityFromRequest(request, customer);
+        
+        // Update parent if provided
+        if (request.getParentId() != null) {
+            Customer parent = customerRepository.findByIdAndIsActiveTrue(request.getParentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Parent customer not found with id: " + request.getParentId()));
+            customer.setParent(parent);
+        } else {
+            customer.setParent(null);
+        }
+
+        Customer updatedCustomer = customerRepository.save(customer);
+        log.info("Customer updated successfully with id: {}", updatedCustomer.getId());
+        return customerMapper.toDto(updatedCustomer);
+    }
+
+    public void deleteCustomer(Long id) {
+        log.info("Deleting customer with id: {}", id);
+        Customer customer = customerRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
+        
+        customer.setIsActive(false);
+        customerRepository.save(customer);
+        log.info("Customer deleted successfully with id: {}", id);
+    }
+
+    public List<CustomerDto> searchCustomers(String keyword) {
+        log.info("Searching customers with keyword: {}", keyword);
+        List<Customer> customers = customerRepository.searchCustomers(keyword);
+        return customerMapper.toDtoList(customers);
+    }
+
+    public List<CustomerDto> getCustomersByType(Customer.CustomerType customerType) {
+        log.info("Fetching customers by type: {}", customerType);
+        List<Customer> customers = customerRepository.findByCustomerTypeAndIsActiveTrue(customerType);
+        return customerMapper.toDtoList(customers);
+    }
+
+    public List<CustomerDto> getCustomersByStatus(Customer.CustomerStatus status) {
+        log.info("Fetching customers by status: {}", status);
+        List<Customer> customers = customerRepository.findByStatusAndIsActiveTrue(status);
+        return customerMapper.toDtoList(customers);
+    }
+
+    public List<CustomerDto> getChildCustomers(Long parentId) {
+        log.info("Fetching child customers for parent id: {}", parentId);
+        List<Customer> children = customerRepository.findByParentIdAndIsActiveTrue(parentId);
+        return customerMapper.toDtoList(children);
+    }
+
+    public CustomerDto getParentCustomer(Long childId) {
+        log.info("Fetching parent customer for child id: {}", childId);
+        Customer child = customerRepository.findByIdAndIsActiveTrue(childId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + childId));
+        
+        if (child.getParent() == null) {
+            throw new ResourceNotFoundException("Customer has no parent");
         }
         
-        return code;
+        return customerMapper.toDto(child.getParent());
     }
-    
-    // Inner class for stats
-    public static class CustomerStats {
-        public final Long totalCustomers;
-        public final Long activeCustomers;
-        public final BigDecimal totalDebt;
+
+    public void updateCustomerDebt(Long customerId, Double amount) {
+        log.info("Updating debt for customer id: {} by amount: {}", customerId, amount);
+        Customer customer = customerRepository.findByIdAndIsActiveTrue(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + customerId));
         
-        public CustomerStats(Long totalCustomers, Long activeCustomers, BigDecimal totalDebt) {
-            this.totalCustomers = totalCustomers;
-            this.activeCustomers = activeCustomers;
-            this.totalDebt = totalDebt != null ? totalDebt : BigDecimal.ZERO;
-        }
+        customer.setCurrentDebt(customer.getCurrentDebt().add(java.math.BigDecimal.valueOf(amount)));
+        customerRepository.save(customer);
+        log.info("Customer debt updated successfully");
+    }
+
+    public void updateCustomerLoyaltyPoints(Long customerId, Integer points) {
+        log.info("Updating loyalty points for customer id: {} by points: {}", customerId, points);
+        Customer customer = customerRepository.findByIdAndIsActiveTrue(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + customerId));
+        
+        customer.setLoyaltyPoints(customer.getLoyaltyPoints() + points);
+        customerRepository.save(customer);
+        log.info("Customer loyalty points updated successfully");
+    }
+
+    public void updateCustomerPurchaseHistory(Long customerId) {
+        log.info("Updating purchase history for customer id: {}", customerId);
+        Customer customer = customerRepository.findByIdAndIsActiveTrue(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + customerId));
+        
+        // Update last purchase date
+        customer.setLastPurchaseDate(LocalDate.now());
+        
+        // Update total orders count (this would typically be calculated from orders table)
+        // For now, we'll just increment it
+        customer.setTotalOrders(customer.getTotalOrders() + 1);
+        
+        customerRepository.save(customer);
+        log.info("Customer purchase history updated successfully");
     }
 }

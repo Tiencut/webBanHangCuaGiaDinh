@@ -1,4 +1,7 @@
-package com.giadinh.banphutung.web_banphutung.web_ban_hang_gia_dinh.repository;
+package com.giadinh.banphutung.web_ban_hang_gia_dinh.repository;
+
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -7,9 +10,6 @@ import org.springframework.stereotype.Repository;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.ProductBundle;
-
-import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface ProductBundleRepository extends JpaRepository<ProductBundle, Long> {
@@ -58,7 +58,7 @@ public interface ProductBundleRepository extends JpaRepository<ProductBundle, Lo
     
     // Tìm tất cả sản phẩm con có thể thay thế cho một sản phẩm cụ thể
     @Query("SELECT p FROM Product p WHERE p.id IN " +
-           "(SELECT DISTINCT ps.substituteProduct.id FROM ProductBundle pb " +
+           "(SELECT DISTINCT ps.id FROM ProductBundle pb " +
            "JOIN pb.substituteProducts ps WHERE pb.childProduct.id = :childId)")
     List<Product> findSubstituteProductsForChild(@Param("childId") Long childId);
 } 

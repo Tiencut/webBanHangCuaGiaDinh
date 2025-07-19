@@ -54,6 +54,56 @@ const productsAPI = {
   getTotalStock: (productId) => api.get(`/products/${productId}/total-stock`)
 }
 
+// Product Bundle API Service
+const productBundlesAPI = {
+  // Get all bundles
+  getAll: () => api.get('/product-bundles'),
+
+  // Get bundle by ID
+  getById: (id) => api.get(`/product-bundles/${id}`),
+
+  // Get bundles by parent product
+  getByParentProduct: (parentId) => api.get(`/product-bundles/parent/${parentId}`),
+
+  // Get bundles by child product
+  getByChildProduct: (childId) => api.get(`/product-bundles/child/${childId}`),
+
+  // Get all combo products
+  getComboProducts: () => api.get('/product-bundles/combo-products'),
+
+  // Get substitute products for a child
+  getSubstituteProducts: (childId) => api.get(`/product-bundles/substitutes/${childId}`),
+
+  // Create bundle
+  create: (bundle) => api.post('/product-bundles', bundle),
+
+  // Update bundle
+  update: (id, bundle) => api.put(`/product-bundles/${id}`, bundle),
+
+  // Delete bundle
+  delete: (id) => api.delete(`/product-bundles/${id}`),
+
+  // Add substitute product to bundle
+  addSubstituteProduct: (bundleId, substituteId) => api.post(`/product-bundles/${bundleId}/substitutes/${substituteId}`),
+
+  // Remove substitute product from bundle
+  removeSubstituteProduct: (bundleId, substituteId) => api.delete(`/product-bundles/${bundleId}/substitutes/${substituteId}`),
+
+  // Calculate bundle total price
+  calculateTotalPrice: (parentId) => api.get(`/product-bundles/${parentId}/total-price`),
+
+  // Check if product is combo
+  isComboProduct: (productId) => api.get(`/product-bundles/${productId}/is-combo`),
+
+  // Create combo from products
+  createComboFromProducts: (parentId, childIds, quantities, prices) => api.post('/product-bundles/create-combo', {
+    parentProductId: parentId,
+    childProductIds: childIds,
+    quantities: quantities,
+    prices: prices
+  })
+}
+
 // Customers API Service
 const customersAPI = {
   // Get all customers
@@ -353,6 +403,7 @@ const inventoryAPI = {
 // Export all services
 export {
   productsAPI,
+  productBundlesAPI,
   customersAPI,
   ordersAPI,
   vehiclesAPI,

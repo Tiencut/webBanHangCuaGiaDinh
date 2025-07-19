@@ -1,260 +1,178 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.controller;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.VehicleModelDto;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.VehicleModelService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.VehicleModel;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.VehicleModel.VehicleType;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.VehicleModelService;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
+import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
 
-/**
- * VehicleModelController - API quản lý mẫu xe và gợi ý sản phẩm
- * 
- * Controller này cung cấp các API quan trọng nhất cho nhân viên bán hàng:
- * 
- * 1. **API Gợi ý thông minh**: Khi khách nói "hộp số xe Thaco Ollin"
- *    -> Tìm xe -> Gợi ý sản phẩm phù hợp
- * 
- * 2. **API Tìm kiếm xe**: Tìm mẫu xe theo tên, thương hiệu
- * 
- * 3. **API Quản lý**: CRUD mẫu xe, cập nhật thông tin kỹ thuật
- * 
- * Endpoints chính:
- * - GET /api/vehicles/suggest?product=hộp số&vehicle=thaco ollin
- * - GET /api/vehicles/search?keyword=ollin
- * - GET /api/vehicles/{id}/products (sản phẩm tương thích)
- * - POST /api/vehicles (tạo mẫu xe mới)
- */
 @RestController
-@RequestMapping("/api/vehicles")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/vehicle-models")
+@RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Vehicle Model Management", description = "APIs for managing vehicle models")
 public class VehicleModelController {
 
-    @Autowired
-    private VehicleModelService vehicleModelService;
+    private final VehicleModelService vehicleModelService;
 
-    /**
-     * API Gợi ý sản phẩm theo xe và từ khóa
-     * GET /api/vehicles/suggest?product=hộp số&vehicle=thaco ollin
-     */
-    @GetMapping("/suggest")
-    public ResponseEntity<VehicleModelService.VehicleProductSuggestion> suggestProducts(
-            @RequestParam(required = false) String product,
-            @RequestParam String vehicle
-    ) {
-        try {
-            VehicleModelService.VehicleProductSuggestion suggestion = vehicleModelService
-                .suggestProductsByKeywordAndVehicle(product, vehicle);
-            
-            return ResponseEntity.ok(suggestion);
-        } catch (BusinessException e) {
-            log.error("Business error suggesting products: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(null);
-        } catch (Exception e) {
-            log.error("Error suggesting products: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-
-
-    /**
-     * Lấy tất cả sản phẩm tương thích với 1 mẫu xe
-     * GET /api/vehicles/1/products
-     */
-    @GetMapping("/{id}/products")
-    public ResponseEntity<List<Product>> getCompatibleProducts(@PathVariable Long id) {
-        try {
-            List<Product> products = vehicleModelService.suggestProductsForVehicle(id);
-            return ResponseEntity.ok(products);
-        } catch (ResourceNotFoundException e) {
-            log.error("Vehicle model not found: {}", e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            log.error("Error getting compatible products: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    /**
-     * Lấy danh sách tất cả mẫu xe
-     * GET /api/vehicles
-     */
     @GetMapping
-    public ResponseEntity<List<VehicleModel>> getAllVehicles() {
-        try {
-            List<VehicleModel> vehicles = vehicleModelService.findAll();
-            return ResponseEntity.ok(vehicles);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Get all vehicle models", description = "Retrieve a list of all active vehicle models")
+    public ResponseEntity<List<VehicleModelDto>> getAllVehicleModels() {
+        log.info("GET /api/vehicle-models - Fetching all vehicle models");
+        List<VehicleModelDto> vehicleModels = vehicleModelService.getAllVehicleModels();
+        return ResponseEntity.ok(vehicleModels);
     }
 
-    /**
-     * Lấy thông tin 1 mẫu xe
-     * GET /api/vehicles/1
-     */
+    @GetMapping("/page")
+    @Operation(summary = "Get vehicle models with pagination", description = "Retrieve vehicle models with pagination support")
+    public ResponseEntity<Page<VehicleModelDto>> getVehicleModelsWithPagination(Pageable pageable) {
+        log.info("GET /api/vehicle-models/page - Fetching vehicle models with pagination: {}", pageable);
+        Page<VehicleModelDto> vehicleModels = vehicleModelService.getVehicleModelsWithPagination(pageable);
+        return ResponseEntity.ok(vehicleModels);
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<VehicleModel> getVehicleById(@PathVariable Long id) {
-        try {
-            Optional<VehicleModel> vehicle = vehicleModelService.findById(id);
-            return vehicle.map(ResponseEntity::ok)
-                         .orElse(ResponseEntity.notFound().build());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Get vehicle model by ID", description = "Retrieve a specific vehicle model by its ID")
+    public ResponseEntity<VehicleModelDto> getVehicleModelById(@PathVariable Long id) {
+        log.info("GET /api/vehicle-models/{} - Fetching vehicle model by id", id);
+        VehicleModelDto vehicleModel = vehicleModelService.getVehicleModelById(id);
+        return ResponseEntity.ok(vehicleModel);
     }
 
-    /**
-     * Tạo vehicle model mới
-     * POST /api/vehicle-models
-     */
+    @GetMapping("/code/{code}")
+    @Operation(summary = "Get vehicle model by code", description = "Retrieve a specific vehicle model by its code")
+    public ResponseEntity<VehicleModelDto> getVehicleModelByCode(@PathVariable String code) {
+        log.info("GET /api/vehicle-models/code/{} - Fetching vehicle model by code", code);
+        VehicleModelDto vehicleModel = vehicleModelService.getVehicleModelByCode(code);
+        return ResponseEntity.ok(vehicleModel);
+    }
+
     @PostMapping
-    public ResponseEntity<VehicleModel> createVehicleModel(@Valid @RequestBody VehicleModel vehicleModel) {
-        try {
-            VehicleModel savedVehicleModel = vehicleModelService.createVehicleModel(vehicleModel);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedVehicleModel);
-        } catch (BusinessException e) {
-            log.error("Business error creating vehicle model: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(null);
-        } catch (Exception e) {
-            log.error("Error creating vehicle model: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Create new vehicle model", description = "Create a new vehicle model")
+    public ResponseEntity<VehicleModelDto> createVehicleModel(@Valid @RequestBody VehicleModelDto vehicleModelDto) {
+        log.info("POST /api/vehicle-models - Creating new vehicle model: {} {}", vehicleModelDto.getBrand(), vehicleModelDto.getModel());
+        VehicleModelDto vehicleModel = vehicleModelService.createVehicleModel(vehicleModelDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(vehicleModel);
     }
 
-    /**
-     * Cập nhật vehicle model
-     * PUT /api/vehicle-models/{id}
-     */
     @PutMapping("/{id}")
-    public ResponseEntity<VehicleModel> updateVehicleModel(
-            @PathVariable Long id, 
-            @Valid @RequestBody VehicleModel vehicleModel
-    ) {
-        try {
-            VehicleModel updatedVehicleModel = vehicleModelService.updateVehicleModel(id, vehicleModel);
-            return ResponseEntity.ok(updatedVehicleModel);
-        } catch (BusinessException e) {
-            log.error("Business error updating vehicle model: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(null);
-        } catch (ResourceNotFoundException e) {
-            log.error("Vehicle model not found: {}", e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            log.error("Error updating vehicle model: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Update vehicle model", description = "Update an existing vehicle model")
+    public ResponseEntity<VehicleModelDto> updateVehicleModel(@PathVariable Long id, @Valid @RequestBody VehicleModelDto vehicleModelDto) {
+        log.info("PUT /api/vehicle-models/{} - Updating vehicle model", id);
+        VehicleModelDto vehicleModel = vehicleModelService.updateVehicleModel(id, vehicleModelDto);
+        return ResponseEntity.ok(vehicleModel);
     }
 
-
-
-    /**
-     * Xóa mẫu xe (soft delete)
-     * DELETE /api/vehicles/1
-     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteVehicle(@PathVariable Long id) {
-        try {
-            vehicleModelService.deleteVehicleModel(id);
-            return ResponseEntity.noContent().build();
-        } catch (ResourceNotFoundException e) {
-            log.error("Vehicle model not found: {}", e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            log.error("Error deleting vehicle model: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Delete vehicle model", description = "Delete a vehicle model (soft delete)")
+    public ResponseEntity<Void> deleteVehicleModel(@PathVariable Long id) {
+        log.info("DELETE /api/vehicle-models/{} - Deleting vehicle model", id);
+        vehicleModelService.deleteVehicleModel(id);
+        return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Tìm xe theo thương hiệu
-     * GET /api/vehicles/brand/THACO
-     */
     @GetMapping("/brand/{brand}")
-    public ResponseEntity<List<VehicleModel>> getVehiclesByBrand(@PathVariable String brand) {
-        try {
-            List<VehicleModel> vehicles = vehicleModelService.findByBrand(brand);
-            return ResponseEntity.ok(vehicles);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Get vehicle models by brand", description = "Retrieve vehicle models by brand")
+    public ResponseEntity<List<VehicleModelDto>> getVehicleModelsByBrand(@PathVariable String brand) {
+        log.info("GET /api/vehicle-models/brand/{} - Fetching vehicle models by brand", brand);
+        List<VehicleModelDto> vehicleModels = vehicleModelService.getVehicleModelsByBrand(brand);
+        return ResponseEntity.ok(vehicleModels);
     }
 
-    /**
-     * Tìm xe theo năm sản xuất
-     * GET /api/vehicles/year/2020
-     */
     @GetMapping("/year/{year}")
-    public ResponseEntity<List<VehicleModel>> getVehiclesByYear(@PathVariable int year) {
-        try {
-            List<VehicleModel> vehicles = vehicleModelService.findByProductionYear(year);
-            return ResponseEntity.ok(vehicles);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Get vehicle models by year", description = "Retrieve vehicle models by year")
+    public ResponseEntity<List<VehicleModelDto>> getVehicleModelsByYear(@PathVariable String year) {
+        log.info("GET /api/vehicle-models/year/{} - Fetching vehicle models by year", year);
+        List<VehicleModelDto> vehicleModels = vehicleModelService.getVehicleModelsByYear(year);
+        return ResponseEntity.ok(vehicleModels);
     }
 
-    /**
-     * Tìm xe theo động cơ
-     * GET /api/vehicles/engine/isuzu
-     */
     @GetMapping("/engine/{engine}")
-    public ResponseEntity<List<VehicleModel>> getVehiclesByEngine(@PathVariable String engine) {
-        try {
-            List<VehicleModel> vehicles = vehicleModelService.findByEngine(engine);
-            return ResponseEntity.ok(vehicles);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Get vehicle models by engine", description = "Retrieve vehicle models by engine")
+    public ResponseEntity<List<VehicleModelDto>> getVehicleModelsByEngine(@PathVariable String engine) {
+        log.info("GET /api/vehicle-models/engine/{} - Fetching vehicle models by engine", engine);
+        List<VehicleModelDto> vehicleModels = vehicleModelService.getVehicleModelsByEngine(engine);
+        return ResponseEntity.ok(vehicleModels);
     }
 
-    /**
-     * Lấy xe phổ biến (có nhiều sản phẩm)
-     * GET /api/vehicles/popular
-     */
-    @GetMapping("/popular")
-    public ResponseEntity<List<VehicleModel>> getPopularVehicles() {
-        try {
-            List<VehicleModel> vehicles = vehicleModelService.findPopularVehicles();
-            return ResponseEntity.ok(vehicles);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @GetMapping("/fuel-type/{fuelType}")
+    @Operation(summary = "Get vehicle models by fuel type", description = "Retrieve vehicle models by fuel type")
+    public ResponseEntity<List<VehicleModelDto>> getVehicleModelsByFuelType(@PathVariable String fuelType) {
+        log.info("GET /api/vehicle-models/fuel-type/{} - Fetching vehicle models by fuel type", fuelType);
+        List<VehicleModelDto> vehicleModels = vehicleModelService.getVehicleModelsByFuelType(fuelType);
+        return ResponseEntity.ok(vehicleModels);
     }
 
-    /**
-     * API gợi ý xe theo sản phẩm (ngược lại)
-     * GET /api/vehicles/suggest-for-product/123
-     */
-    @GetMapping("/suggest-for-product/{productId}")
-    public ResponseEntity<List<VehicleModel>> suggestVehiclesForProduct(@PathVariable Long productId) {
-        try {
-            List<VehicleModel> vehicles = vehicleModelService.suggestVehiclesForProduct(productId);
-            return ResponseEntity.ok(vehicles);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @GetMapping("/body-type/{bodyType}")
+    @Operation(summary = "Get vehicle models by body type", description = "Retrieve vehicle models by body type")
+    public ResponseEntity<List<VehicleModelDto>> getVehicleModelsByBodyType(@PathVariable String bodyType) {
+        log.info("GET /api/vehicle-models/body-type/{} - Fetching vehicle models by body type", bodyType);
+        List<VehicleModelDto> vehicleModels = vehicleModelService.getVehicleModelsByBodyType(bodyType);
+        return ResponseEntity.ok(vehicleModels);
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "Search vehicle models", description = "Search vehicle models by keyword")
+    public ResponseEntity<List<VehicleModelDto>> searchVehicleModels(@RequestParam String keyword) {
+        log.info("GET /api/vehicle-models/search - Searching vehicle models with keyword: {}", keyword);
+        List<VehicleModelDto> vehicleModels = vehicleModelService.searchVehicleModels(keyword);
+        return ResponseEntity.ok(vehicleModels);
+    }
+
+    @GetMapping("/brands")
+    @Operation(summary = "Get all brands", description = "Retrieve all unique vehicle brands")
+    public ResponseEntity<List<String>> getAllBrands() {
+        log.info("GET /api/vehicle-models/brands - Fetching all vehicle brands");
+        List<String> brands = vehicleModelService.getAllBrands();
+        return ResponseEntity.ok(brands);
+    }
+
+    @GetMapping("/years")
+    @Operation(summary = "Get all years", description = "Retrieve all unique vehicle years")
+    public ResponseEntity<List<String>> getAllYears() {
+        log.info("GET /api/vehicle-models/years - Fetching all vehicle years");
+        List<String> years = vehicleModelService.getAllYears();
+        return ResponseEntity.ok(years);
+    }
+
+    @GetMapping("/fuel-types")
+    @Operation(summary = "Get all fuel types", description = "Retrieve all unique fuel types")
+    public ResponseEntity<List<String>> getAllFuelTypes() {
+        log.info("GET /api/vehicle-models/fuel-types - Fetching all fuel types");
+        List<String> fuelTypes = vehicleModelService.getAllFuelTypes();
+        return ResponseEntity.ok(fuelTypes);
+    }
+
+    @GetMapping("/body-types")
+    @Operation(summary = "Get all body types", description = "Retrieve all unique body types")
+    public ResponseEntity<List<String>> getAllBodyTypes() {
+        log.info("GET /api/vehicle-models/body-types - Fetching all body types");
+        List<String> bodyTypes = vehicleModelService.getAllBodyTypes();
+        return ResponseEntity.ok(bodyTypes);
+    }
+
+    @GetMapping("/sorted")
+    @Operation(summary = "Get vehicle models by sort order", description = "Retrieve vehicle models ordered by their sort order")
+    public ResponseEntity<List<VehicleModelDto>> getVehicleModelsBySortOrder() {
+        log.info("GET /api/vehicle-models/sorted - Fetching vehicle models by sort order");
+        List<VehicleModelDto> vehicleModels = vehicleModelService.getVehicleModelsBySortOrder();
+        return ResponseEntity.ok(vehicleModels);
+    }
+
+    @PutMapping("/{id}/sort-order")
+    @Operation(summary = "Update vehicle model sort order", description = "Update the sort order of a vehicle model")
+    public ResponseEntity<Void> updateVehicleModelSortOrder(@PathVariable Long id, @RequestParam Integer newSortOrder) {
+        log.info("PUT /api/vehicle-models/{}/sort-order - Updating vehicle model sort order to {}", id, newSortOrder);
+        vehicleModelService.updateVehicleModelSortOrder(id, newSortOrder);
+        return ResponseEntity.ok().build();
     }
 }
