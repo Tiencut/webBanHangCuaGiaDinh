@@ -18,10 +18,36 @@
       </div>
     </div>
 
+    <!-- Column Visibility Controls -->
+    <div class="mb-4 flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <button
+          @click="openColumnSelector"
+          class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center"
+        >
+          <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+          </svg>
+          Hiển thị cột
+        </button>
+        
+        <button
+          @click="resetColumnVisibility"
+          class="px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors text-sm"
+        >
+          Đặt lại
+        </button>
+      </div>
+      
+      <div class="text-sm text-gray-500">
+        {{ visibleColumns.length }}/{{ allColumns.length }} cột đang hiển thị
+      </div>
+    </div>
+
     <!-- DataTable -->
     <DataTable
       :data="products"
-      :columns="columns"
+      :columns="visibleColumns"
       :loading="loading"
       :categories="categories"
       :status-options="statusOptions"
@@ -177,6 +203,68 @@
         </div>
       </template>
     </DataTable>
+
+    <!-- Column Selector Modal -->
+    <div v-if="showColumnSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Chọn cột hiển thị</h3>
+          <button @click="showColumnSelector = false" class="text-gray-400 hover:text-gray-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <button
+              @click="selectAllColumns"
+              class="text-sm text-blue-600 hover:text-blue-800"
+            >
+              Chọn tất cả
+            </button>
+            <button
+              @click="deselectAllColumns"
+              class="text-sm text-gray-600 hover:text-gray-800"
+            >
+              Bỏ chọn tất cả
+            </button>
+          </div>
+          
+          <div class="space-y-2 max-h-60 overflow-y-auto">
+            <label
+              v-for="column in allColumns"
+              :key="column.key"
+              class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                :checked="isColumnVisible(column.key)"
+                @change="toggleColumnVisibility(column.key)"
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <span class="text-sm">{{ column.label }}</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="flex justify-end space-x-3 mt-6">
+          <button
+            @click="showColumnSelector = false"
+            class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            Đóng
+          </button>
+          <button
+            @click="applyColumnVisibility"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Áp dụng
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Stock Details Modal -->
     <div v-if="showStockModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -598,6 +686,11 @@ export default {
     const selectedComboProduct = ref(null)
     const comboComponents = ref([])
     const comboTotalPrice = ref(0)
+    
+    // Column visibility management
+    const showColumnSelector = ref(false)
+    const columnVisibility = ref({})
+    const tempColumnVisibility = ref({})
 
     const newProduct = ref({
       name: '',
@@ -786,6 +879,83 @@ export default {
       },
 
     ])
+    
+    // All columns for reference
+    const allColumns = computed(() => columns.value)
+    
+    // Visible columns based on visibility settings
+    const visibleColumns = computed(() => {
+      return columns.value.filter(column => columnVisibility.value[column.key] !== false)
+    })
+    
+    // Initialize column visibility
+    const initializeColumnVisibility = () => {
+      // Danh sách các cột mặc định nên hiển thị
+      const defaultVisibleKeys = [
+        'image', // tên + ảnh
+        'partNumber',
+        'brand',
+        'model',
+        'vehicleType',
+        'category.name',
+        'sellingPrice',
+        'basePrice', // hoặc costPrice nếu muốn
+        'stock',
+        'status',
+        'actions' // thao tác (nếu có)
+      ];
+      columns.value.forEach(column => {
+        if (columnVisibility.value[column.key] === undefined) {
+          columnVisibility.value[column.key] = defaultVisibleKeys.includes(column.key);
+        }
+      });
+    }
+    
+    // Column visibility methods
+    const isColumnVisible = (columnKey) => {
+      return tempColumnVisibility.value[columnKey] !== false
+    }
+    
+    const toggleColumnVisibility = (columnKey) => {
+      tempColumnVisibility.value[columnKey] = !tempColumnVisibility.value[columnKey]
+    }
+    
+    const selectAllColumns = () => {
+      columns.value.forEach(column => {
+        tempColumnVisibility.value[column.key] = true
+      })
+    }
+    
+    const deselectAllColumns = () => {
+      columns.value.forEach(column => {
+        tempColumnVisibility.value[column.key] = false
+      })
+    }
+    
+    const applyColumnVisibility = () => {
+      columnVisibility.value = { ...tempColumnVisibility.value }
+      showColumnSelector.value = false
+    }
+    
+    const openColumnSelector = () => {
+      // Copy current visibility to temp for editing
+      tempColumnVisibility.value = { ...columnVisibility.value }
+      showColumnSelector.value = true
+    }
+    
+    const resetColumnVisibility = () => {
+      columns.value.forEach(column => {
+        columnVisibility.value[column.key] = true
+        tempColumnVisibility.value[column.key] = true
+      })
+    }
+    
+    // Initialize on component mount
+    onMounted(() => {
+      initializeColumnVisibility()
+      // Copy current visibility to temp for editing
+      tempColumnVisibility.value = { ...columnVisibility.value }
+    })
 
     // Status options for filter
     const statusOptions = ref([
@@ -1361,6 +1531,11 @@ export default {
       comboComponents,
       comboTotalPrice,
       
+      // Column visibility
+      showColumnSelector,
+      allColumns,
+      visibleColumns,
+      
       // Table config
       columns,
       statusOptions,
@@ -1398,7 +1573,16 @@ export default {
       // Training Assistant
       handleSearchSuggestion,
       handleHelpRequest,
-      selectProductForTraining
+      selectProductForTraining,
+      
+      // Column visibility methods
+      isColumnVisible,
+      toggleColumnVisibility,
+      selectAllColumns,
+      deselectAllColumns,
+      applyColumnVisibility,
+      openColumnSelector,
+      resetColumnVisibility
     }
   }
 }
