@@ -363,6 +363,10 @@
             <p>Chưa có dữ liệu tồn kho cho sản phẩm này</p>
           </div>
         </div>
+        <div class="mt-8">
+          <h4 class="font-semibold text-lg mb-2">Lịch sử giao dịch kho</h4>
+          <ProductInventoryHistory :product-id="selectedProductForStock?.id" />
+        </div>
       </div>
     </div>
 
@@ -651,28 +655,30 @@
                 </tbody>
               </table>
             </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useProductsStore } from '../stores/products'
 import { formatCurrency, debounce } from '../utils/helpers'
 import { productsAPI, inventoryAPI } from '@/services'
 import TrainingAssistant from '@/components/TrainingAssistant.vue'
 import DataTable from '@/components/DataTable.vue'
 import { removeVietnameseTones } from '../utils/removeVietnameseTones'
+import ProductInventoryHistory from '../components/ProductInventoryHistory.vue'
 
 export default {
   name: 'Products',
   components: {
     TrainingAssistant,
-    DataTable
+    DataTable,
+    ProductInventoryHistory
   },
   setup() {
     // Reactive data
@@ -1496,8 +1502,8 @@ export default {
     }
 
     const selectProductForTraining = (product) => {
-      selectedProductForTraining.value = product
-      console.log('Selected product for training:', product)
+      selectedProductForStock.value = product;
+      showStockModal.value = true;
     }
 
     // Lifecycle
@@ -1505,6 +1511,24 @@ export default {
       // Load data when component mounts
       fetchProductsWithInventory()
       console.log('Products component mounted')
+    })
+
+    watch(showStockModal, (val) => {
+      if (val) {
+        window.addEventListener('keydown', handleEscClose)
+      } else {
+        window.removeEventListener('keydown', handleEscClose)
+      }
+    })
+
+    function handleEscClose(e) {
+      if (e.key === 'Escape') {
+        showStockModal.value = false
+      }
+    }
+
+    onUnmounted(() => {
+      window.removeEventListener('keydown', handleEscClose)
     })
 
     return {

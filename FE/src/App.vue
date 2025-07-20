@@ -528,21 +528,21 @@ export default {
 
     // Mounted logic
     onMounted(() => {
-      // Close sidebar on window resize
-      window.addEventListener('resize', () => {
-        if (window.innerWidth >= 1024) {
+    // Close sidebar on window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024) {
           sidebarOpen.value = false
-        }
-      })
-      
-      // Fix dropdown navigation by ensuring proper event handling
+      }
+    })
+    
+    // Fix dropdown navigation by ensuring proper event handling
       nextTick(() => {
-        // Add event listeners to all dropdown items
-        const dropdownItems = document.querySelectorAll('.dropdown-menu a[href^="/"]')
-        dropdownItems.forEach(item => {
-          item.addEventListener('click', (e) => {
-            // Allow normal router-link behavior
-            e.stopPropagation()
+      // Add event listeners to all dropdown items
+      const dropdownItems = document.querySelectorAll('.dropdown-menu a[href^="/"]')
+      dropdownItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+          // Allow normal router-link behavior
+          e.stopPropagation()
           })
         })
       })
