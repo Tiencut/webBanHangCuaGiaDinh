@@ -46,12 +46,14 @@
 
     <!-- DataTable -->
     <DataTable
-      :data="products"
+      :data="filteredProducts"
       :columns="visibleColumns"
       :loading="loading"
       :categories="categories"
       :status-options="statusOptions"
       :show-export="true"
+      :column-filters="columnFilters"
+      @update:columnFilters="val => columnFilters = val"
       @create="handleCreate"
       @edit="handleEdit"
       @delete="handleDelete"
@@ -893,15 +895,12 @@ export default {
       // Danh sách các cột mặc định nên hiển thị
       const defaultVisibleKeys = [
         'image', // tên + ảnh
-        'partNumber',
         'brand',
         'model',
-        'vehicleType',
         'category.name',
         'sellingPrice',
-        'basePrice', // hoặc costPrice nếu muốn
+        'basePrice',
         'stock',
-        'status',
         'actions' // thao tác (nếu có)
       ];
       columns.value.forEach(column => {
@@ -1274,27 +1273,20 @@ export default {
       { id: 4, name: 'Nhà phân phối Phương Nam' }
     ])
 
+    // Trong setup()
+    const columnFilters = ref({ image: '', brand: '', model: '' })
+
     // Computed properties
     const filteredProducts = computed(() => {
-      let filtered = products.value
-
-      if (searchQuery.value) {
-        const search = removeVietnameseTones(searchQuery.value.toLowerCase())
-        filtered = filtered.filter(product => 
-          removeVietnameseTones(product.name.toLowerCase()).includes(search) ||
-          removeVietnameseTones(product.sku?.toLowerCase() || '').includes(search)
-        )
-      }
-
-      if (selectedCategory.value) {
-        filtered = filtered.filter(product => product.categoryId == selectedCategory.value)
-      }
-
-      if (selectedSupplier.value) {
-        filtered = filtered.filter(product => product.supplierId == selectedSupplier.value)
-      }
-
-      return filtered
+      return products.value.filter(item => {
+        // Tên sản phẩm (image key)
+        const nameMatch = !columnFilters.value.image || (item.name && item.name.toLowerCase().includes(columnFilters.value.image.toLowerCase()))
+        // Thương hiệu
+        const brandMatch = !columnFilters.value.brand || (item.brand && item.brand.toLowerCase().includes(columnFilters.value.brand.toLowerCase()))
+        // Model
+        const modelMatch = !columnFilters.value.model || (item.model && item.model.toLowerCase().includes(columnFilters.value.model.toLowerCase()))
+        return nameMatch && brandMatch && modelMatch
+      })
     })
 
     const substitutableCount = computed(() => {
@@ -1582,7 +1574,11 @@ export default {
       deselectAllColumns,
       applyColumnVisibility,
       openColumnSelector,
-      resetColumnVisibility
+      resetColumnVisibility,
+
+      // Column filters
+      columnFilters,
+      filteredProducts
     }
   }
 }

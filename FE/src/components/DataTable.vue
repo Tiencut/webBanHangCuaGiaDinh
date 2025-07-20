@@ -216,6 +216,22 @@
                 Thao tác
               </th>
             </tr>
+            <!-- Filter row -->
+            <tr>
+              <th v-if="selectable"></th>
+              <th v-for="column in columns" :key="column.key">
+                <template v-if="['image','brand','model'].includes(column.key)">
+                  <input
+                    type="text"
+                    :placeholder="'Tìm kiếm ' + (column.label || '')"
+                    class="px-2 py-1 border border-gray-300 rounded w-full text-xs"
+                    :value="columnFilters[column.key] || ''"
+                    @input="$emit('update:columnFilters', { ...columnFilters, [column.key]: $event.target.value })"
+                  />
+                </template>
+              </th>
+              <th v-if="showActions"></th>
+            </tr>
           </thead>
 
           <!-- Body -->
@@ -489,12 +505,16 @@ const props = defineProps({
   emptySubText: {
     type: String,
     default: 'Chưa có dữ liệu để hiển thị'
+  },
+  columnFilters: {
+    type: Object,
+    default: () => ({})
   }
 })
 
 // Emits
 const emit = defineEmits([
-  'create', 'edit', 'delete', 'bulkAction', 'export', 'rowClick'
+  'create', 'edit', 'delete', 'bulkAction', 'export', 'rowClick', 'update:columnFilters'
 ])
 
 // Reactive state
