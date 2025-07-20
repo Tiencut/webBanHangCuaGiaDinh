@@ -12,11 +12,9 @@ public class UserDto {
     private String fullName;
     private String email;
     private String phone;
-    private String address;
-    private User.Role role;
+    private User.UserRole role;
     private User.UserStatus status;
-    private String avatar;
-    private LocalDateTime lastLoginAt;
+    private LocalDateTime lastLogin;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isActive;

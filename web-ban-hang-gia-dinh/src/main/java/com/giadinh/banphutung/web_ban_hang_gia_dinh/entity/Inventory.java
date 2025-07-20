@@ -54,6 +54,12 @@ public class Inventory extends BaseEntity {
     private Integer currentQuantity = 0;
     
     /**
+     * Số lượng tồn kho (alias cho currentQuantity)
+     */
+    @Column(name = "quantity")
+    private Integer quantity = 0;
+    
+    /**
      * Số lượng đã đặt hàng (chưa nhập)
      */
     @Column(name = "ordered_quantity")
@@ -66,6 +72,12 @@ public class Inventory extends BaseEntity {
     private Integer committedQuantity = 0;
     
     /**
+     * Số lượng đã đặt trước
+     */
+    @Column(name = "reserved_quantity")
+    private Integer reservedQuantity = 0;
+    
+    /**
      * Số lượng có sẵn để bán
      */
     @Column(name = "available_quantity")
@@ -76,6 +88,12 @@ public class Inventory extends BaseEntity {
      */
     @Column(name = "average_cost", precision = 19, scale = 2)
     private BigDecimal averageCost = BigDecimal.ZERO;
+    
+    /**
+     * Giá mua cuối cùng
+     */
+    @Column(name = "last_purchase_price", precision = 19, scale = 2)
+    private BigDecimal lastPurchasePrice = BigDecimal.ZERO;
     
     /**
      * Giá trị tồn kho
@@ -112,6 +130,36 @@ public class Inventory extends BaseEntity {
      */
     @Column(name = "last_shipped_date")
     private LocalDateTime lastShippedDate;
+    
+    /**
+     * Ngày nhập kho cuối cùng
+     */
+    @Column(name = "last_stock_in")
+    private LocalDateTime lastStockIn;
+    
+    /**
+     * Ngày xuất kho cuối cùng
+     */
+    @Column(name = "last_stock_out")
+    private LocalDateTime lastStockOut;
+    
+    /**
+     * Số lô hàng
+     */
+    @Column(name = "batch_number")
+    private String batchNumber;
+    
+    /**
+     * Vị trí lưu trữ
+     */
+    @Column(name = "location")
+    private String location;
+    
+    /**
+     * Ngày hết hạn
+     */
+    @Column(name = "expiry_date")
+    private LocalDateTime expiryDate;
     
     /**
      * Số lần nhập hàng trong tháng
@@ -193,7 +241,7 @@ public class Inventory extends BaseEntity {
      * Cập nhật số lượng có sẵn
      */
     public void updateAvailableQuantity() {
-        this.availableQuantity = Math.max(0, currentQuantity - committedQuantity);
+        this.availableQuantity = Math.max(0, currentQuantity - committedQuantity - reservedQuantity);
     }
     
     /**
@@ -218,6 +266,35 @@ public class Inventory extends BaseEntity {
         } else {
             this.stockStatus = StockStatus.OVERSTOCK;
         }
+    }
+    
+    /**
+     * Đồng bộ quantity và currentQuantity
+     */
+    public void syncQuantity() {
+        this.quantity = this.currentQuantity;
+    }
+    
+    /**
+     * Set quantity và đồng bộ currentQuantity
+     */
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+        this.currentQuantity = quantity;
+        updateAvailableQuantity();
+        updateInventoryValue();
+        updateStockStatus();
+    }
+    
+    /**
+     * Set currentQuantity và đồng bộ quantity
+     */
+    public void setCurrentQuantity(Integer currentQuantity) {
+        this.currentQuantity = currentQuantity;
+        this.quantity = currentQuantity;
+        updateAvailableQuantity();
+        updateInventoryValue();
+        updateStockStatus();
     }
     
     /**
@@ -257,6 +334,7 @@ public class Inventory extends BaseEntity {
     public void updateAfterReceipt(Integer quantity, BigDecimal cost) {
         // Cập nhật số lượng
         this.currentQuantity += quantity;
+        this.quantity = this.currentQuantity; // Đồng bộ
         this.orderedQuantity = Math.max(0, this.orderedQuantity - quantity);
         
         // Cập nhật giá trung bình
@@ -270,6 +348,7 @@ public class Inventory extends BaseEntity {
         this.receiptsThisMonth++;
         this.totalReceivedThisMonth += quantity;
         this.lastReceivedDate = LocalDateTime.now();
+        this.lastStockIn = LocalDateTime.now(); // Cập nhật lastStockIn
         
         // Cập nhật các giá trị khác
         updateAvailableQuantity();
@@ -283,12 +362,14 @@ public class Inventory extends BaseEntity {
     public void updateAfterShipment(Integer quantity) {
         // Cập nhật số lượng
         this.currentQuantity = Math.max(0, this.currentQuantity - quantity);
+        this.quantity = this.currentQuantity; // Đồng bộ
         this.committedQuantity = Math.max(0, this.committedQuantity - quantity);
         
         // Cập nhật thống kê
         this.shipmentsThisMonth++;
         this.totalShippedThisMonth += quantity;
         this.lastShippedDate = LocalDateTime.now();
+        this.lastStockOut = LocalDateTime.now(); // Cập nhật lastStockOut
         
         // Cập nhật các giá trị khác
         updateAvailableQuantity();
@@ -301,6 +382,28 @@ public class Inventory extends BaseEntity {
      */
     public void updateAfterCommit(Integer quantity) {
         this.committedQuantity += quantity;
+        updateAvailableQuantity();
+    }
+    
+    /**
+     * Đặt trước hàng
+     */
+    public void reserveQuantity(Integer quantity) {
+        if (this.availableQuantity < quantity) {
+            throw new IllegalStateException("Insufficient available quantity");
+        }
+        this.reservedQuantity += quantity;
+        updateAvailableQuantity();
+    }
+    
+    /**
+     * Giải phóng hàng đã đặt trước
+     */
+    public void releaseReservedQuantity(Integer quantity) {
+        if (this.reservedQuantity < quantity) {
+            throw new IllegalStateException("Insufficient reserved quantity");
+        }
+        this.reservedQuantity -= quantity;
         updateAvailableQuantity();
     }
     

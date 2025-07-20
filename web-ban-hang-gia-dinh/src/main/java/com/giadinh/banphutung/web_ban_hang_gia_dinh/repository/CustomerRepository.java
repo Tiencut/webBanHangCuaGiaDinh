@@ -44,11 +44,11 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     @Query("SELECT c FROM Customer c WHERE c.currentDebt > 0 ORDER BY c.currentDebt DESC")
     List<Customer> findCustomersWithDebt();
     
-    // Tìm customer theo tên (không phân biệt hoa thường)
+    // Tìm customer theo tên (không phân biệt hoa thường) - có phân trang
     @Query("SELECT c FROM Customer c WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%')) " +
            "OR LOWER(c.code) LIKE LOWER(CONCAT('%', :name, '%')) " +
            "OR LOWER(c.phone) LIKE LOWER(CONCAT('%', :name, '%'))")
-    Page<Customer> searchCustomers(@Param("name") String name, Pageable pageable);
+    Page<Customer> searchCustomersWithPagination(@Param("name") String name, Pageable pageable);
     
     // Tìm customer theo địa chỉ
     @Query("SELECT c FROM Customer c WHERE LOWER(c.address) LIKE LOWER(CONCAT('%', :address, '%'))")
@@ -89,4 +89,33 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     // Lấy tất cả khách cha (parent_id = null)
     List<Customer> findByParentIsNull();
+    
+    // === Các method bổ sung cho CustomerService ===
+    
+    // Tìm tất cả customer đang active
+    List<Customer> findByIsActiveTrue();
+    
+    // Tìm customer đang active với phân trang
+    Page<Customer> findByIsActiveTrue(Pageable pageable);
+    
+    // Tìm customer theo id và active
+    Optional<Customer> findByIdAndIsActiveTrue(Long id);
+    
+    // Tìm customer theo code và active
+    Optional<Customer> findByCodeAndIsActiveTrue(String code);
+    
+    // Tìm customer theo status và active
+    List<Customer> findByStatusAndIsActiveTrue(Customer.CustomerStatus status);
+    
+    // Tìm customer theo type và active
+    List<Customer> findByCustomerTypeAndIsActiveTrue(Customer.CustomerType customerType);
+    
+    // Tìm customer con theo parent id và active
+    List<Customer> findByParentIdAndIsActiveTrue(Long parentId);
+    
+    // Tìm kiếm customer theo keyword (không phân trang)
+    @Query("SELECT c FROM Customer c WHERE c.isActive = true AND (LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(c.code) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(c.phone) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<Customer> searchCustomers(@Param("keyword") String keyword);
 }

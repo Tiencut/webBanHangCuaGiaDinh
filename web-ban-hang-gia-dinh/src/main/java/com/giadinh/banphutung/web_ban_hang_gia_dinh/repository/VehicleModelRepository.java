@@ -3,6 +3,8 @@ package com.giadinh.banphutung.web_ban_hang_gia_dinh.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -44,34 +46,87 @@ public interface VehicleModelRepository extends JpaRepository<VehicleModel, Long
     @Query("SELECT v FROM VehicleModel v WHERE LOWER(v.engineModel) LIKE LOWER(CONCAT('%', :engine, '%'))")
     List<VehicleModel> findByEngineContaining(@Param("engine") String engine);
     
-    // Tìm kiếm tổng hợp (tên, thương hiệu, tên gọi khác)
-    @Query("SELECT v FROM VehicleModel v WHERE " +
-           "LOWER(v.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(v.brand) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(v.code) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(v.alternativeNames) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<VehicleModel> searchVehicles(@Param("keyword") String keyword);
+    /**
+     * Tìm kiếm vehicle model theo keyword
+     */
+    @Query("SELECT vm FROM VehicleModel vm WHERE vm.isActive = true AND (LOWER(vm.brand) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(vm.model) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(vm.year) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(vm.engine) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<VehicleModel> searchVehicleModels(@Param("keyword") String keyword);
     
-    // Tìm xe có sản phẩm tương thích
-    @Query("SELECT DISTINCT v FROM VehicleModel v JOIN v.compatibleProducts p WHERE p.id = :productId")
-    List<VehicleModel> findCompatibleWithProduct(@Param("productId") Long productId);
-    
-    // Tìm xe phổ biến (có nhiều sản phẩm tương thích)
-    @Query("SELECT v, COUNT(p) FROM VehicleModel v LEFT JOIN v.compatibleProducts p " +
-           "WHERE v.isActive = true GROUP BY v ORDER BY COUNT(p) DESC")
-    List<Object[]> findPopularVehicles();
-    
-    // Tìm xe mới nhất
-    @Query("SELECT v FROM VehicleModel v WHERE v.isActive = true ORDER BY v.yearFrom DESC")
-    List<VehicleModel> findLatestVehicles();
-    
-    // Đếm xe theo thương hiệu
-    @Query("SELECT v.brand, COUNT(v) FROM VehicleModel v WHERE v.isActive = true GROUP BY v.brand")
-    List<Object[]> countVehiclesByBrand();
-    
-    // Kiểm tra mã xe đã tồn tại
+    // Kiểm tra code đã tồn tại chưa
     boolean existsByCode(String code);
     
-    // Kiểm tra tên xe đã tồn tại
-    boolean existsByNameIgnoreCase(String name);
+    // Đếm xe theo brand
+    Long countByBrand(String brand);
+    
+    // Đếm xe theo vehicle type
+    Long countByVehicleType(VehicleType vehicleType);
+    
+    // === Các method bổ sung cho VehicleModelService ===
+    
+    /**
+     * Tìm vehicle model theo brand và active
+     */
+    List<VehicleModel> findByBrandContainingIgnoreCaseAndIsActiveTrue(String brand);
+    
+    /**
+     * Tìm vehicle model theo year và active
+     */
+    List<VehicleModel> findByYearAndIsActiveTrue(String year);
+    
+    /**
+     * Tìm vehicle model theo engine và active
+     */
+    List<VehicleModel> findByEngineContainingIgnoreCaseAndIsActiveTrue(String engine);
+    
+    /**
+     * Tìm vehicle model theo fuel type và active
+     */
+    List<VehicleModel> findByFuelTypeAndIsActiveTrue(String fuelType);
+    
+    /**
+     * Tìm vehicle model theo body type và active
+     */
+    List<VehicleModel> findByBodyTypeAndIsActiveTrue(String bodyType);
+    
+    /**
+     * Lấy tất cả brand
+     */
+    @Query("SELECT DISTINCT vm.brand FROM VehicleModel vm WHERE vm.isActive = true ORDER BY vm.brand")
+    List<String> findAllBrands();
+    
+    /**
+     * Lấy tất cả year
+     */
+    @Query("SELECT DISTINCT vm.year FROM VehicleModel vm WHERE vm.isActive = true ORDER BY vm.year DESC")
+    List<String> findAllYears();
+    
+    /**
+     * Lấy tất cả fuel type
+     */
+    @Query("SELECT DISTINCT vm.fuelType FROM VehicleModel vm WHERE vm.isActive = true ORDER BY vm.fuelType")
+    List<String> findAllFuelTypes();
+    
+    /**
+     * Lấy tất cả body type
+     */
+    @Query("SELECT DISTINCT vm.bodyType FROM VehicleModel vm WHERE vm.isActive = true ORDER BY vm.bodyType")
+    List<String> findAllBodyTypes();
+    
+    // Tìm tất cả xe đang active
+    List<VehicleModel> findByIsActiveTrue();
+    
+    // Tìm xe đang active với phân trang
+    Page<VehicleModel> findByIsActiveTrue(Pageable pageable);
+    
+    // Tìm xe theo id và active
+    Optional<VehicleModel> findByIdAndIsActiveTrue(Long id);
+    
+    // Tìm xe theo code và active
+    Optional<VehicleModel> findByCodeAndIsActiveTrue(String code);
+    
+    // Tìm xe đang active theo sort order
+    List<VehicleModel> findByIsActiveTrueOrderBySortOrderAsc();
 }

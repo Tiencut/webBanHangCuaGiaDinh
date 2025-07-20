@@ -15,6 +15,12 @@ const routes = [
     meta: { title: 'Quản lý sản phẩm' }
   },
   {
+    path: '/categories',
+    name: 'Categories',
+    component: () => import('../views/Categories.vue'),
+    meta: { title: 'Quản lý danh mục' }
+  },
+  {
     path: '/pricing',
     name: 'Pricing',
     component: () => import('../views/Pricing.vue'),

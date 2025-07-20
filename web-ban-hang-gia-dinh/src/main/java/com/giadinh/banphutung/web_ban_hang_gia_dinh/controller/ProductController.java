@@ -2,17 +2,13 @@ package com.giadinh.banphutung.web_ban_hang_gia_dinh.controller;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +23,8 @@ import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product.ProductStatus
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.ProductService;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CreateProductRequest;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.ProductDto;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -44,39 +42,26 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")
-@Tag(name = "Product Management", description = "APIs để quản lý sản phẩm")
+@Tag(name = "Product Management", description = "Custom APIs để quản lý sản phẩm")
 public class ProductController {
     
     private final ProductService productService;
+    
+    // ===== CUSTOM ENDPOINTS (không có trong Spring Data REST) =====
     
     @Operation(summary = "Lấy tất cả sản phẩm đang hoạt động", 
                description = "Trả về danh sách tất cả sản phẩm có trạng thái ACTIVE")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Thành công",
                     content = @Content(mediaType = "application/json", 
-                    schema = @Schema(implementation = Product.class))),
+                    schema = @Schema(implementation = ProductDto.class))),
         @ApiResponse(responseCode = "500", description = "Lỗi server")
     })
-    @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
+    @GetMapping("/active")
+    public ResponseEntity<List<ProductDto>> getAllActiveProducts() {
         log.info("Getting all active products");
-        List<Product> products = productService.findAllActiveProducts();
+        List<ProductDto> products = productService.findAllActiveProductsAsDto();
         return ResponseEntity.ok(products);
-    }
-    
-    @Operation(summary = "Lấy sản phẩm theo ID", 
-               description = "Trả về thông tin chi tiết của sản phẩm theo ID")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Thành công"),
-        @ApiResponse(responseCode = "404", description = "Không tìm thấy sản phẩm")
-    })
-    @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(
-            @Parameter(description = "ID của sản phẩm") @PathVariable Long id) {
-        log.info("Getting product with id: {}", id);
-        return productService.findById(id)
-            .map(product -> ResponseEntity.ok(product))
-            .orElse(ResponseEntity.notFound().build());
     }
     
     @Operation(summary = "Lấy sản phẩm theo mã sản phẩm", 
@@ -181,11 +166,11 @@ public class ProductController {
         @ApiResponse(responseCode = "404", description = "Danh mục không tồn tại"),
         @ApiResponse(responseCode = "500", description = "Lỗi server")
     })
-    @PostMapping
-    public ResponseEntity<Product> createProduct(
-            @Parameter(description = "Thông tin sản phẩm cần tạo") @Valid @RequestBody Product product) {
+    @PostMapping("/create")
+    public ResponseEntity<ProductDto> createProduct(
+            @Parameter(description = "Thông tin sản phẩm cần tạo") @Valid @RequestBody CreateProductRequest request) {
         try {
-            Product savedProduct = productService.createProduct(product);
+            ProductDto savedProduct = productService.createProduct(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
         } catch (BusinessException e) {
             log.error("Business error creating product: {}", e.getMessage());
@@ -207,7 +192,7 @@ public class ProductController {
         @ApiResponse(responseCode = "404", description = "Sản phẩm không tồn tại"),
         @ApiResponse(responseCode = "500", description = "Lỗi server")
     })
-    @PutMapping("/{id}")
+    @PutMapping("/{id}/update")
     public ResponseEntity<Product> updateProduct(
             @Parameter(description = "ID của sản phẩm") @PathVariable Long id, 
             @Parameter(description = "Thông tin sản phẩm cần cập nhật") @Valid @RequestBody Product product
@@ -278,7 +263,7 @@ public class ProductController {
         @ApiResponse(responseCode = "404", description = "Sản phẩm không tồn tại"),
         @ApiResponse(responseCode = "500", description = "Lỗi server")
     })
-    @DeleteMapping("/{id}")
+    @PutMapping("/{id}/delete")
     public ResponseEntity<Void> deleteProduct(
             @Parameter(description = "ID của sản phẩm") @PathVariable Long id) {
         try {

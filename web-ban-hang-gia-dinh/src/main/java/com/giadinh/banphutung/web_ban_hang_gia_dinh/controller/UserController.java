@@ -7,8 +7,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,34 +18,12 @@ import java.util.List;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "User Management", description = "APIs for managing users")
+@Tag(name = "User Management", description = "Custom APIs for managing users")
 public class UserController {
 
     private final UserService userService;
 
-    @GetMapping
-    @Operation(summary = "Get all users", description = "Retrieve a list of all active users")
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        log.info("GET /api/users - Fetching all users");
-        List<UserDto> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
-    }
-
-    @GetMapping("/page")
-    @Operation(summary = "Get users with pagination", description = "Retrieve users with pagination support")
-    public ResponseEntity<Page<UserDto>> getUsersWithPagination(Pageable pageable) {
-        log.info("GET /api/users/page - Fetching users with pagination: {}", pageable);
-        Page<UserDto> users = userService.getUsersWithPagination(pageable);
-        return ResponseEntity.ok(users);
-    }
-
-    @GetMapping("/{id}")
-    @Operation(summary = "Get user by ID", description = "Retrieve a specific user by their ID")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
-        log.info("GET /api/users/{} - Fetching user by id", id);
-        UserDto user = userService.getUserById(id);
-        return ResponseEntity.ok(user);
-    }
+    // ===== CUSTOM ENDPOINTS (không có trong Spring Data REST) =====
 
     @GetMapping("/username/{username}")
     @Operation(summary = "Get user by username", description = "Retrieve a specific user by their username")
@@ -65,28 +41,12 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    @PostMapping
-    @Operation(summary = "Create new user", description = "Create a new user")
+    @PostMapping("/create")
+    @Operation(summary = "Create new user", description = "Create a new user with password")
     public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto, @RequestParam String password) {
-        log.info("POST /api/users - Creating new user: {}", userDto.getUsername());
+        log.info("POST /api/users/create - Creating new user: {}", userDto.getUsername());
         UserDto user = userService.createUser(userDto, password);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
-    }
-
-    @PutMapping("/{id}")
-    @Operation(summary = "Update user", description = "Update an existing user")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @Valid @RequestBody UserDto userDto) {
-        log.info("PUT /api/users/{} - Updating user", id);
-        UserDto user = userService.updateUser(id, userDto);
-        return ResponseEntity.ok(user);
-    }
-
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete user", description = "Delete a user (soft delete)")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        log.info("DELETE /api/users/{} - Deleting user", id);
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/change-password")
@@ -115,7 +75,7 @@ public class UserController {
 
     @GetMapping("/role/{role}")
     @Operation(summary = "Get users by role", description = "Retrieve users by role")
-    public ResponseEntity<List<UserDto>> getUsersByRole(@PathVariable User.Role role) {
+    public ResponseEntity<List<UserDto>> getUsersByRole(@PathVariable User.UserRole role) {
         log.info("GET /api/users/role/{} - Fetching users by role", role);
         List<UserDto> users = userService.getUsersByRole(role);
         return ResponseEntity.ok(users);
@@ -159,5 +119,15 @@ public class UserController {
         log.info("POST /api/users/validate-credentials - Validating credentials for username: {}", username);
         boolean isValid = userService.validateCredentials(username, password);
         return ResponseEntity.ok(isValid);
+    }
+
+    // ===== PAGINATION ENDPOINT (custom vì cần DTO) =====
+    
+    @GetMapping("/page")
+    @Operation(summary = "Get users with pagination", description = "Retrieve users with pagination support")
+    public ResponseEntity<org.springframework.data.domain.Page<UserDto>> getUsersWithPagination(org.springframework.data.domain.Pageable pageable) {
+        log.info("GET /api/users/page - Fetching users with pagination: {}", pageable);
+        org.springframework.data.domain.Page<UserDto> users = userService.getUsersWithPagination(pageable);
+        return ResponseEntity.ok(users);
     }
 }

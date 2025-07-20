@@ -155,12 +155,12 @@ public class UserService {
         User user = userRepository.findByIdAndIsActiveTrue(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         
-        user.setLastLoginAt(LocalDateTime.now());
+        user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
         log.info("Last login updated successfully for user id: {}", userId);
     }
 
-    public List<UserDto> getUsersByRole(User.Role role) {
+    public List<UserDto> getUsersByRole(User.UserRole role) {
         log.info("Fetching users by role: {}", role);
         List<User> users = userRepository.findByRoleAndIsActiveTrue(role);
         return userMapper.toDtoList(users);

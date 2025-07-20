@@ -16,17 +16,68 @@
           </svg>
         </div>
 
-        <!-- Category Filter -->
-        <select 
-          v-if="categories?.length" 
-          v-model="selectedCategory" 
-          class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors"
-        >
-          <option value="">Tất cả danh mục</option>
-          <option v-for="category in categories" :key="category.id" :value="category.id">
-            {{ category.name }}
-          </option>
-        </select>
+        <!-- Category Multi-Select Filter -->
+        <div v-if="categories?.length" class="relative category-dropdown">
+          <button
+            @click="toggleCategoryDropdown"
+            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors flex items-center justify-between min-w-[200px]"
+            :class="selectedCategories.length > 0 ? 'bg-blue-50 border-blue-300' : ''"
+          >
+            <span class="text-left">
+              {{ selectedCategories.length === 0 ? 'Tất cả danh mục' : 
+                 selectedCategories.length === 1 ? getCategoryName(selectedCategories[0]) :
+                 `${selectedCategories.length} danh mục đã chọn` }}
+            </span>
+            <div class="flex items-center ml-2">
+              <button
+                v-if="selectedCategories.length > 0"
+                @click.stop="clearCategoryFilter"
+                class="text-gray-400 hover:text-gray-600 mr-1"
+                title="Xóa filter danh mục"
+              >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </button>
+          
+          <!-- Dropdown -->
+          <div v-if="showCategoryDropdown" class="absolute top-full left-0 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+            <div class="p-2">
+              <!-- Select All -->
+              <label class="flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer">
+                <input
+                  type="checkbox"
+                  :checked="isAllCategoriesSelected"
+                  @change="toggleAllCategories"
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2"
+                />
+                <span class="text-sm font-medium">Tất cả danh mục</span>
+              </label>
+              
+              <hr class="my-2">
+              
+              <!-- Individual Categories -->
+              <label
+                v-for="category in categories"
+                :key="category.id"
+                class="flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  :value="category.id"
+                  v-model="selectedCategories"
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2"
+                />
+                <span class="text-sm">{{ category.name }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
 
         <!-- Status Filter -->
         <select 
@@ -39,6 +90,34 @@
             {{ status.label }}
           </option>
         </select>
+
+        <!-- Date Range Filter -->
+        <div class="flex items-center space-x-2">
+          <span class="text-sm text-gray-600">Từ ngày:</span>
+          <input
+            v-model="dateFrom"
+            type="date"
+            placeholder="Từ ngày"
+            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors"
+          />
+          <span class="text-gray-500">đến</span>
+          <input
+            v-model="dateTo"
+            type="date"
+            placeholder="Đến ngày"
+            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors"
+          />
+          <button
+            v-if="dateFrom || dateTo"
+            @click="clearDateFilter"
+            class="px-2 py-2 text-gray-500 hover:text-gray-700 transition-colors"
+            title="Xóa filter ngày"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <!-- Actions -->
@@ -198,26 +277,37 @@
                 ]"
               >
                 <slot :name="`cell-${column.key}`" :item="item" :value="getColumnValue(item, column.key)" :index="index">
-                  <span v-if="column.type === 'currency'" class="font-medium">
+                  <!-- Custom Formatter -->
+                  <span v-if="column.formatter">
+                    {{ column.formatter(getColumnValue(item, column.key)) }}
+                  </span>
+                  <!-- Currency -->
+                  <span v-else-if="column.type === 'currency'" class="font-medium">
                     {{ formatCurrency(getColumnValue(item, column.key)) }}
                   </span>
+                  <!-- Date -->
                   <span v-else-if="column.type === 'date'">
                     {{ formatDate(getColumnValue(item, column.key)) }}
                   </span>
+                  <!-- DateTime -->
                   <span v-else-if="column.type === 'datetime'">
                     {{ formatDateTime(getColumnValue(item, column.key)) }}
                   </span>
+                  <!-- Badge -->
                   <span v-else-if="column.type === 'badge'" :class="getBadgeClass(getColumnValue(item, column.key), column.badgeMap)">
                     {{ getBadgeText(getColumnValue(item, column.key), column.badgeMap) }}
                   </span>
+                  <!-- Number -->
                   <span v-else-if="column.type === 'number'" class="font-mono">
                     {{ formatNumber(getColumnValue(item, column.key)) }}
                   </span>
+                  <!-- Boolean -->
                   <span v-else-if="column.type === 'boolean'">
                     <span :class="getColumnValue(item, column.key) ? 'text-green-600' : 'text-red-600'">
                       {{ getColumnValue(item, column.key) ? 'Có' : 'Không' }}
                     </span>
                   </span>
+                  <!-- Default -->
                   <span v-else class="text-gray-900">
                     {{ getColumnValue(item, column.key) || '-' }}
                   </span>
@@ -344,7 +434,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 
 // Props
 const props = defineProps({
@@ -409,13 +499,17 @@ const emit = defineEmits([
 
 // Reactive state
 const searchQuery = ref('')
-const selectedCategory = ref('')
+const selectedCategory = ref('') // Keep for backward compatibility
+const selectedCategories = ref([]) // New multi-select
 const selectedStatus = ref('')
+const dateFrom = ref('')
+const dateTo = ref('')
 const selectedRows = ref([])
 const sortField = ref('')
 const sortOrder = ref('asc')
 const currentPage = ref(1)
 const pageSize = ref(props.defaultPageSize)
+const showCategoryDropdown = ref(false)
 
 // Computed properties
 const totalColumns = computed(() => {
@@ -423,6 +517,11 @@ const totalColumns = computed(() => {
   if (props.selectable) count++
   if (props.showActions) count++
   return count
+})
+
+const isAllCategoriesSelected = computed(() => {
+  return props.categories && props.categories.length > 0 && 
+         selectedCategories.value.length === props.categories.length
 })
 
 const filteredData = computed(() => {
@@ -439,8 +538,14 @@ const filteredData = computed(() => {
     )
   }
 
-  // Category filter
-  if (selectedCategory.value) {
+  // Category filter (multi-select)
+  if (selectedCategories.value.length > 0) {
+    filtered = filtered.filter(item => 
+      selectedCategories.value.includes(item.categoryId) || 
+      selectedCategories.value.includes(item.category?.id)
+    )
+  } else if (selectedCategory.value) {
+    // Backward compatibility
     filtered = filtered.filter(item => 
       item.categoryId === selectedCategory.value || 
       item.category?.id === selectedCategory.value
@@ -452,6 +557,28 @@ const filteredData = computed(() => {
     filtered = filtered.filter(item => 
       item.status === selectedStatus.value
     )
+  }
+
+  // Date range filter
+  if (dateFrom.value || dateTo.value) {
+    filtered = filtered.filter(item => {
+      const itemDate = item.createdAt || item.updatedAt
+      if (!itemDate) return false
+      
+      const itemDateObj = new Date(itemDate)
+      const fromDate = dateFrom.value ? new Date(dateFrom.value) : null
+      const toDate = dateTo.value ? new Date(dateTo.value) : null
+      
+      if (fromDate && toDate) {
+        return itemDateObj >= fromDate && itemDateObj <= toDate
+      } else if (fromDate) {
+        return itemDateObj >= fromDate
+      } else if (toDate) {
+        return itemDateObj <= toDate
+      }
+      
+      return true
+    })
   }
 
   // Sort
@@ -615,6 +742,33 @@ const exportData = () => {
   emit('export', filteredData.value)
 }
 
+const clearDateFilter = () => {
+  dateFrom.value = ''
+  dateTo.value = ''
+}
+
+const toggleCategoryDropdown = () => {
+  showCategoryDropdown.value = !showCategoryDropdown.value
+}
+
+const toggleAllCategories = () => {
+  if (isAllCategoriesSelected.value) {
+    selectedCategories.value = []
+  } else {
+    selectedCategories.value = props.categories.map(cat => cat.id)
+  }
+}
+
+const getCategoryName = (categoryId) => {
+  const category = props.categories?.find(cat => cat.id === categoryId)
+  return category ? category.name : 'Unknown'
+}
+
+const clearCategoryFilter = () => {
+  selectedCategories.value = []
+  selectedCategory.value = ''
+}
+
 const prevPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--
@@ -655,8 +809,22 @@ watch(() => props.data, () => {
   selectedRows.value = []
 }, { deep: false })
 
-watch([searchQuery, selectedCategory, selectedStatus], () => {
+watch([searchQuery, selectedCategory, selectedStatus, dateFrom, dateTo], () => {
   currentPage.value = 1
+})
+
+watch(selectedCategories, () => {
+  currentPage.value = 1
+})
+
+// Close dropdown when clicking outside
+onMounted(() => {
+  document.addEventListener('click', (e) => {
+    const dropdown = document.querySelector('.category-dropdown')
+    if (dropdown && !dropdown.contains(e.target)) {
+      showCategoryDropdown.value = false
+    }
+  })
 })
 
 watch(pageSize, () => {

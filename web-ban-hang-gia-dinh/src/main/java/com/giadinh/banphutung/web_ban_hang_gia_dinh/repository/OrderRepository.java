@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Order;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Order.OrderStatus;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Order.PaymentStatus;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
@@ -43,7 +44,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByTotalAmountGreaterThanEqual(BigDecimal minAmount);
     
     // Tìm order theo mã đơn hàng
-    Optional<Order> findByOrderCode(String orderCode);
+    Optional<Order> findByOrderNumber(String orderNumber);
     
     // Tìm order active (chưa bị xóa)
     @Query("SELECT o FROM Order o WHERE o.isDeleted = false ORDER BY o.orderDate DESC")
@@ -107,11 +108,64 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // Tìm order theo khoảng thời gian (LocalDateTime)
     @Query("SELECT o FROM Order o WHERE o.orderDate >= :start AND o.orderDate <= :end")
     List<Order> findByOrderDateBetween(@Param("start") java.time.LocalDateTime start, @Param("end") java.time.LocalDateTime end);
+    
+    // Tìm order theo khoảng thời gian và chưa bị xóa
+    @Query("SELECT o FROM Order o WHERE o.orderDate >= :start AND o.orderDate <= :end AND o.isDeleted = false")
+    List<Order> findByOrderDateBetweenAndIsDeletedFalse(@Param("start") java.time.LocalDateTime start, @Param("end") java.time.LocalDateTime end);
 
     // Tìm order theo tổng tiền trong khoảng
     List<Order> findByTotalAmountBetween(BigDecimal minTotal, BigDecimal maxTotal);
 
-    // Tìm kiếm đơn hàng theo từ khóa (orderCode, customer name, v.v.)
-    @Query("SELECT o FROM Order o WHERE o.orderCode LIKE %:term% OR o.customer.name LIKE %:term%")
-    Page<Order> searchOrders(@Param("term") String term, Pageable pageable);
+    // Tìm kiếm đơn hàng theo từ khóa (orderNumber, customer name, v.v.) - có phân trang
+    @Query("SELECT o FROM Order o WHERE o.orderNumber LIKE %:term% OR o.customer.name LIKE %:term%")
+    Page<Order> searchOrdersWithPagination(@Param("term") String term, Pageable pageable);
+    
+    // === Các method bổ sung cho OrderService ===
+    
+    // Tìm order theo order number và chưa bị xóa
+    Optional<Order> findByOrderNumberAndIsDeletedFalse(String orderNumber);
+    
+    // Tìm order theo id và chưa bị xóa
+    Optional<Order> findByIdAndIsDeletedFalse(Long id);
+    
+    // Tìm order theo customer và chưa bị xóa
+    List<Order> findByCustomerIdAndIsDeletedFalse(Long customerId);
+    
+    // Tìm order theo status và chưa bị xóa
+    List<Order> findByStatusAndIsDeletedFalse(OrderStatus status);
+    
+    // Tìm order theo payment status và chưa bị xóa
+    List<Order> findByPaymentStatusAndIsDeletedFalse(PaymentStatus paymentStatus);
+    
+    // Tìm order theo staff và chưa bị xóa
+    List<Order> findByStaffIdAndIsDeletedFalse(Long staffId);
+    
+    // Đếm order chưa bị xóa
+    Long countByIsDeletedFalse();
+    
+    // Đếm order theo status và chưa bị xóa
+    Long countByStatusAndIsDeletedFalse(OrderStatus status);
+    
+    // Tính tổng doanh thu theo status và chưa bị xóa
+    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.status = :status AND o.isDeleted = false")
+    BigDecimal sumTotalAmountByStatusAndIsDeletedFalse(@Param("status") OrderStatus status);
+    
+    /**
+     * Tìm kiếm đơn hàng theo keyword
+     */
+    @Query("SELECT o FROM Order o WHERE o.isDeleted = false AND (LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(o.customer.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(o.customer.phone) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<Order> searchOrders(@Param("keyword") String keyword);
+    
+    /**
+     * Tìm đơn hàng được tạo bằng giọng nói
+     */
+    List<Order> findByVoiceCreatedTrueAndIsDeletedFalse();
+    
+    // Tìm tất cả order chưa bị xóa
+    List<Order> findByIsDeletedFalse();
+    
+    // Tìm order chưa bị xóa với phân trang
+    Page<Order> findByIsDeletedFalse(Pageable pageable);
 }

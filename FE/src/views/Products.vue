@@ -1,5 +1,6 @@
 <template>
-  <div class="container mx-auto px-4 py-6">
+  <div class="w-full min-h-screen bg-gray-50">
+    <div class="px-6 py-6">
     <!-- Header Section -->
     <div class="flex justify-between items-center mb-6">
       <div>
@@ -84,6 +85,49 @@
       <template #cell-supplierCount="{ item }">
         <div class="text-center">
           <span class="text-sm font-medium text-purple-600">{{ item.supplierCount || 0 }}</span>
+        </div>
+      </template>
+
+      <!-- Custom cell cho brand -->
+      <template #cell-brand="{ item }">
+        <div class="text-sm font-medium text-gray-900">{{ item.brand || '-' }}</div>
+      </template>
+
+      <!-- Custom cell cho model -->
+      <template #cell-model="{ item }">
+        <div class="text-sm text-gray-600">{{ item.model || '-' }}</div>
+      </template>
+
+      <!-- Custom cell cho partNumber -->
+      <template #cell-partNumber="{ item }">
+        <div class="text-sm font-mono text-blue-600">{{ item.partNumber || '-' }}</div>
+      </template>
+
+      <!-- Custom cell cho vehicleType -->
+      <template #cell-vehicleType="{ item }">
+        <div class="text-sm text-gray-700">{{ item.vehicleType || '-' }}</div>
+      </template>
+
+      <!-- Custom cell cho minStockLevel -->
+      <template #cell-minStockLevel="{ item }">
+        <div class="text-center">
+          <span class="text-sm font-medium text-orange-600">{{ item.minStockLevel || 0 }}</span>
+        </div>
+      </template>
+
+      <!-- Custom cell cho reorderPoint -->
+      <template #cell-reorderPoint="{ item }">
+        <div class="text-center">
+          <span class="text-sm font-medium text-red-600">{{ item.reorderPoint || 0 }}</span>
+        </div>
+      </template>
+
+      <!-- Custom cell cho ngày tạo -->
+      <template #cell-createdAt="{ item }">
+        <div class="text-center">
+          <span class="text-sm text-gray-700">
+            {{ item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : 'N/A' }}
+          </span>
         </div>
       </template>
 
@@ -257,6 +301,35 @@
             </div>
             
             <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Thương hiệu</label>
+              <input v-model="newProduct.brand" type="text" class="form-input w-full" placeholder="Isuzu, Hyundai, Hino...">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Model</label>
+              <input v-model="newProduct.model" type="text" class="form-input w-full" placeholder="4JB1, HD72, 300...">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Mã phụ tùng</label>
+              <input v-model="newProduct.partNumber" type="text" class="form-input w-full" placeholder="ISU-4JB1-OIL-001">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Loại xe</label>
+              <select v-model="newProduct.vehicleType" class="form-input w-full">
+                <option value="">Chọn loại xe</option>
+                <option value="Xe tải nhẹ">Xe tải nhẹ</option>
+                <option value="Xe tải trung">Xe tải trung</option>
+                <option value="Xe tải nặng">Xe tải nặng</option>
+                <option value="Xe bán tải">Xe bán tải</option>
+                <option value="Xe van">Xe van</option>
+                <option value="Xe khách">Xe khách</option>
+                <option value="Xe chuyên dụng">Xe chuyên dụng</option>
+              </select>
+            </div>
+            
+            <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
               <select v-model="newProduct.categoryId" class="form-input w-full">
                 <option value="">Chọn danh mục</option>
@@ -277,8 +350,13 @@
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Giá bán *</label>
-              <input v-model.number="newProduct.price" type="number" min="0" class="form-input w-full" required>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Giá cơ bản *</label>
+              <input v-model.number="newProduct.basePrice" type="number" min="0" class="form-input w-full" required>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Giá bán</label>
+              <input v-model.number="newProduct.sellingPrice" type="number" min="0" class="form-input w-full">
             </div>
             
             <div>
@@ -287,8 +365,18 @@
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Đơn vị</label>
-              <input v-model="newProduct.unit" type="text" class="form-input w-full" placeholder="Cái, Bộ, Kg...">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Thời gian bảo hành (tháng)</label>
+              <input v-model.number="newProduct.warrantyPeriod" type="number" min="0" class="form-input w-full">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Trọng lượng (kg)</label>
+              <input v-model.number="newProduct.weight" type="number" min="0" step="0.1" class="form-input w-full">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Kích thước</label>
+              <input v-model="newProduct.dimensions" type="text" class="form-input w-full" placeholder="L x W x H cm">
             </div>
             
             <div>
@@ -297,6 +385,7 @@
                 <option value="ACTIVE">Hoạt động</option>
                 <option value="INACTIVE">Không hoạt động</option>
                 <option value="DISCONTINUED">Ngừng kinh doanh</option>
+                <option value="OUT_OF_STOCK">Hết hàng</option>
               </select>
             </div>
           </div>
@@ -314,18 +403,19 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Tồn kho tối thiểu</label>
-              <input v-model.number="newProduct.minStock" type="number" min="0" class="form-input w-full">
+              <input v-model.number="newProduct.minStockLevel" type="number" min="0" class="form-input w-full">
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Tồn kho tối đa</label>
-              <input v-model.number="newProduct.maxStock" type="number" min="0" class="form-input w-full">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Điểm đặt hàng lại</label>
+              <input v-model.number="newProduct.reorderPoint" type="number" min="0" class="form-input w-full">
             </div>
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Vị trí lưu trữ</label>
               <input v-model="newProduct.location" type="text" class="form-input w-full" placeholder="Kệ A, Tủ B...">
             </div>
+
           </div>
           
           <!-- Combo checkbox -->
@@ -475,6 +565,7 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
@@ -511,16 +602,23 @@ export default {
     const newProduct = ref({
       name: '',
       sku: '',
+      brand: '',
+      model: '',
+      partNumber: '',
+      vehicleType: '',
       categoryId: '',
       supplierId: '',
-      price: 0,
+      basePrice: 0,
+      sellingPrice: 0,
       costPrice: 0,
-      unit: '',
+      warrantyPeriod: 0,
+      weight: 0,
+      dimensions: '',
       status: 'ACTIVE',
       description: '',
       specifications: '',
-      minStock: 0,
-      maxStock: 0,
+      minStockLevel: 0,
+      reorderPoint: 10,
       location: '',
       isCombo: false
     })
@@ -532,6 +630,30 @@ export default {
         label: 'Sản phẩm',
         sortable: false,
         width: '280px'
+      },
+      {
+        key: 'brand',
+        label: 'Thương hiệu',
+        sortable: true,
+        width: '120px'
+      },
+      {
+        key: 'model',
+        label: 'Model',
+        sortable: true,
+        width: '120px'
+      },
+      {
+        key: 'partNumber',
+        label: 'Mã phụ tùng',
+        sortable: true,
+        width: '130px'
+      },
+      {
+        key: 'vehicleType',
+        label: 'Loại xe',
+        sortable: true,
+        width: '120px'
       },
       {
         key: 'category.name',
@@ -546,32 +668,20 @@ export default {
         width: '150px'
       },
       {
-        key: 'stock',
-        label: 'Tồn kho',
+        key: 'basePrice',
+        label: 'Giá cơ bản',
         sortable: true,
-        align: 'center',
-        width: '100px'
+        type: 'currency',
+        align: 'right',
+        width: '120px'
       },
       {
-        key: 'availableStock',
-        label: 'Có sẵn',
+        key: 'sellingPrice',
+        label: 'Giá bán',
         sortable: true,
-        align: 'center',
-        width: '100px'
-      },
-      {
-        key: 'reservedStock',
-        label: 'Đã đặt',
-        sortable: true,
-        align: 'center',
-        width: '100px'
-      },
-      {
-        key: 'supplierCount',
-        label: 'Nhà CC',
-        sortable: true,
-        align: 'center',
-        width: '80px'
+        type: 'currency',
+        align: 'right',
+        width: '120px'
       },
       {
         key: 'costPrice',
@@ -582,11 +692,62 @@ export default {
         width: '120px'
       },
       {
-        key: 'salePrice',
-        label: 'Giá bán',
+        key: 'stock',
+        label: 'Tồn kho',
         sortable: true,
-        align: 'right',
-        width: '120px'
+        align: 'center',
+        width: '80px'
+      },
+      {
+        key: 'availableStock',
+        label: 'Có sẵn',
+        sortable: true,
+        align: 'center',
+        width: '80px'
+      },
+      {
+        key: 'reservedStock',
+        label: 'Đã đặt',
+        sortable: true,
+        align: 'center',
+        width: '80px'
+      },
+      {
+        key: 'minStockLevel',
+        label: 'Tồn tối thiểu',
+        sortable: true,
+        align: 'center',
+        width: '100px'
+      },
+      {
+        key: 'reorderPoint',
+        label: 'Điểm đặt hàng',
+        sortable: true,
+        align: 'center',
+        width: '100px'
+      },
+      {
+        key: 'supplierCount',
+        label: 'Nhà CC',
+        sortable: true,
+        align: 'center',
+        width: '70px'
+      },
+      {
+        key: 'warrantyPeriod',
+        label: 'Bảo hành',
+        sortable: true,
+        align: 'center',
+        width: '80px',
+        formatter: (value) => value ? `${value} tháng` : 'N/A'
+      },
+      {
+        key: 'weight',
+        label: 'Trọng lượng',
+        sortable: true,
+        align: 'center',
+        width: '100px',
+        formatter: (value) => value ? `${value} kg` : 'N/A'
       },
       {
         key: 'status',
@@ -598,7 +759,8 @@ export default {
         badgeMap: {
           'ACTIVE': { text: 'Hoạt động', class: 'bg-green-100 text-green-800' },
           'OUT_OF_STOCK': { text: 'Hết hàng', class: 'bg-red-100 text-red-800' },
-          'DISCONTINUED': { text: 'Ngừng bán', class: 'bg-gray-100 text-gray-800' }
+          'DISCONTINUED': { text: 'Ngừng bán', class: 'bg-gray-100 text-gray-800' },
+          'INACTIVE': { text: 'Không hoạt động', class: 'bg-yellow-100 text-yellow-800' }
         }
       },
       {
@@ -614,17 +776,21 @@ export default {
         }
       },
       {
-        key: 'actions',
-        label: 'Thao tác',
-        sortable: false,
+        key: 'createdAt',
+        label: 'Ngày tạo',
+        sortable: true,
+        type: 'date',
         align: 'center',
-        width: '120px'
-      }
+        width: '120px',
+        formatter: (value) => value ? new Date(value).toLocaleDateString('vi-VN') : 'N/A'
+      },
+
     ])
 
     // Status options for filter
     const statusOptions = ref([
       { value: 'ACTIVE', label: 'Hoạt động' },
+      { value: 'INACTIVE', label: 'Không hoạt động' },
       { value: 'OUT_OF_STOCK', label: 'Hết hàng' },
       { value: 'DISCONTINUED', label: 'Ngừng bán' }
     ])
@@ -633,86 +799,309 @@ export default {
     const products = ref([
       {
         id: 1,
-        name: 'Lọc dầu động cơ',
+        name: 'Lọc dầu động cơ Isuzu 4JB1',
         sku: 'OIL-FILTER-001',
+        brand: 'Isuzu',
+        model: '4JB1',
+        partNumber: 'ISU-4JB1-OIL-001',
+        vehicleType: 'Xe tải nhẹ',
         categoryId: 1,
         category: { id: 1, name: 'Hệ thống động cơ' },
         supplierId: 1,
         supplier: { id: 1, name: 'Công ty TNHH ABC' },
-        totalStock: 50,
+        basePrice: 140000,
+        sellingPrice: 150000,
         costPrice: 120000,
-        salePrice: 150000,
+        stock: 50,
+        availableStock: 45,
+        reservedStock: 5,
+        minStockLevel: 10,
+        reorderPoint: 15,
+        supplierCount: 2,
+        warrantyPeriod: 12,
+        weight: 0.8,
+        dimensions: '12x8x6 cm',
         status: 'ACTIVE',
         imageUrl: null,
         supplierStocks: [
           { supplierId: 1, quantity: 30 },
           { supplierId: 2, quantity: 20 }
         ],
-        isCombo: false
+        isCombo: false,
+        createdAt: '2024-01-15T10:00:00'
       },
       {
         id: 2,
-        name: 'Má phanh trước',
+        name: 'Má phanh trước Hyundai HD72',
         sku: 'BRAKE-PAD-002',
+        brand: 'Hyundai',
+        model: 'HD72',
+        partNumber: 'HYU-HD72-BRAKE-002',
+        vehicleType: 'Xe tải trung',
         categoryId: 2,
         category: { id: 2, name: 'Hệ thống phanh' },
         supplierId: 2,
         supplier: { id: 2, name: 'Nhà phân phối XYZ' },
-        totalStock: 5,
+        basePrice: 320000,
+        sellingPrice: 350000,
         costPrice: 280000,
-        salePrice: 350000,
+        stock: 5,
+        availableStock: 3,
+        reservedStock: 2,
+        minStockLevel: 5,
+        reorderPoint: 8,
+        supplierCount: 1,
+        warrantyPeriod: 6,
+        weight: 2.5,
+        dimensions: '15x12x3 cm',
         status: 'ACTIVE',
         imageUrl: null,
         supplierStocks: [
           { supplierId: 2, quantity: 5 }
         ],
-        isCombo: false
+        isCombo: false,
+        createdAt: '2024-01-20T14:30:00'
       },
       {
         id: 3,
-        name: 'Lốp xe 900R20',
+        name: 'Lốp xe 900R20 Michelin',
         sku: 'TIRE-003',
+        brand: 'Michelin',
+        model: '900R20',
+        partNumber: 'MIC-900R20-TIRE-003',
+        vehicleType: 'Xe tải nặng',
         categoryId: 3,
         category: { id: 3, name: 'Lốp xe' },
         supplierId: 1,
         supplier: { id: 1, name: 'Công ty TNHH ABC' },
-        totalStock: 0,
+        basePrice: 2400000,
+        sellingPrice: 2500000,
         costPrice: 2200000,
-        salePrice: 2500000,
+        stock: 0,
+        availableStock: 0,
+        reservedStock: 0,
+        minStockLevel: 4,
+        reorderPoint: 6,
+        supplierCount: 1,
+        warrantyPeriod: 24,
+        weight: 45.0,
+        dimensions: '90x20 cm',
         status: 'OUT_OF_STOCK',
         imageUrl: null,
         supplierStocks: [],
-        isCombo: false
+        isCombo: false,
+        createdAt: '2024-01-10T09:15:00'
       },
       {
         id: 4,
-        name: 'Combo lọc dầu + má phanh',
+        name: 'Combo lọc dầu + má phanh Thaco Ollin',
         sku: 'OIL-BRAKE-004',
+        brand: 'Thaco',
+        model: 'Ollin',
+        partNumber: 'THA-OLLIN-COMBO-004',
+        vehicleType: 'Xe tải nhẹ',
         categoryId: 1,
         category: { id: 1, name: 'Hệ thống động cơ' },
         supplierId: 1,
         supplier: { id: 1, name: 'Công ty TNHH ABC' },
-        totalStock: 10,
+        basePrice: 200000,
+        sellingPrice: 220000,
         costPrice: 180000,
-        salePrice: 220000,
+        stock: 10,
+        availableStock: 8,
+        reservedStock: 2,
+        minStockLevel: 5,
+        reorderPoint: 8,
+        supplierCount: 1,
+        warrantyPeriod: 12,
+        weight: 3.2,
+        dimensions: '20x15x8 cm',
         status: 'ACTIVE',
         imageUrl: null,
         supplierStocks: [
           { supplierId: 1, quantity: 10 }
         ],
-        isCombo: true
+        isCombo: true,
+        createdAt: '2024-01-25T16:45:00'
+      },
+      {
+        id: 5,
+        name: 'Hộp số 5 cấp Isuzu',
+        sku: 'GEARBOX-005',
+        brand: 'Isuzu',
+        model: '5-Speed',
+        partNumber: 'ISU-5SPD-GEAR-005',
+        vehicleType: 'Xe tải nhẹ',
+        categoryId: 4,
+        category: { id: 4, name: 'Hệ thống truyền động' },
+        supplierId: 2,
+        supplier: { id: 2, name: 'Nhà phân phối XYZ' },
+        basePrice: 8500000,
+        sellingPrice: 9000000,
+        costPrice: 7500000,
+        stock: 2,
+        availableStock: 1,
+        reservedStock: 1,
+        minStockLevel: 1,
+        reorderPoint: 2,
+        supplierCount: 1,
+        warrantyPeriod: 36,
+        weight: 85.0,
+        dimensions: '60x40x35 cm',
+        status: 'ACTIVE',
+        imageUrl: null,
+        supplierStocks: [
+          { supplierId: 2, quantity: 2 }
+        ],
+        isCombo: false,
+        createdAt: '2024-02-01T11:20:00'
+      },
+      {
+        id: 6,
+        name: 'Bộ lọc gió động cơ',
+        sku: 'AIR-FILTER-006',
+        brand: 'Mann',
+        model: 'C25114',
+        partNumber: 'MAN-C25114-AIR-006',
+        vehicleType: 'Xe tải nhẹ',
+        categoryId: 1,
+        category: { id: 1, name: 'Hệ thống động cơ' },
+        supplierId: 1,
+        supplier: { id: 1, name: 'Công ty TNHH ABC' },
+        basePrice: 85000,
+        sellingPrice: 95000,
+        costPrice: 70000,
+        stock: 25,
+        availableStock: 22,
+        reservedStock: 3,
+        minStockLevel: 5,
+        reorderPoint: 8,
+        supplierCount: 1,
+        warrantyPeriod: 6,
+        weight: 0.5,
+        dimensions: '15x12x8 cm',
+        status: 'ACTIVE',
+        imageUrl: null,
+        supplierStocks: [
+          { supplierId: 1, quantity: 25 }
+        ],
+        isCombo: false,
+        createdAt: '2024-02-05T13:30:00'
+      },
+      {
+        id: 7,
+        name: 'Dây đai động cơ',
+        sku: 'BELT-007',
+        brand: 'Gates',
+        model: '13x1000',
+        partNumber: 'GAT-13X1000-BELT-007',
+        vehicleType: 'Xe tải trung',
+        categoryId: 1,
+        category: { id: 1, name: 'Hệ thống động cơ' },
+        supplierId: 2,
+        supplier: { id: 2, name: 'Nhà phân phối XYZ' },
+        basePrice: 120000,
+        sellingPrice: 135000,
+        costPrice: 100000,
+        stock: 15,
+        availableStock: 12,
+        reservedStock: 3,
+        minStockLevel: 3,
+        reorderPoint: 5,
+        supplierCount: 1,
+        warrantyPeriod: 12,
+        weight: 0.3,
+        dimensions: '100x2 cm',
+        status: 'ACTIVE',
+        imageUrl: null,
+        supplierStocks: [
+          { supplierId: 2, quantity: 15 }
+        ],
+        isCombo: false,
+        createdAt: '2024-02-10T08:45:00'
+      },
+      {
+        id: 8,
+        name: 'Bugi đánh lửa',
+        sku: 'SPARK-PLUG-008',
+        brand: 'NGK',
+        model: 'BPR6ES',
+        partNumber: 'NGK-BPR6ES-SPARK-008',
+        vehicleType: 'Xe tải nhẹ',
+        categoryId: 1,
+        category: { id: 1, name: 'Hệ thống động cơ' },
+        supplierId: 1,
+        supplier: { id: 1, name: 'Công ty TNHH ABC' },
+        basePrice: 45000,
+        sellingPrice: 55000,
+        costPrice: 35000,
+        stock: 100,
+        availableStock: 85,
+        reservedStock: 15,
+        minStockLevel: 20,
+        reorderPoint: 30,
+        supplierCount: 3,
+        warrantyPeriod: 12,
+        weight: 0.1,
+        dimensions: '2x1 cm',
+        status: 'ACTIVE',
+        imageUrl: null,
+        supplierStocks: [
+          { supplierId: 1, quantity: 50 },
+          { supplierId: 3, quantity: 30 },
+          { supplierId: 4, quantity: 20 }
+        ],
+        isCombo: false,
+        createdAt: '2024-02-15T15:10:00'
+      },
+      {
+        id: 9,
+        name: 'Bộ lọc nhiên liệu cũ',
+        sku: 'FUEL-FILTER-009',
+        brand: 'Bosch',
+        model: 'F026402001',
+        partNumber: 'BOS-F026402001-FUEL-009',
+        vehicleType: 'Xe tải trung',
+        categoryId: 7,
+        category: { id: 7, name: 'Hệ thống nhiên liệu' },
+        supplierId: 2,
+        supplier: { id: 2, name: 'Nhà phân phối XYZ' },
+        basePrice: 180000,
+        sellingPrice: 200000,
+        costPrice: 150000,
+        stock: 0,
+        availableStock: 0,
+        reservedStock: 0,
+        minStockLevel: 5,
+        reorderPoint: 8,
+        supplierCount: 1,
+        warrantyPeriod: 12,
+        weight: 0.8,
+        dimensions: '10x8x6 cm',
+        status: 'INACTIVE',
+        imageUrl: null,
+        supplierStocks: [],
+        isCombo: false,
+        createdAt: '2024-01-05T12:00:00'
       }
     ])
 
     const categories = ref([
       { id: 1, name: 'Hệ thống động cơ' },
       { id: 2, name: 'Hệ thống phanh' },
-      { id: 3, name: 'Lốp xe' }
+      { id: 3, name: 'Lốp xe' },
+      { id: 4, name: 'Hệ thống truyền động' },
+      { id: 5, name: 'Hệ thống điện' },
+      { id: 6, name: 'Hệ thống làm mát' },
+      { id: 7, name: 'Hệ thống nhiên liệu' },
+      { id: 8, name: 'Phụ kiện' }
     ])
 
     const suppliers = ref([
       { id: 1, name: 'Công ty TNHH ABC' },
-      { id: 2, name: 'Nhà phân phối XYZ' }
+      { id: 2, name: 'Nhà phân phối XYZ' },
+      { id: 3, name: 'Công ty Phụ tùng Đông Nam' },
+      { id: 4, name: 'Nhà phân phối Phương Nam' }
     ])
 
     // Computed properties

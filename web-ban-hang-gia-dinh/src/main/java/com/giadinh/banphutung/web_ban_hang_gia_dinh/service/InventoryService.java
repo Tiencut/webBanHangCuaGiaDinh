@@ -1,5 +1,15 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.InventoryDto;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Inventory;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
@@ -10,17 +20,9 @@ import com.giadinh.banphutung.web_ban_hang_gia_dinh.mapper.InventoryMapper;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.InventoryRepository;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.ProductRepository;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.SupplierRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -236,7 +238,8 @@ public class InventoryService {
 
     public List<InventoryDto> getExpiringInventories(int daysThreshold) {
         log.info("Fetching inventories expiring within {} days", daysThreshold);
-        List<Inventory> inventories = inventoryRepository.findExpiringInventories(daysThreshold);
+        LocalDateTime threshold = LocalDateTime.now().plusDays(daysThreshold);
+        List<Inventory> inventories = inventoryRepository.findExpiringInventories(threshold);
         return inventoryMapper.toDtoList(inventories);
     }
 } 

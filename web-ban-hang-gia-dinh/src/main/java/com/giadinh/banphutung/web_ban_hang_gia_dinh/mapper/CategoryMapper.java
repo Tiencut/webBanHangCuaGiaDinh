@@ -1,10 +1,16 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.mapper;
 
+import java.util.List;
+
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CategoryDto;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Category;
-import org.mapstruct.*;
-
-import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CategoryMapper {

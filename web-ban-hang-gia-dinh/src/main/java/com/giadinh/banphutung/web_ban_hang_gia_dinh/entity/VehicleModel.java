@@ -88,6 +88,12 @@ public class VehicleModel extends BaseEntity {
     private Integer productionYear;
 
     /**
+     * Năm sản xuất (alias cho yearFrom - để tương thích với service)
+     */
+    @Column(name = "year")
+    private String year;
+
+    /**
      * Loại xe
      */
     @Enumerated(EnumType.STRING)
@@ -100,6 +106,12 @@ public class VehicleModel extends BaseEntity {
     private String engineType;
 
     /**
+     * Động cơ (alias cho engineType - để tương thích với service)
+     */
+    @Column(length = 100)
+    private String engine;
+
+    /**
      * Loại hộp số
      */
     @Column(length = 100)
@@ -110,6 +122,12 @@ public class VehicleModel extends BaseEntity {
      */
     @Column(length = 50)
     private String fuelType;
+
+    /**
+     * Loại thân xe
+     */
+    @Column(length = 50)
+    private String bodyType;
 
     /**
      * Mô tả chi tiết
@@ -195,6 +213,12 @@ public class VehicleModel extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProductionStatus productionStatus = ProductionStatus.IN_PRODUCTION;
+
+    /**
+     * Thứ tự sắp xếp
+     */
+    @Column(name = "sort_order")
+    private Integer sortOrder = 0;
 
     /**
      * Có đang kinh doanh phụ tùng không

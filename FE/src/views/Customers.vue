@@ -1,5 +1,6 @@
 <template>
-  <div class="container mx-auto px-4 py-6">
+  <div class="w-full min-h-screen bg-gray-50">
+    <div class="px-6 py-6">
     <!-- Header Section -->
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-gray-800">Quản lý khách hàng</h1>
@@ -232,6 +233,8 @@
       <el-button type="primary" @click="addCustomer">Thêm</el-button>
     </template>
   </el-dialog>
+    </div>
+  </div>
 </template>
 
 <script>

@@ -1,19 +1,24 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.mapper;
 
+import java.util.List;
+
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CreateProductRequest;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.ProductDto;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
-import org.mapstruct.*;
-
-import java.util.List;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.VehicleModel;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ProductMapper {
-    
     @Mapping(source = "category.id", target = "categoryId")
     @Mapping(source = "category.name", target = "categoryName")
-    @Mapping(source = "compatibleVehicles", target = "compatibleVehicleIds", 
-            qualifiedByName = "extractVehicleIds")
+    @Mapping(target = "compatibleVehicleIds", expression = "java(mapVehicleIds(product.getCompatibleVehicles()))")
     ProductDto toDto(Product product);
     
     @Mapping(target = "id", ignore = true)
@@ -28,18 +33,10 @@ public interface ProductMapper {
     
     List<ProductDto> toDtoList(List<Product> products);
     
-    @Named("extractVehicleIds")
-    default List<Long> extractVehicleIds(List<Object> vehicles) {
+    default List<Long> mapVehicleIds(List<VehicleModel> vehicles) {
         if (vehicles == null) return null;
         return vehicles.stream()
-                .map(vehicle -> {
-                    try {
-                        return (Long) vehicle.getClass().getMethod("getId").invoke(vehicle);
-                    } catch (Exception e) {
-                        return null;
-                    }
-                })
-                .filter(id -> id != null)
+                .map(VehicleModel::getId)
                 .toList();
     }
     

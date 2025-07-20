@@ -224,24 +224,38 @@ public class OrderService {
         long totalOrders = orderRepository.countByIsDeletedFalse();
         long pendingOrders = orderRepository.countByStatusAndIsDeletedFalse(Order.OrderStatus.PENDING);
         long confirmedOrders = orderRepository.countByStatusAndIsDeletedFalse(Order.OrderStatus.CONFIRMED);
+        long processingOrders = 0; // TODO: Add processing status if needed
         long shippedOrders = orderRepository.countByStatusAndIsDeletedFalse(Order.OrderStatus.SHIPPED);
         long deliveredOrders = orderRepository.countByStatusAndIsDeletedFalse(Order.OrderStatus.DELIVERED);
         long cancelledOrders = orderRepository.countByStatusAndIsDeletedFalse(Order.OrderStatus.CANCELLED);
+        long returnedOrders = 0; // TODO: Add returned status if needed
         
         BigDecimal totalRevenue = orderRepository.sumTotalAmountByStatusAndIsDeletedFalse(Order.OrderStatus.DELIVERED);
         BigDecimal pendingRevenue = orderRepository.sumTotalAmountByStatusAndIsDeletedFalse(Order.OrderStatus.PENDING);
         BigDecimal confirmedRevenue = orderRepository.sumTotalAmountByStatusAndIsDeletedFalse(Order.OrderStatus.CONFIRMED);
+        BigDecimal processingRevenue = BigDecimal.ZERO; // TODO: Add processing status if needed
+        BigDecimal shippedRevenue = orderRepository.sumTotalAmountByStatusAndIsDeletedFalse(Order.OrderStatus.SHIPPED);
+        BigDecimal deliveredRevenue = orderRepository.sumTotalAmountByStatusAndIsDeletedFalse(Order.OrderStatus.DELIVERED);
+        BigDecimal cancelledRevenue = orderRepository.sumTotalAmountByStatusAndIsDeletedFalse(Order.OrderStatus.CANCELLED);
+        BigDecimal returnedRevenue = BigDecimal.ZERO; // TODO: Add returned status if needed
         
         return OrderStatsResponse.builder()
-                .totalOrders(totalOrders)
-                .pendingOrders(pendingOrders)
-                .confirmedOrders(confirmedOrders)
-                .shippedOrders(shippedOrders)
-                .deliveredOrders(deliveredOrders)
-                .cancelledOrders(cancelledOrders)
+                .totalOrders((int) totalOrders)
+                .pendingOrders((int) pendingOrders)
+                .confirmedOrders((int) confirmedOrders)
+                .processingOrders((int) processingOrders)
+                .shippedOrders((int) shippedOrders)
+                .deliveredOrders((int) deliveredOrders)
+                .cancelledOrders((int) cancelledOrders)
+                .returnedOrders((int) returnedOrders)
                 .totalRevenue(totalRevenue != null ? totalRevenue : BigDecimal.ZERO)
                 .pendingRevenue(pendingRevenue != null ? pendingRevenue : BigDecimal.ZERO)
                 .confirmedRevenue(confirmedRevenue != null ? confirmedRevenue : BigDecimal.ZERO)
+                .processingRevenue(processingRevenue)
+                .shippedRevenue(shippedRevenue != null ? shippedRevenue : BigDecimal.ZERO)
+                .deliveredRevenue(deliveredRevenue != null ? deliveredRevenue : BigDecimal.ZERO)
+                .cancelledRevenue(cancelledRevenue != null ? cancelledRevenue : BigDecimal.ZERO)
+                .returnedRevenue(returnedRevenue)
                 .build();
     }
 

@@ -1,18 +1,20 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.service;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CategoryDto;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Category;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.mapper.CategoryMapper;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.CategoryRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -149,6 +151,20 @@ public class CategoryService {
     public List<CategoryDto> searchCategories(String keyword) {
         log.info("Searching categories with keyword: {}", keyword);
         List<Category> categories = categoryRepository.searchCategories(keyword);
+        return categoryMapper.toDtoList(categories);
+    }
+
+    public List<CategoryDto> advancedSearch(CategorySearchRequest request) {
+        log.info("Advanced search categories with request: {}", request);
+        List<Category> categories = categoryRepository.advancedSearch(
+            request.getKeyword(),
+            request.getParentId(),
+            request.getLevel(),
+            request.getIsActive(),
+            request.getProductCountRange(),
+            request.getSortBy(),
+            request.getSortDirection()
+        );
         return categoryMapper.toDtoList(categories);
     }
 

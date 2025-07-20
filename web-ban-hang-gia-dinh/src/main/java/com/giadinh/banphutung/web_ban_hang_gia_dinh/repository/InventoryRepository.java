@@ -1,6 +1,10 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.repository;
 
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Inventory;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,10 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Inventory;
 
 /**
  * InventoryRepository - Repository cho quản lý tồn kho theo supplier
@@ -337,4 +338,63 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
            "FROM Inventory i WHERE i.isActive = true " +
            "GROUP BY i.product.id ORDER BY totalValue DESC")
     List<Object[]> findProductsWithHighestInventory();
+    
+    // === Các method bổ sung cho InventoryService ===
+    
+    /**
+     * Tìm tất cả tồn kho đang active
+     */
+    List<Inventory> findByIsActiveTrue();
+    
+    /**
+     * Tìm tồn kho đang active với phân trang
+     */
+    Page<Inventory> findByIsActiveTrue(Pageable pageable);
+    
+    /**
+     * Tìm tồn kho theo id và active
+     */
+    Optional<Inventory> findByIdAndIsActiveTrue(Long id);
+    
+    /**
+     * Tìm tồn kho theo product, supplier và active
+     */
+    Optional<Inventory> findByProductIdAndSupplierIdAndIsActiveTrue(Long productId, Long supplierId);
+    
+    // === Các method bổ sung cho InventoryService ===
+    
+    /**
+     * Tìm tồn kho theo product và active
+     */
+    List<Inventory> findByProductIdAndIsActiveTrue(Long productId);
+    
+    /**
+     * Tìm tồn kho theo supplier và active
+     */
+    List<Inventory> findBySupplierIdAndIsActiveTrue(Long supplierId);
+    
+    /**
+     * Tìm tồn kho theo available quantity và active
+     */
+    List<Inventory> findByAvailableQuantityLessThanEqualAndIsActiveTrue(Integer quantity);
+    
+    /**
+     * Tìm kiếm tồn kho theo keyword
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.isActive = true AND (LOWER(i.product.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(i.supplier.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(i.location) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<Inventory> searchInventories(@Param("keyword") String keyword);
+    
+    /**
+     * Tìm tồn kho theo location và active
+     */
+    List<Inventory> findByLocationContainingIgnoreCaseAndIsActiveTrue(String location);
+    
+    /**
+     * Tìm tồn kho sắp hết hạn
+     */
+    @Query("SELECT i FROM Inventory i WHERE i.isActive = true AND i.expiryDate IS NOT NULL " +
+           "AND i.expiryDate <= :threshold ORDER BY i.expiryDate ASC")
+    List<Inventory> findExpiringInventories(@Param("threshold") LocalDateTime threshold);
 } 
