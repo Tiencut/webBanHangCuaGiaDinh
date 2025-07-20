@@ -367,6 +367,10 @@
           <h4 class="font-semibold text-lg mb-2">Lịch sử giao dịch kho</h4>
           <ProductInventoryHistory :product-id="selectedProductForStock?.id" />
         </div>
+        <div class="mb-8">
+          <h4 class="font-semibold text-lg mb-2">Giá nhập/bán theo từng nhà cung cấp</h4>
+          <ProductSuppliersTable :product-id="selectedProductForStock?.id" />
+        </div>
       </div>
     </div>
 
@@ -672,13 +676,15 @@ import TrainingAssistant from '@/components/TrainingAssistant.vue'
 import DataTable from '@/components/DataTable.vue'
 import { removeVietnameseTones } from '../utils/removeVietnameseTones'
 import ProductInventoryHistory from '../components/ProductInventoryHistory.vue'
+import ProductSuppliersTable from '../components/ProductSuppliersTable.vue'
 
 export default {
   name: 'Products',
   components: {
     TrainingAssistant,
     DataTable,
-    ProductInventoryHistory
+    ProductInventoryHistory,
+    ProductSuppliersTable
   },
   setup() {
     // Reactive data
