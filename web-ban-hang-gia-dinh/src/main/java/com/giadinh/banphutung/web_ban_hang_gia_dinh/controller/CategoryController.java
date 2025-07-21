@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CategoryDto;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CategorySearchRequest;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.CategoryService;
 
 import io.swagger.v3.oas.annotations.Operation;

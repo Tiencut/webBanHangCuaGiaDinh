@@ -7,7 +7,7 @@
         <h1 class="text-3xl font-bold text-gray-800">Quản lý sản phẩm</h1>
         <!-- <p class="text-gray-600 mt-1">Quản lý sản phẩm đa nguồn cung ứng</p> -->
       </div>
-      
+
       <!-- Training Assistant -->
       <div class="flex items-center space-x-4">
         <TrainingAssistant 
@@ -380,9 +380,9 @@
 
     <!-- Product Detail Modal -->
     <div v-if="showProductDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div class="bg-white rounded-lg p-8 w-full max-w-5xl max-h-[95vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Chi tiết sản phẩm</h3>
+          <h3 class="text-xl font-semibold">Chi tiết sản phẩm</h3>
           <button @click="showProductDetailModal = false" class="text-gray-400 hover:text-gray-600">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -390,100 +390,68 @@
           </button>
         </div>
         
-        <div v-if="selectedProductDetail" class="space-y-6">
+        <div v-if="selectedProductDetail" class="space-y-8">
           <!-- Product Info Header -->
           <div class="bg-gray-50 p-4 rounded-lg">
             <div class="flex items-center space-x-4">
-              <div class="h-16 w-16 rounded-lg bg-gray-200 flex items-center justify-center">
+              <div class="h-20 w-20 rounded-lg bg-gray-200 flex items-center justify-center">
                 <img 
                   v-if="selectedProductDetail.imageUrl" 
                   :src="selectedProductDetail.imageUrl" 
                   :alt="selectedProductDetail.name"
-                  class="h-16 w-16 rounded-lg object-cover"
+                  class="h-20 w-20 rounded-lg object-cover"
                 />
-                <svg v-else class="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg v-else class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                 </svg>
               </div>
               <div>
-                <h4 class="text-xl font-bold text-gray-900">{{ selectedProductDetail.name }}</h4>
+                <h4 class="text-2xl font-bold text-gray-900">{{ selectedProductDetail.name }}</h4>
                 <p class="text-sm text-gray-600">SKU: {{ selectedProductDetail.sku }}</p>
                 <p class="text-sm text-gray-600">Danh mục: {{ getCategoryName(selectedProductDetail.categoryId) }}</p>
               </div>
             </div>
-          </div>
-
-          <!-- Tabs -->
-          <div class="border-b border-gray-200">
-            <nav class="-mb-px flex space-x-8">
-              <button 
-                @click="activeTab = 'info'"
-                :class="activeTab === 'info' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
-              >
-                Thông tin cơ bản
-              </button>
-              <button 
-                @click="activeTab = 'specs'"
-                :class="activeTab === 'specs' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
-              >
-                Thông số kỹ thuật
-              </button>
-              <button 
-                @click="activeTab = 'suppliers'"
-                :class="activeTab === 'suppliers' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
-              >
-                Nhà cung cấp
-              </button>
-            </nav>
-          </div>
-
-          <!-- Tab Content -->
-          <div class="mt-6">
-            <!-- Basic Info Tab -->
-            <div v-if="activeTab === 'info'" class="space-y-4">
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Thương hiệu</label>
-                  <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.brand || 'N/A' }}</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Model</label>
-                  <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.model || 'N/A' }}</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Mã phụ tùng</label>
-                  <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.partNumber || 'N/A' }}</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Loại xe</label>
-                  <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.vehicleType || 'N/A' }}</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Tồn kho</label>
-                  <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.stock || 0 }}</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">Giá bán</label>
-                  <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(selectedProductDetail.sellingPrice) }}</p>
-                </div>
+            <div class="grid grid-cols-2 gap-4 mt-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Thương hiệu</label>
+                <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.brand || 'N/A' }}</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Model</label>
+                <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.model || 'N/A' }}</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Mã phụ tùng</label>
+                <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.partNumber || 'N/A' }}</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Loại xe</label>
+                <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.vehicleType || 'N/A' }}</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Tồn kho</label>
+                <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.stock || 0 }}</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Giá bán</label>
+                <p class="mt-1 text-sm text-gray-900">{{ formatPrice(selectedProductDetail.sellingPrice) }}</p>
               </div>
             </div>
+          </div>
 
-            <!-- Specifications Tab -->
-            <div v-if="activeTab === 'specs'">
-              <ProductDynamicAttributes 
-                :product-id="selectedProductDetail.id" 
-                :category-id="selectedProductDetail.categoryId" 
-              />
-            </div>
+          <!-- Product Dynamic Attributes -->
+          <div>
+            <h4 class="font-semibold text-lg mb-2">Thông số kỹ thuật</h4>
+            <ProductDynamicAttributes 
+              :product-id="selectedProductDetail.id" 
+              :category-id="selectedProductDetail.categoryId" 
+            />
+          </div>
 
-            <!-- Suppliers Tab -->
-            <div v-if="activeTab === 'suppliers'">
-              <ProductSuppliersTable :product-id="selectedProductDetail.id" />
-            </div>
+          <!-- Product Suppliers Table -->
+          <div>
+            <h4 class="font-semibold text-lg mb-2">Giá nhập/bán theo từng nhà cung cấp</h4>
+            <ProductSuppliersTable :product-id="selectedProductDetail.id" />
           </div>
         </div>
       </div>
