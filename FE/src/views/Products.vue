@@ -7,7 +7,7 @@
         <h1 class="text-3xl font-bold text-gray-800">Quản lý sản phẩm</h1>
         <!-- <p class="text-gray-600 mt-1">Quản lý sản phẩm đa nguồn cung ứng</p> -->
       </div>
-
+      
       <!-- Training Assistant -->
       <div class="flex items-center space-x-4">
         <TrainingAssistant 

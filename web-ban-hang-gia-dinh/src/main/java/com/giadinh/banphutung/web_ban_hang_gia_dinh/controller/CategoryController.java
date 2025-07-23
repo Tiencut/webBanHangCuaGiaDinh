@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CategoryDto;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CategorySearchRequest;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.UpdateCategoryParentRequest;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.CategoryService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -71,6 +72,14 @@ public class CategoryController {
         log.info("PUT /api/categories/{} - Updating category", id);
         CategoryDto category = categoryService.updateCategory(id, categoryDto);
         return ResponseEntity.ok(category);
+    }
+
+    @PutMapping("/{id}/parent")
+    @Operation(summary = "Update category's parent", description = "Move a category to a new parent.")
+    public ResponseEntity<Void> updateCategoryParent(@PathVariable Long id, @RequestBody UpdateCategoryParentRequest request) {
+        log.info("PUT /api/categories/{}/parent - Moving category to new parent: {}", id, request.getNewParentId());
+        categoryService.updateCategoryParent(id, request.getNewParentId());
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")

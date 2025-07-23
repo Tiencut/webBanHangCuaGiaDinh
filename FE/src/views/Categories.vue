@@ -5,7 +5,7 @@
     <div class="flex justify-between items-center mb-6">
       <div>
         <h1 class="text-3xl font-bold text-gray-800">Quản lý danh mục</h1>
-        <p class="text-gray-600 mt-1">Quản lý danh mục sản phẩm theo cấu trúc cây</p>
+        <p class="text-gray-600 mt-1">Kéo và thả để sắp xếp lại các danh mục.</p>
       </div>
       <button @click="handleCreateRoot" class="btn-primary">
         Thêm danh mục gốc
@@ -30,20 +30,29 @@
       <div v-else-if="categoryTree.length === 0" class="p-8 text-center text-gray-500">
         Không có danh mục nào.
       </div>
-      <div v-else>
-        <CategoryTreeRow
-          v-for="rootCategory in categoryTree"
-          :key="rootCategory.id"
-          :category="rootCategory"
-          :level="0"
-          :expanded="expandedState[rootCategory.id]"
-          @toggle="toggleNode(rootCategory.id)"
-          @add="handleAddChild"
-          @edit="handleEdit"
-          @delete="handleDelete"
-          @toggle-child="toggleNode"
-        />
-      </div>
+      <draggable
+        v-else
+        v-model="categoryTree"
+        @end="handleDragEnd"
+        item-key="id"
+        group="categories"
+        handle=".drag-handle"
+        class="w-full"
+      >
+        <template #item="{ element: rootCategory }">
+          <CategoryTreeRow
+            :category="rootCategory"
+            :level="0"
+            :expanded="expandedState[rootCategory.id]"
+            @toggle="toggleNode(rootCategory.id)"
+            @add="handleAddChild"
+            @edit="handleEdit"
+            @delete="handleDelete"
+            @toggle-child="toggleNode"
+            @update:children="newChildren => handleChildrenUpdate(rootCategory, newChildren)"
+          />
+        </template>
+      </draggable>
     </div>
 
     <!-- Add/Edit Category Modal -->
@@ -118,12 +127,19 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue'
+import draggable from 'vuedraggable'
 import CategoryTreeRow from '@/components/CategoryTreeRow.vue'
 import { categoriesApi } from '@/api/categories.js'
+
+// Add a new method to your API service object
+categoriesApi.updateCategoryParent = (categoryId, newParentId) => {
+  return categoriesApi.put(`/${categoryId}/parent`, { newParentId });
+};
 
 export default {
   name: 'Categories',
   components: {
+    draggable,
     CategoryTreeRow
   },
   setup() {
@@ -254,6 +270,47 @@ export default {
       }
     }
 
+    const handleDragEnd = async (event) => {
+      const { to } = event;
+      const draggedElement = event.item;
+      const draggedCategoryId = parseInt(draggedElement.dataset.categoryId);
+      const newParentId = to.dataset.parentId ? parseInt(to.dataset.parentId) : null;
+      
+      console.log(`Dragged category ${draggedCategoryId} to new parent ID: ${newParentId}`);
+
+      // Basic check to see if position actually changed
+      const originalCategory = findCategoryById(categories.value, draggedCategoryId);
+      if (originalCategory && originalCategory.parentId === newParentId) {
+        console.log("No change in parent, skipping API call.");
+        return;
+      }
+
+      try {
+        await categoriesApi.updateCategoryParent(draggedCategoryId, newParentId);
+        await loadCategories(); // Reload to reflect changes and ensure consistency
+      } catch (error) {
+        console.error("Failed to update category parent:", error);
+        alert("Cập nhật thứ tự danh mục thất bại! Vui lòng thử lại.");
+        // We reload here as well to revert any optimistic UI changes
+        await loadCategories();
+      }
+    };
+
+    const findCategoryById = (nodes, id) => {
+      for (const node of nodes) {
+        if (node.id === id) return node;
+        if (node.children) {
+          const found = findCategoryById(node.children, id);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    const handleChildrenUpdate = (parentCategory, newChildren) => {
+      parentCategory.children = newChildren;
+    };
+
     const loadCategories = async () => {
       try {
         loading.value = true
@@ -296,6 +353,8 @@ export default {
       saveCategory,
       closeModal,
       toggleNode,
+      handleDragEnd,
+      handleChildrenUpdate,
     }
   }
 }

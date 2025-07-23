@@ -119,6 +119,52 @@ public class CategoryService {
         log.info("Category deleted successfully with id: {}", id);
     }
 
+    @Transactional
+    public void updateCategoryParent(Long categoryId, Long newParentId) {
+        log.info("Moving category {} to new parent {}", categoryId, newParentId);
+
+        Category categoryToMove = categoryRepository.findById(categoryId)
+            .orElseThrow(() -> new ResourceNotFoundException("Category to move not found with id: " + categoryId));
+
+        // Prevent moving a category into itself
+        if (categoryId.equals(newParentId)) {
+            throw new BusinessException("Cannot move a category into itself.");
+        }
+        
+        // Prevent moving a category into one of its own descendants
+        if (newParentId != null) {
+            Category current = categoryRepository.findById(newParentId).orElse(null);
+            while (current != null) {
+                if (current.getId().equals(categoryId)) {
+                    throw new BusinessException("Cannot move a category into its own descendant.");
+                }
+                current = current.getParent();
+            }
+        }
+        
+        Category newParent = null;
+        if (newParentId != null) {
+            newParent = categoryRepository.findById(newParentId)
+                .orElseThrow(() -> new ResourceNotFoundException("New parent category not found with id: " + newParentId));
+        }
+
+        categoryToMove.setParent(newParent);
+        categoryRepository.save(categoryToMove);
+
+        // Update levels for the moved category and all its descendants
+        updateLevelRecursively(categoryToMove, newParent != null ? newParent.getLevel() + 1 : 0);
+    }
+
+    private void updateLevelRecursively(Category category, int newLevel) {
+        category.setLevel(newLevel);
+        categoryRepository.save(category);
+        
+        List<Category> children = categoryRepository.findByParentIdAndIsActiveTrue(category.getId());
+        for (Category child : children) {
+            updateLevelRecursively(child, newLevel + 1);
+        }
+    }
+
     public List<CategoryDto> getRootCategories() {
         log.info("Fetching root categories");
         List<Category> categories = categoryRepository.findByParentIdIsNullAndIsActiveTrue();
