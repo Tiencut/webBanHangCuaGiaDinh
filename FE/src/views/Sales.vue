@@ -71,12 +71,10 @@
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl font-semibold text-gray-900">Chọn sản phẩm</h2>
             <div class="flex items-center space-x-3">
-              <!-- Ô tìm kiếm sản phẩm -->
-              <input v-model="productSearch" type="text" placeholder="Tìm kiếm sản phẩm theo tên..." 
+              <input v-model="productSearch" type="text" placeholder="Tìm sản phẩm..." 
                      class="form-input w-64">
-              <!-- Bộ lọc danh mục -->
               <select v-model="categoryFilter" class="form-input w-40">
-                <option value="">Tất cả các danh mục</option>
+                <option value="">Tất cả danh mục</option>
                 <option v-for="category in categories" :key="category" :value="category">
                   {{ category }}
                 </option>
