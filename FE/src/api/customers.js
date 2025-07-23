@@ -1,10 +1,31 @@
-  // Lấy công nợ khách hàng
+
+import api from './config.js';
+
+// API lấy báo cáo công nợ chi tiết
+// GET /customers/{customerId}/debt-report
+// Trả về: { totalDebt, unpaidOrders: [], lastPayment, paymentHistory: [] }
+
+// API lấy lịch sử mua hàng nâng cao (có phân trang, lọc, tổng tiền, trạng thái...)
+// GET /customers/{customerId}/orders?fromDate=&toDate=&status=&page=&size=
+
+
+export const customersApi = {
+  // Lấy công nợ khách hàng đơn giản
   getDebt: (customerId) => {
     return api.get(`/customers/${customerId}/debt`);
   },
-import api from './config.js';
 
-export const customersApi = {
+  // Lấy báo cáo công nợ chi tiết
+  getDebtReport: (customerId) => {
+    return api.get(`/customers/${customerId}/debt-report`);
+  },
+
+  // Lấy lịch sử mua hàng nâng cao (có lọc, phân trang)
+  getAdvancedOrders: (customerId, params = {}) => {
+    // params: { fromDate, toDate, status, page, size }
+    return api.get(`/customers/${customerId}/orders`, { params });
+  },
+
   // Lấy danh sách khách hàng với phân trang
   getAll: (page = 0, size = 10, search = '', type = null, status = null) => {
     const params = new URLSearchParams();
