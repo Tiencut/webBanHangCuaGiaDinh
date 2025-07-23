@@ -71,10 +71,12 @@
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl font-semibold text-gray-900">Chọn sản phẩm</h2>
             <div class="flex items-center space-x-3">
-              <input v-model="productSearch" type="text" placeholder="Tìm sản phẩm..." 
+              <!-- Ô tìm kiếm sản phẩm -->
+              <input v-model="productSearch" type="text" placeholder="Tìm kiếm sản phẩm theo tên..." 
                      class="form-input w-64">
+              <!-- Bộ lọc danh mục -->
               <select v-model="categoryFilter" class="form-input w-40">
-                <option value="">Tất cả danh mục</option>
+                <option value="">Tất cả các danh mục</option>
                 <option v-for="category in categories" :key="category" :value="category">
                   {{ category }}
                 </option>
@@ -113,7 +115,7 @@
           <div class="mb-6">
             <label class="form-label">Khách hàng</label>
             <div class="flex items-center space-x-2">
-              <select v-model="selectedCustomer" class="form-input flex-1">
+              <select v-model="selectedCustomer" @change="fetchCustomerHistory" class="form-input flex-1">
                 <option value="">Khách lẻ</option>
                 <option v-for="customer in customers" :key="customer.id" :value="customer">
                   {{ customer.name }}
@@ -125,7 +127,48 @@
                 </svg>
               </button>
             </div>
+
+            <!-- Customer purchase history & debt -->
+            <div v-if="selectedCustomer && customerHistory.length" class="mt-4 bg-gray-50 rounded p-3">
+              <div class="font-semibold text-sm text-gray-700 mb-2">Lịch sử mua hàng gần đây</div>
+              <ul class="text-xs text-gray-700 space-y-1 max-h-32 overflow-y-auto">
+                <li v-for="order in customerHistory" :key="order.id">
+                  <span class="font-medium">#{{ order.code || order.id }}</span> -
+                  {{ order.date | formatDate }} -
+                  <span class="text-green-700">₫{{ formatCurrency(order.totalAmount) }}</span>
+                  <span v-if="order.status === 'CREDIT'" class="ml-2 text-yellow-700">(Còn nợ)</span>
+                </li>
+              </ul>
+            </div>
+            <div v-if="selectedCustomer && customerDebt !== null" class="mt-2 text-xs text-red-700 font-semibold">
+              Công nợ hiện tại: ₫{{ formatCurrency(customerDebt) }}
+            </div>
           </div>
+    // Lịch sử mua hàng và công nợ khách hàng
+    const customerHistory = ref([])
+    const customerDebt = ref(null)
+
+    // Hàm lấy lịch sử mua hàng và công nợ
+    const fetchCustomerHistory = async () => {
+      if (!selectedCustomer.value || !selectedCustomer.value.id) {
+        customerHistory.value = []
+        customerDebt.value = null
+        return
+      }
+      try {
+        // Giả sử có API customersApi.getHistory và customersApi.getDebt
+        const [ordersRes, debtRes] = await Promise.all([
+          customersApi.getHistory(selectedCustomer.value.id, 0, 5),
+          customersApi.getDebt(selectedCustomer.value.id)
+        ])
+        customerHistory.value = ordersRes.data.content || ordersRes.data || []
+        customerDebt.value = debtRes.data?.debt ?? 0
+      } catch (e) {
+        customerHistory.value = []
+        customerDebt.value = null
+        console.error('Lỗi khi lấy lịch sử mua hàng/công nợ:', e)
+      }
+    }
 
           <!-- Cart Items -->
           <div class="space-y-3 mb-6 max-h-60 overflow-y-auto">
@@ -183,7 +226,14 @@
               </div>
             </div>
 
-            <!-- Payment Method -->
+
+            <!-- Order Notes -->
+            <div class="mb-4">
+              <label class="form-label">Ghi chú đơn hàng</label>
+              <textarea v-model="orderNotes" class="form-input" rows="2" placeholder="Nhập ghi chú cho đơn hàng..."></textarea>
+            </div>
+
+            <!-- Payment Method & Credit Sale -->
             <div class="mb-4">
               <label class="form-label">Phương thức thanh toán</label>
               <select v-model="paymentMethod" class="form-input">
@@ -191,6 +241,10 @@
                 <option value="card">Thẻ</option>
                 <option value="transfer">Chuyển khoản</option>
               </select>
+              <div class="mt-2 flex items-center">
+                <input id="credit-sale" type="checkbox" v-model="isCreditSale" class="mr-2">
+                <label for="credit-sale" class="text-sm">Bán nợ (ghi nợ cho khách hàng)</label>
+              </div>
             </div>
 
             <!-- Action Buttons -->
@@ -253,8 +307,12 @@
 </template>
 
 <script>
+
 import { ref, computed, onMounted } from 'vue'
-import { productsAPI, customersApi, ordersApi, salesApi } from '@/api'
+import { productsAPI, customersApi, salesApi } from '@/api'
+import { format } from 'date-fns'
+import { vi } from 'date-fns/locale'
+
 
 export default {
   name: 'Sales',
@@ -315,6 +373,18 @@ export default {
         newCustomers.value = 3
       } finally {
         loadingStats.value = false
+      }
+    }
+
+    // Lấy sản phẩm bán chạy (top selling)
+    const topSellingProducts = ref([])
+    const fetchTopSelling = async () => {
+      try {
+        const res = await salesApi.getTopSelling('month', 10)
+        topSellingProducts.value = res.data || []
+      } catch (e) {
+        console.error('Không thể tải sản phẩm bán chạy', e)
+        topSellingProducts.value = []
       }
     }
 
@@ -415,7 +485,9 @@ export default {
       }
     }
 
-    // Process payment (tạo đơn hàng)
+    // Process payment (tạo đơn hàng và thanh toán qua salesApi)
+    const orderNotes = ref('')
+    const isCreditSale = ref(false)
     const processPayment = async () => {
       if (cartItems.value.length === 0) return
       loadingOrder.value = true
@@ -430,18 +502,22 @@ export default {
           totalAmount: total.value,
           discount: discount.value,
           paymentMethod: paymentMethod.value,
-          status: 'CONFIRMED',
-          notes: ''
+          status: isCreditSale.value ? 'CREDIT' : 'CONFIRMED',
+          notes: orderNotes.value
         }
-        await ordersApi.create(orderPayload)
-        
+        // Tạo đơn hàng qua salesApi
+        const orderRes = await salesApi.createOrder(orderPayload)
+        const orderId = orderRes.data?.id
+        // Xử lý thanh toán nếu cần (nếu backend tách riêng)
+        // await salesApi.processPayment(orderId, { method: paymentMethod.value, amount: total.value })
+
         // Show success toast
         if (window.$toast) {
           window.$toast.success('Thanh toán thành công!', `Tổng tiền: ₫${formatCurrency(total.value)}`)
         } else {
           alert(`Thanh toán thành công! Tổng tiền: ₫${formatCurrency(total.value)}`)
         }
-        
+
         clearCart()
         loadStats() // Reload stats after successful order
       } catch (e) {
@@ -483,6 +559,7 @@ export default {
       loadStats()
       loadProducts()
       loadCustomers()
+      fetchTopSelling()
     })
 
     return {
@@ -519,11 +596,31 @@ export default {
       addCustomer,
       processPayment,
       formatCurrency,
+      fetchTopSelling,
+      fetchCustomerHistory,
       // Computed
       filteredProducts,
       subtotal,
-      total
+      total,
+      // Top selling products
+      topSellingProducts,
+      // Order notes & credit sale
+      orderNotes,
+      isCreditSale,
+      // Lịch sử mua hàng & công nợ
+      customerHistory,
+      customerDebt,
+      // Date filter
+      formatDate: (value) => {
+        if (!value) return ''
+        try {
+          return format(new Date(value), 'dd/MM/yyyy', { locale: vi })
+        } catch {
+          return value
+        }
+      }
     }
+
   }
 }
 </script>

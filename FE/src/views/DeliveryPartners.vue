@@ -78,24 +78,39 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm</label>
-          <input type="text" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Tên đối tác, số điện thoại...">
+          <input
+            v-model="searchTerm"
+            @input="loadPartners"
+            type="text"
+            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Tên đối tác, số điện thoại..."
+          >
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-          <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <select
+            v-model="statusFilter"
+            @change="loadPartners"
+            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
             <option value="">Tất cả</option>
-            <option value="active">Đang hoạt động</option>
-            <option value="inactive">Tạm dừng</option>
-            <option value="suspended">Đình chỉ</option>
+            <option value="ACTIVE">Đang hoạt động</option>
+            <option value="INACTIVE">Tạm dừng</option>
+            <option value="SUSPENDED">Đình chỉ</option>
           </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Loại dịch vụ</label>
-          <select class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <select
+            v-model="typeFilter"
+            @change="loadPartners"
+            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
             <option value="">Tất cả</option>
-            <option value="motorbike">Xe máy</option>
-            <option value="car">Ô tô</option>
-            <option value="truck">Xe tải</option>
+            <option value="MOTORCYCLE">Xe máy</option>
+            <option value="CAR">Ô tô</option>
+            <option value="TRUCK">Xe tải</option>
+            <option value="BICYCLE">Xe đạp</option>
           </select>
         </div>
       </div>

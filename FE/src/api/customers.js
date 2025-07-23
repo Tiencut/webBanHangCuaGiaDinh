@@ -1,3 +1,7 @@
+  // Lấy công nợ khách hàng
+  getDebt: (customerId) => {
+    return api.get(`/customers/${customerId}/debt`);
+  },
 import api from './config.js';
 
 export const customersApi = {

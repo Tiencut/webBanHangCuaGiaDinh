@@ -327,7 +327,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { inventoryApi } from '@/api'
 
 export default {
@@ -342,6 +342,7 @@ export default {
       checksToday: 0
     })
     const recentChecks = ref([])
+
     const showCreateCheckModal = ref(false)
     const newCheck = ref({
       name: '',
@@ -349,6 +350,24 @@ export default {
       warehouse: '',
       items: []
     })
+
+    // Danh sách sản phẩm tồn kho
+    const products = ref([])
+
+    // Lấy danh sách sản phẩm tồn kho
+    const loadProducts = async () => {
+      try {
+        loading.value = true
+        error.value = ''
+        const response = await inventoryApi.getProducts(0, 100)
+        products.value = response.data.content || response.data || []
+      } catch (err) {
+        error.value = 'Lỗi khi tải danh sách sản phẩm tồn kho'
+        console.error('Error loading inventory products:', err)
+      } finally {
+        loading.value = false
+      }
+    }
 
     // Load inventory stats
     const loadStats = async () => {
@@ -375,13 +394,22 @@ export default {
       }
     }
 
+    // Mở modal tạo phiếu kiểm kho
+    const openCreateCheckModal = () => {
+      showCreateCheckModal.value = true
+    }
+
     // Create new inventory check
     const createCheck = async () => {
       try {
         await inventoryApi.createCheck(newCheck.value)
         showCreateCheckModal.value = false
         resetNewCheck()
-        loadRecentChecks() // reload list
+        await loadRecentChecks() // reload list
+        await loadProducts() // reload tồn kho nếu có thay đổi
+        if (window.$toast) {
+          window.$toast.success('Tạo phiếu kiểm kho thành công!')
+        }
       } catch (err) {
         alert('Lỗi khi tạo phiếu kiểm kho')
         console.error('Error creating check:', err)
@@ -418,6 +446,13 @@ export default {
       return texts[status] || status
     }
 
+    // Trạng thái tồn kho sản phẩm
+    const getStockStatus = (stock) => {
+      if (stock === 0) return { color: 'bg-red-100 text-red-800', text: 'Hết hàng' }
+      if (stock > 0 && stock <= 10) return { color: 'bg-yellow-100 text-yellow-800', text: 'Sắp hết' }
+      return { color: 'bg-green-100 text-green-800', text: 'Còn hàng' }
+    }
+
     // Format date
     const formatDate = (dateString) => {
       return new Date(dateString).toLocaleDateString('vi-VN')
@@ -427,6 +462,7 @@ export default {
     onMounted(() => {
       loadStats()
       loadRecentChecks()
+      loadProducts()
     })
 
     return {
@@ -438,9 +474,13 @@ export default {
       newCheck,
       createCheck,
       resetNewCheck,
+      openCreateCheckModal,
       getStatusClass,
       getStatusText,
-      formatDate
+      formatDate,
+      products,
+      loadProducts,
+      getStockStatus
     }
   }
 }
