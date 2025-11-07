@@ -317,6 +317,7 @@ export default {
     const selectedYear = ref('')
     const brands = ref([]) // Khởi tạo brands
     const selectedType = ref('') // Khởi tạo selectedType
+    const popularBrands = ref([]) // Khai báo popularBrands
 
     // Computed property for filtered vehicles
     const filteredVehicles = computed(() => {
@@ -404,6 +405,19 @@ export default {
         vehicles.value = response.data.content || []
         totalPages.value = response.data.totalPages || 0
         totalElements.value = response.data.totalElements || 0
+
+        // Populate brands
+        const uniqueBrands = [...new Set(vehicles.value.map(v => v.brand))].filter(Boolean)
+        brands.value = uniqueBrands
+
+        // Populate popularBrands (example, you might fetch this from API)
+        popularBrands.value = [
+          { name: 'HINO', count: 10 },
+          { name: 'HYUNDAI', count: 8 },
+          { name: 'THACO', count: 12 },
+          { name: 'ISUZU', count: 5 },
+        ];
+
       } catch (error) {
         console.error('Error loading vehicles:', error)
       } finally {
@@ -590,6 +604,8 @@ export default {
       searchQuery,
       selectedBrand,
       selectedYear,
+      brands, // Thêm brands vào đây
+      selectedType, // Thêm selectedType vào đây
       
       // Modals
       showAddModal,
@@ -616,7 +632,9 @@ export default {
       getBrandText,
       
       // Computed
-      paginationInfo
+      filteredVehicles, // Thêm filteredVehicles vào đây
+      paginationInfo,
+      popularBrands // Thêm popularBrands vào đây
     }
   }
 }

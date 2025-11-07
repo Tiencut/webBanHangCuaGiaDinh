@@ -217,13 +217,20 @@ export default {
     const totalElements = ref(0)
     const pageSize = ref(10)
 
+    // Stats
+    const totalSuppliers = ref(0)
+    const activeSuppliers = ref(0)
+    const totalValue = ref(0)
+    const monthlyOrders = ref(0)
+
     // Filters
-    const searchQuery = ref('')
+    const searchTerm = ref('')
+    const statusFilter = ref('')
     const selectedBrand = ref('')
     const selectedStatus = ref('')
 
     // Modal states
-    const showAddModal = ref(false)
+    const showAddSupplierModal = ref(false)
     const showEditModal = ref(false)
     const selectedSupplier = ref(null)
 
@@ -248,14 +255,21 @@ export default {
         const response = await suppliersApi.getAll(
           currentPage.value,
           pageSize.value,
-          searchQuery.value,
+          searchTerm.value, // Use searchTerm here
           selectedBrand.value || null,
-          selectedStatus.value || null
+          statusFilter.value || null // Use statusFilter here
         )
         
         suppliers.value = response.data.content || []
         totalPages.value = response.data.totalPages || 0
         totalElements.value = response.data.totalElements || 0
+
+        // Update stats (assuming API provides these)
+        totalSuppliers.value = response.data.totalSuppliers || totalElements.value; // Fallback to totalElements
+        activeSuppliers.value = response.data.activeSuppliers || suppliers.value.filter(s => s.status === 'ACTIVE').length;
+        totalValue.value = response.data.totalValue || 0; // You might need to calculate this if not from API
+        monthlyOrders.value = response.data.monthlyOrders || 0; // You might need to calculate this if not from API
+
       } catch (error) {
         console.error('Error loading suppliers:', error)
       } finally {
@@ -267,7 +281,7 @@ export default {
     const createSupplier = async () => {
       try {
         await suppliersApi.create(newSupplier.value)
-        showAddModal.value = false
+        showAddSupplierModal.value = false // Use showAddSupplierModal
         resetNewSupplier()
         loadSuppliers()
       } catch (error) {
@@ -367,9 +381,9 @@ export default {
 
     // Clear filters
     const clearFilters = () => {
-      searchQuery.value = ''
+      searchTerm.value = ''
+      statusFilter.value = ''
       selectedBrand.value = ''
-      selectedStatus.value = ''
       currentPage.value = 0
       loadSuppliers()
     }
@@ -438,6 +452,25 @@ export default {
     }
 
     // Computed properties
+    const filteredSuppliers = computed(() => {
+      let filtered = suppliers.value;
+
+      if (searchTerm.value) {
+        filtered = filtered.filter(supplier =>
+          supplier.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+          supplier.code.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+          supplier.phone.includes(searchTerm.value)
+        );
+      }
+
+      if (statusFilter.value) {
+        filtered = filtered.filter(supplier =>
+          supplier.status.toLowerCase() === statusFilter.value.toLowerCase()
+        );
+      }
+      return filtered;
+    });
+
     const paginationInfo = computed(() => {
       const start = currentPage.value * pageSize.value + 1
       const end = Math.min((currentPage.value + 1) * pageSize.value, totalElements.value)
@@ -458,13 +491,19 @@ export default {
       totalElements,
       pageSize,
       
+      // Stats
+      totalSuppliers,
+      activeSuppliers,
+      totalValue,
+      monthlyOrders,
+
       // Filters
-      searchQuery,
+      searchTerm,
+      statusFilter,
       selectedBrand,
-      selectedStatus,
       
       // Modals
-      showAddModal,
+      showAddSupplierModal, // Changed from showAddModal
       showEditModal,
       selectedSupplier,
       newSupplier,
@@ -490,6 +529,7 @@ export default {
       getBrandClass,
       
       // Computed
+      filteredSuppliers, // Added filteredSuppliers
       paginationInfo
     }
   }
