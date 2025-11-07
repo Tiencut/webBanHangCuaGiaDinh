@@ -1,24 +1,22 @@
 <template>
   <div class="w-full min-h-screen bg-gray-50">
     <div class="px-6 py-6">
-    <!-- Header Section -->
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold text-gray-800">Quản lý khách hàng</h1>
-      <button 
-        @click="showAddModal = true"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
-      >
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-        </svg>
-        Thêm khách hàng
-      </button>
-    </div>
-
     <!-- Filter & Search Section -->
     <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
+           <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Quản lý khách hàng</h1>
+            <button 
+              @click="showAddModal = true"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+              Thêm khách hàng
+            </button>
+          </div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm</label>
           <input 
             v-model="searchQuery"
@@ -170,281 +168,141 @@
     <!-- Pagination (có thể bổ sung sau) -->
   </div>
 
-  <el-dialog v-model="showAddModal" title="Thêm khách hàng" width="500px">
-    <el-form :model="newCustomer" label-width="140px">
-      <el-form-item label="Tên khách hàng" required>
-        <el-input v-model="newCustomer.name" required></el-input>
-      </el-form-item>
-      <el-form-item label="Loại khách hàng">
-        <el-select v-model="newCustomer.customerType" placeholder="Chọn loại khách hàng">
-          <el-option label="Khách lẻ" value="RETAIL" />
-          <el-option label="Khách sỉ" value="WHOLESALE" />
-          <el-option label="Garage sửa chữa" value="GARAGE" />
-          <el-option label="Đại lý" value="DEALER" />
-          <el-option label="VIP" value="VIP" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="Trạng thái">
-        <el-select v-model="newCustomer.status" placeholder="Chọn trạng thái">
-          <el-option label="Hoạt động" value="ACTIVE" />
-          <el-option label="Không hoạt động" value="INACTIVE" />
-          <el-option label="Danh sách đen" value="BLACKLISTED" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="Người liên hệ">
-        <el-input v-model="newCustomer.contactPerson"></el-input>
-      </el-form-item>
-      <!-- <el-form-item label="Tên công ty">
-        <el-input v-model="newCustomer.companyName"></el-input>
-      </el-form-item> -->
-      <!-- <el-form-item label="Mã số thuế">
-        <el-input v-model="newCustomer.taxCode"></el-input>
-      </el-form-item> -->
-      <el-form-item label="Số điện thoại">
-        <el-input v-model="newCustomer.phone"></el-input>
-      </el-form-item>
-      <el-form-item label="Email">
-        <el-input v-model="newCustomer.email"></el-input>
-      </el-form-item>
-      <el-form-item label="Địa chỉ">
-        <el-input v-model="newCustomer.address"></el-input>
-      </el-form-item>
-      <el-form-item label="Hạn mức công nợ">
-        <el-input v-model.number="newCustomer.creditLimit" type="number" min="0"></el-input>
-      </el-form-item>
-      <el-form-item label="Công nợ hiện tại">
-        <el-input v-model.number="newCustomer.currentDebt" type="number" min="0"></el-input>
-      </el-form-item>
-      <el-form-item label="Chiết khấu (%)">
-        <el-input v-model.number="newCustomer.discountPercentage" type="number" min="0" max="100"></el-input>
-      </el-form-item>
-      <el-form-item label="Điểm tích lũy">
-        <el-input v-model.number="newCustomer.loyaltyPoints" type="number" min="0"></el-input>
-      </el-form-item>
-      <el-form-item label="Hãng xe ưu tiên">
-        <el-input v-model="newCustomer.preferredVehicleBrands" placeholder="VD: Hino,Isuzu,Hyundai"></el-input>
-      </el-form-item>
-      <el-form-item label="Ghi chú">
-        <el-input v-model="newCustomer.notes" type="textarea"></el-input>
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <el-button @click="showAddModal = false">Hủy</el-button>
-      <el-button type="primary" @click="addCustomer">Thêm</el-button>
-    </template>
-  </el-dialog>
-    </div>
+
+    <AddCustomerModal :show="showAddModal" @update:show="showAddModal = $event" @customerAdded="handleCustomerAdded" />
   </div>
 </template>
 
-<script>
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { customersApi } from '../api/customers.js'
-import { removeVietnameseTones } from '../utils/removeVietnameseTones'
+<script setup>
+import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import customerService from '@/services/customerService';
+import { removeVietnameseTones } from '@/utils/removeVietnameseTones';
+import AddCustomerModal from '@/components/customer/AddCustomerModal.vue';
 
-export default {
-  name: 'Customers',
-  setup() {
-    // Reactive data
-    const searchQuery = ref('')
-    const selectedType = ref('')
-    const selectedStatus = ref('')
-    const showAddModal = ref(false)
-    const customers = ref([])
-    const loading = ref(false)
+// Reactive data
+const searchQuery = ref('');
+const selectedType = ref('');
+const selectedStatus = ref('');
+const showAddModal = ref(false);
+const customers = ref([]);
+const loading = ref(false);
 
-    const newCustomer = ref({
-      name: '',
-      address: '',
-      phone: '',
-      email: '',
-      contactPerson: '',
-      // companyName: '', // <--- comment lại, nếu cần thì mở ra
-      // taxCode: '',     // <--- comment lại, nếu cần thì mở ra
-      customerType: 'RETAIL',
-      creditLimit: 0,
-      currentDebt: 0,
-      discountPercentage: 0,
-      loyaltyPoints: 0,
-      preferredVehicleBrands: '',
-      notes: '',
-      status: 'ACTIVE'
-    })
+const router = useRouter();
 
-    const router = useRouter()
-
-    // Computed properties
-    const filteredCustomers = computed(() => {
-      let filtered = customers.value
-      if (searchQuery.value) {
-        const search = removeVietnameseTones(searchQuery.value.toLowerCase())
-        filtered = filtered.filter(customer =>
-          removeVietnameseTones(customer.name?.toLowerCase() || '').includes(search) ||
-          removeVietnameseTones(customer.phone?.toLowerCase() || '').includes(search) ||
-          removeVietnameseTones(customer.email?.toLowerCase() || '').includes(search)
-        )
-      }
-      // Apply type filter
-      if (selectedType.value) {
-        filtered = filtered.filter(customer => customer.type === selectedType.value)
-      }
-      // Apply status filter
-      if (selectedStatus.value) {
-        filtered = filtered.filter(customer => customer.status === selectedStatus.value)
-      }
-      return filtered
-    })
-
-    // Methods
-    const fetchCustomers = async () => {
-      loading.value = true
-      try {
-        const res = await customersApi.getAll(0, 100, searchQuery.value, selectedType.value || null, selectedStatus.value || null)
-        customers.value = res.data.content || res.data
-      } catch (error) {
-        customers.value = []
-        console.error('Lỗi khi tải khách hàng:', error)
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const applyFilters = () => {
-      fetchCustomers()
-    }
-
-    const clearFilters = () => {
-      searchQuery.value = ''
-      selectedType.value = ''
-      selectedStatus.value = ''
-      fetchCustomers()
-    }
-
-    const addCustomer = async () => {
-      // Validate các trường bắt buộc
-      if (!newCustomer.value.name || !newCustomer.value.customerType || !newCustomer.value.status) {
-        alert('Vui lòng nhập đầy đủ Tên khách hàng, Loại khách hàng và Trạng thái!')
-        return
-      }
-      // Đảm bảo các trường số là số, không phải chuỗi rỗng
-      const payload = { ...newCustomer.value }
-      const numberFields = ['creditLimit', 'currentDebt', 'discountPercentage', 'loyaltyPoints']
-      numberFields.forEach(field => {
-        if (payload[field] === '' || payload[field] === null || isNaN(payload[field])) {
-          delete payload[field]
-        } else {
-          payload[field] = Number(payload[field])
-        }
-      })
-      // Loại bỏ các trường rỗng
-      Object.keys(payload).forEach(key => {
-        if (payload[key] === '' || payload[key] === null) {
-          delete payload[key]
-        }
-      })
-      try {
-        await customersApi.create(payload)
-        showAddModal.value = false
-        newCustomer.value = {
-          name: '',
-          address: '',
-          phone: '',
-          email: '',
-          contactPerson: '',
-          // companyName: '',
-          // taxCode: '',
-          customerType: 'RETAIL',
-          creditLimit: 0,
-          currentDebt: 0,
-          discountPercentage: 0,
-          loyaltyPoints: 0,
-          preferredVehicleBrands: '',
-          notes: '',
-          status: 'ACTIVE'
-        }
-        fetchCustomers() // reload list
-      } catch (e) {
-        alert('Lỗi khi thêm khách hàng')
-      }
-    }
-
-    const getTypeClass = (type) => {
-      switch (type) {
-        case 'INDIVIDUAL': return 'bg-blue-100 text-blue-800'
-        case 'BUSINESS': return 'bg-purple-100 text-purple-800'
-        default: return 'bg-gray-100 text-gray-800'
-      }
-    }
-
-    const getTypeText = (type) => {
-      switch (type) {
-        case 'INDIVIDUAL': return 'Cá nhân'
-        case 'BUSINESS': return 'Doanh nghiệp'
-        default: return 'Không xác định'
-      }
-    }
-
-    const getStatusClass = (status) => {
-      switch (status) {
-        case 'ACTIVE': return 'bg-green-100 text-green-800'
-        case 'INACTIVE': return 'bg-yellow-100 text-yellow-800'
-        case 'BLOCKED': return 'bg-red-100 text-red-800'
-        default: return 'bg-gray-100 text-gray-800'
-      }
-    }
-
-    const getStatusText = (status) => {
-      switch (status) {
-        case 'ACTIVE': return 'Hoạt động'
-        case 'INACTIVE': return 'Không hoạt động'
-        case 'BLOCKED': return 'Bị khóa'
-        default: return 'Không xác định'
-      }
-    }
-
-    const formatCurrency = (amount) => {
-      return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND'
-      }).format(amount)
-    }
-
-    const viewCustomer = (customer) => {
-      router.push(`/customers/${customer.id}`)
-    }
-
-    const editCustomer = (customer) => {
-      console.log('Edit customer:', customer)
-      // Logic to edit customer
-    }
-
-    // Lifecycle
-    onMounted(() => {
-      fetchCustomers()
-    })
-
-    return {
-      searchQuery,
-      selectedType,
-      selectedStatus,
-      showAddModal,
-      customers,
-      loading,
-      newCustomer,
-      addCustomer,
-      getTypeClass,
-      getTypeText,
-      getStatusClass,
-      getStatusText,
-      formatCurrency,
-      applyFilters,
-      clearFilters,
-      viewCustomer,
-      editCustomer
-    }
+// Computed properties
+const filteredCustomers = computed(() => {
+  let filtered = customers.value;
+  if (searchQuery.value) {
+    const search = removeVietnameseTones(searchQuery.value.toLowerCase());
+    filtered = filtered.filter(customer =>
+      removeVietnameseTones(customer.name?.toLowerCase() || '').includes(search) ||
+      removeVietnameseTones(customer.phone?.toLowerCase() || '').includes(search) ||
+      removeVietnameseTones(customer.email?.toLowerCase() || '').includes(search)
+    );
   }
-}
+  // Apply type filter
+  if (selectedType.value) {
+    filtered = filtered.filter(customer => customer.type === selectedType.value);
+  }
+  // Apply status filter
+  if (selectedStatus.value) {
+    filtered = filtered.filter(customer => customer.status === selectedStatus.value);
+  }
+  return filtered;
+});
+
+// Methods
+const fetchCustomers = async () => {
+  loading.value = true;
+  try {
+    const res = await customerService.getCustomers({
+      page: 0, // Assuming page 0 for now, adjust if pagination is implemented
+      limit: 100, // Assuming limit 100 for now
+      search: searchQuery.value,
+      customerType: selectedType.value || null,
+      status: selectedStatus.value || null,
+    });
+    customers.value = res.data.content || res.data;
+  } catch (error) {
+    customers.value = [];
+    console.error('Lỗi khi tải khách hàng:', error);
+    ElMessage.error('Lỗi khi tải khách hàng.');
+  } finally {
+    loading.value = false;
+  }
+};
+
+const applyFilters = () => {
+  fetchCustomers();
+};
+
+const clearFilters = () => {
+  searchQuery.value = '';
+  selectedType.value = '';
+  selectedStatus.value = '';
+  fetchCustomers();
+};
+
+const handleCustomerAdded = () => {
+  fetchCustomers(); // Tải lại danh sách khách hàng sau khi thêm mới
+};
+
+const getTypeClass = (type) => {
+  switch (type) {
+    case 'INDIVIDUAL': return 'bg-blue-100 text-blue-800';
+    case 'BUSINESS': return 'bg-purple-100 text-purple-800';
+    default: return 'bg-gray-100 text-gray-800';
+  }
+};
+
+const getTypeText = (type) => {
+  switch (type) {
+    case 'INDIVIDUAL': return 'Cá nhân';
+    case 'BUSINESS': return 'Doanh nghiệp';
+    default: return 'Không xác định';
+  }
+};
+
+const getStatusClass = (status) => {
+  switch (status) {
+    case 'ACTIVE': return 'bg-green-100 text-green-800';
+    case 'INACTIVE': return 'bg-yellow-100 text-yellow-800';
+    case 'BLOCKED': return 'bg-red-100 text-red-800';
+    default: return 'bg-gray-100 text-gray-800';
+  }
+};
+
+const getStatusText = (status) => {
+  switch (status) {
+    case 'ACTIVE': return 'Hoạt động';
+    case 'INACTIVE': return 'Không hoạt động';
+    case 'BLOCKED': return 'Bị khóa';
+    default: return 'Không xác định';
+  }
+};
+
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(amount);
+};
+
+const viewCustomer = (customer) => {
+  router.push(`/customers/${customer.id}`);
+};
+
+const editCustomer = (customer) => {
+  console.log('Edit customer:', customer);
+  // Logic to edit customer
+};
+
+// Lifecycle
+onMounted(() => {
+  fetchCustomers();
+});
 </script>
 
 <style scoped>

@@ -315,6 +315,62 @@ export default {
     const searchQuery = ref('')
     const selectedBrand = ref('')
     const selectedYear = ref('')
+    const brands = ref([]) // Khởi tạo brands
+    const selectedType = ref('') // Khởi tạo selectedType
+
+    // Computed property for filtered vehicles
+    const filteredVehicles = computed(() => {
+      let filtered = vehicles.value
+
+      if (selectedBrand.value) {
+        filtered = filtered.filter(vehicle => vehicle.brand === selectedBrand.value)
+      }
+      if (selectedType.value) {
+        filtered = filtered.filter(vehicle => vehicle.type === selectedType.value)
+      }
+      if (selectedYear.value) {
+        filtered = filtered.filter(vehicle => vehicle.year === parseInt(selectedYear.value))
+      }
+      if (searchQuery.value) {
+        const query = searchQuery.value.toLowerCase()
+        filtered = filtered.filter(vehicle => 
+          vehicle.name.toLowerCase().includes(query) ||
+          vehicle.brand.toLowerCase().includes(query)
+        )
+      }
+      return filtered
+    })
+
+    // Helper functions for display
+    const getFuelTypeText = (fuelType) => {
+      const types = {
+        GASOLINE: 'Xăng',
+        DIESEL: 'Dầu',
+        ELECTRIC: 'Điện',
+        HYBRID: 'Hybrid'
+      }
+      return types[fuelType] || fuelType
+    }
+
+    const getTypeText = (type) => {
+      const types = {
+        LIGHT_TRUCK: 'Xe tải nhẹ',
+        MEDIUM_TRUCK: 'Xe tải trung',
+        HEAVY_TRUCK: 'Xe tải nặng',
+        TRAILER: 'Xe kéo'
+      }
+      return types[type] || type
+    }
+
+    const getTypeClass = (type) => {
+      const classes = {
+        LIGHT_TRUCK: 'bg-blue-100 text-blue-800',
+        MEDIUM_TRUCK: 'bg-green-100 text-green-800',
+        HEAVY_TRUCK: 'bg-red-100 text-red-800',
+        TRAILER: 'bg-purple-100 text-purple-800'
+      }
+      return classes[type] || 'bg-gray-100 text-gray-800'
+    }
 
     // Modal states
     const showAddModal = ref(false)

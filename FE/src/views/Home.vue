@@ -98,16 +98,6 @@
     <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
       <h2 class="text-lg font-semibold text-gray-900 mb-4">Thao tác nhanh</h2>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <router-link to="/orders"
-          class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors">
-          <div class="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
-            <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-          </div>
-          <span class="text-sm font-medium text-gray-900">Tạo đơn hàng</span>
-        </router-link>
-
         <router-link to="/products"
           class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-colors">
           <div class="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
@@ -151,6 +141,14 @@
         <div class="p-6 border-b border-gray-200">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-semibold text-gray-900">Đơn hàng gần đây</h2>
+            <router-link to="/orders"
+              class="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors">
+              <div class="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+            </router-link>
             <router-link to="/orders" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
               Xem tất cả
             </router-link>
@@ -242,6 +240,37 @@
                 <div class="text-xs text-gray-500">Cần nhập thêm</div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ghi chú -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900">Ghi chú</h2>
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="text-center py-8">
+            <p class="mt-2 text-sm text-gray-500">Chưa có ghi chú nào.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Khách hàng -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900">Khách hàng gần đây</h2>
+            <router-link to="/customers" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+              Xem tất cả
+            </router-link>
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="text-center py-8">
+            <p class="mt-2 text-sm text-gray-500">Chưa có khách hàng nào.</p>
           </div>
         </div>
       </div>
