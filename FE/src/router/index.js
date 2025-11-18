@@ -117,10 +117,23 @@ const routes = [
     meta: { title: 'Bán hàng' }
   },
   {
+    path: '/debts',
+    name: 'Debts',
+    component: () => import('../views/Debts.vue'),
+    meta: { title: 'Quản lý nợ' }
+  },
+  {
     path: '/product-list-debug',
     name: 'ProductListDebug',
     component: () => import('../views/ProductListDebug.vue'),
     meta: { title: 'Debug Danh sách sản phẩm' }
+  }
+  ,
+  {
+    path: '/notes',
+    name: 'Notes',
+    component: () => import('../views/Notes.vue'),
+    meta: { title: 'Ghi chú' }
   }
 ]
 

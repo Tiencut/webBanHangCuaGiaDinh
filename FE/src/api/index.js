@@ -11,3 +11,4 @@ export { importApi } from './importApi'
 export { inventoryApi } from './inventory'
 export { salesApi } from './sales'
 export { default as api } from './config.js'; 
+export { notesApi } from './notes'

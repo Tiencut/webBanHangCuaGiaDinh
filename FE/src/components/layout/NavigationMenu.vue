@@ -150,6 +150,16 @@
       Loại xe
     </router-link>
 
+    <router-link to="/debts"
+      class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+      :class="$route.name === 'Debts' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
+      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+      Quản lý nợ
+    </router-link>
+
     <router-link to="/inventory-check"
       class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
       :class="$route.name === 'InventoryCheck' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
@@ -170,6 +180,16 @@
       Import
     </router-link>
 
+    <router-link to="/notes"
+      class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+      :class="$route.name === 'Notes' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
+      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 20h9M12 4h9M3 9h18M3 15h18" />
+      </svg>
+      Ghi chú
+    </router-link>
+
     <!-- Sales (Bán hàng) - Positioned at the far right -->
     <div class="ml-auto">
       <router-link to="/sales"
@@ -183,17 +203,61 @@
       </router-link>
     </div>
   </nav>
+  <MobileMenu :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 </template>
 
 <script>
+import { ref, onMounted, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
+import MobileMenu from './MobileMenu.vue'
 import DropdownMenu from './DropdownMenu.vue'
 import DropdownItem from './DropdownItem.vue'
 
 export default {
   name: 'NavigationMenu',
   components: {
+    MobileMenu,
     DropdownMenu,
     DropdownItem
+  },
+  setup() {
+    const route = useRoute()
+    const isMobileMenuOpen = ref(false)
+    const isProductsDropdownOpen = ref(false)
+    const isOrdersDropdownOpen = ref(false)
+    const isPurchaseDropdownOpen = ref(false)
+    const sidebarOpen = ref(false)
+
+    // Mounted logic
+    onMounted(() => {
+    // Close sidebar on window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024) {
+          sidebarOpen.value = false
+      }
+    })
+    
+    // Fix dropdown navigation by ensuring proper event handling
+      nextTick(() => {
+      // Add event listeners to all dropdown items
+      const dropdownItems = document.querySelectorAll('.dropdown-menu a[href^="/"]')
+      dropdownItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+          // Allow normal router-link behavior
+          e.stopPropagation()
+          })
+        })
+      })
+    })
+
+    return {
+      route,
+      isMobileMenuOpen,
+      isProductsDropdownOpen,
+      isOrdersDropdownOpen,
+      isPurchaseDropdownOpen,
+      sidebarOpen
+    }
   }
 }
 </script>

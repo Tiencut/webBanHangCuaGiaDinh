@@ -244,19 +244,7 @@
         </div>
       </div>
 
-      <!-- Ghi chú -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-100">
-        <div class="p-6 border-b border-gray-200">
-          <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900">Ghi chú</h2>
-          </div>
-        </div>
-        <div class="p-6">
-          <div class="text-center py-8">
-            <p class="mt-2 text-sm text-gray-500">Chưa có ghi chú nào.</p>
-          </div>
-        </div>
-      </div>
+      <NotesWidget />
 
       <!-- Khách hàng -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-100">
@@ -281,9 +269,11 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { ordersApi, productsAPI } from '@/api'
+import NotesWidget from '@/components/notes/NotesWidget.vue'
 
 export default {
   name: 'Home',
+  components: { NotesWidget },
   setup() {
     const loading = ref(false)
     const loadingStock = ref(false)

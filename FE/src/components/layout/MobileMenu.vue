@@ -77,12 +77,19 @@
         @click="$emit('close')">
         Khách hàng
       </router-link>
-      
+
       <router-link to="/vehicles"
         class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
         :class="$route.name === 'Vehicles' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
         @click="$emit('close')">
         Loại xe
+      </router-link>
+      
+      <router-link to="/debts"
+        class="block px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+        :class="$route.name === 'Debts' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'"
+        @click="$emit('close')">
+        Quản lý nợ
       </router-link>
       
       <router-link to="/inventory-check"
