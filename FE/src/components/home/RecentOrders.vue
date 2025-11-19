@@ -79,13 +79,7 @@ import { ordersApi } from '@/api'
 
 export default {
   name: 'RecentOrders',
-  props: {
-    formatCurrency: {
-      type: Function,
-      required: true
-    }
-  },
-  setup(props) {
+  setup() {
     const loading = ref(false)
     const recentOrders = ref([])
 
@@ -133,13 +127,20 @@ export default {
       loadRecentOrders()
     })
 
+    const formatCurrency = (amount) => {
+      return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+      }).format(amount)
+    }
+
     return {
       loading,
       recentOrders,
       formatDate,
       getStatusClass,
       getStatusText,
-      formatCurrency: props.formatCurrency // Pass formatCurrency from props
+      formatCurrency
     }
   }
 }

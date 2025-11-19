@@ -121,8 +121,13 @@ export default {
           }
         }
 
-        // Mock data cho stats còn lại (sẽ thay bằng API thực tế)
-        stats.value.totalProducts = productsResponse.data.totalElements || 0
+        // Load total products
+        const productsResponse = await productsAPI.getProducts(0, 1) // Get 1 product to get totalElements
+        if (productsResponse.data && productsResponse.data.totalElements !== undefined) {
+          stats.value.totalProducts = productsResponse.data.totalElements
+        }
+
+        // Mock data for remaining stats (will be replaced with actual API)
         stats.value.totalCustomers = 342 // Mock data
         stats.value.customerGrowth = 5.1 // Mock data
 

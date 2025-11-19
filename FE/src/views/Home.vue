@@ -9,13 +9,13 @@
     <!-- Recent Activity Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Recent Orders -->
-    <RecentOrders :formatCurrency="formatCurrency" />
+    <RecentOrders />
 
-      <LowStockAlert />
+    <LowStockAlert />
 
-      <NotesWidget />
+    <NotesWidget />
 
-      <RecentCustomers />
+    <RecentCustomers />
     </div>
   </div>
 </template>

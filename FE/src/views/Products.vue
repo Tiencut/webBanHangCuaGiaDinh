@@ -1,751 +1,323 @@
 <template>
   <div class="w-full min-h-screen bg-gray-50">
     <div class="px-6 py-6">
-    <!-- Header Section -->
-    <div class="flex justify-between items-center mb-6">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-800">Quản lý sản phẩm</h1>
-        <!-- <p class="text-gray-600 mt-1">Quản lý sản phẩm đa nguồn cung ứng</p> -->
-      </div>
-      
-      <!-- Training Assistant -->
-      <div class="flex items-center space-x-4">
-        <TrainingAssistant 
-          :selected-product="selectedProductForTraining"
-          @search-suggestion="handleSearchSuggestion"
-          @help-request="handleHelpRequest"
-        />
-      </div>
-    </div>
-
-    <!-- Column Visibility Controls -->
-    <div class="mb-4 flex items-center justify-between">
-      <div class="flex items-center space-x-4">
-        <button
-          @click="openColumnSelector"
-          class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center"
-        >
-          <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-          </svg>
-          Hiển thị cột
-        </button>
-        
-        <button
-          @click="resetColumnVisibility"
-          class="px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors text-sm"
-        >
-          Đặt lại
-        </button>
-      </div>
-      
-      <div class="text-sm text-gray-500">
-        {{ visibleColumns.length }}/{{ allColumns.length }} cột đang hiển thị
-      </div>
-    </div>
-
-    <!-- DataTable -->
-    <DataTable
-      :data="filteredProducts"
-      :columns="visibleColumns"
-      :loading="loading"
-      :categories="categories"
-      :status-options="statusOptions"
-      :show-export="true"
-      :column-filters="columnFilters"
-      @update:columnFilters="val => columnFilters = val"
-      @create="handleCreate"
-      @edit="handleEdit"
-      @delete="handleDelete"
-      @bulk-action="handleBulkAction"
-      @export="handleExport"
-      @row-click="showProductDetail"
-    >
-      <!-- Custom cell cho hình ảnh sản phẩm -->
-      <template #cell-image="{ item }">
-        <div class="flex items-center">
-          <div class="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center mr-4">
-            <img 
-              v-if="item.imageUrl" 
-              :src="item.imageUrl" 
-              :alt="item.name"
-              class="h-12 w-12 rounded-lg object-cover"
-            />
-            <svg v-else class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-            </svg>
-          </div>
-          <div>
-            <div class="font-medium text-gray-900">{{ item.name }}</div>
-            <div class="text-sm text-gray-500">{{ item.sku }}</div>
-          </div>
-        </div>
-      </template>
-
-      <!-- Custom cell cho tồn kho -->
-      <template #cell-stock="{ item }">
-        <div class="flex items-center justify-center">
-          <button 
-            @click="showStockDetails(item)"
-            class="px-2 py-1 rounded-full text-xs font-medium cursor-pointer hover:bg-gray-100"
-            :class="getStockClass(item.stock)"
-          >
-            {{ item.stock || 0 }}
-          </button>
-        </div>
-      </template>
-
-      <!-- Custom cell cho available stock -->
-      <template #cell-availableStock="{ item }">
-        <div class="text-center">
-          <span class="text-sm font-medium text-green-600">{{ item.availableStock || 0 }}</span>
-        </div>
-      </template>
-
-      <!-- Custom cell cho reserved stock -->
-      <template #cell-reservedStock="{ item }">
-        <div class="text-center">
-          <span class="text-sm font-medium text-yellow-600">{{ item.reservedStock || 0 }}</span>
-        </div>
-      </template>
-
-      <!-- Custom cell cho supplier count -->
-      <template #cell-supplierCount="{ item }">
-        <div class="text-center">
-          <span class="text-sm font-medium text-purple-600">{{ item.supplierCount || 0 }}</span>
-        </div>
-      </template>
-
-      <!-- Custom cell cho brand -->
-      <template #cell-brand="{ item }">
-        <div class="text-sm font-medium text-gray-900">{{ item.brand || '-' }}</div>
-      </template>
-
-      <!-- Custom cell cho model -->
-      <template #cell-model="{ item }">
-        <div class="text-sm text-gray-600">{{ item.model || '-' }}</div>
-      </template>
-
-      <!-- Custom cell cho partNumber -->
-      <template #cell-partNumber="{ item }">
-        <div class="text-sm font-mono text-blue-600">{{ item.partNumber || '-' }}</div>
-      </template>
-
-      <!-- Custom cell cho vehicleType -->
-      <template #cell-vehicleType="{ item }">
-        <div class="text-sm text-gray-700">{{ item.vehicleType || '-' }}</div>
-      </template>
-
-      <!-- Custom cell cho minStockLevel -->
-      <template #cell-minStockLevel="{ item }">
-        <div class="text-center">
-          <span class="text-sm font-medium text-orange-600">{{ item.minStockLevel || 0 }}</span>
-        </div>
-      </template>
-
-      <!-- Custom cell cho reorderPoint -->
-      <template #cell-reorderPoint="{ item }">
-        <div class="text-center">
-          <span class="text-sm font-medium text-red-600">{{ item.reorderPoint || 0 }}</span>
-        </div>
-      </template>
-
-      <!-- Custom cell cho ngày tạo -->
-      <template #cell-createdAt="{ item }">
-        <div class="text-center">
-          <span class="text-sm text-gray-700">
-            {{ item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : 'N/A' }}
-          </span>
-        </div>
-      </template>
-
-      <!-- Custom actions -->
-      <template #cell-actions="{ item }">
-        <div class="flex items-center justify-center space-x-2">
-          <button
-            @click="showStockDetails(item)"
-            class="text-blue-600 hover:text-blue-900 transition-colors"
-            title="Xem chi tiết tồn kho"
-          >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </button>
-          
-          <!-- Combo management button -->
-          <button
-            v-if="item.isCombo"
-            @click="manageCombo(item)"
-            class="text-purple-600 hover:text-purple-900 transition-colors"
-            title="Quản lý combo"
-          >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-          </button>
-          
-          <button
-            @click="handleEdit(item)"
-            class="text-blue-600 hover:text-blue-900 transition-colors"
-            title="Chỉnh sửa"
-          >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-          </button>
-          <button
-            @click="handleDelete(item)"
-            class="text-red-600 hover:text-red-900 transition-colors"
-            title="Xóa"
-          >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
-        </div>
-      </template>
-    </DataTable>
-
-    <!-- Column Selector Modal -->
-    <div v-if="showColumnSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Chọn cột hiển thị</h3>
-          <button @click="showColumnSelector = false" class="text-gray-400 hover:text-gray-600">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+      <!-- Header Section -->
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800">Quản lý sản phẩm</h1>
         </div>
         
-        <div class="space-y-3">
-          <div class="flex items-center justify-between">
-            <button
-              @click="selectAllColumns"
-              class="text-sm text-blue-600 hover:text-blue-800"
-            >
-              Chọn tất cả
-            </button>
-            <button
-              @click="deselectAllColumns"
-              class="text-sm text-gray-600 hover:text-gray-800"
-            >
-              Bỏ chọn tất cả
-            </button>
-          </div>
-          
-          <div class="space-y-2 max-h-60 overflow-y-auto">
-            <label
-              v-for="column in allColumns"
-              :key="column.key"
-              class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
-            >
-              <input
-                type="checkbox"
-                :checked="isColumnVisible(column.key)"
-                @change="toggleColumnVisibility(column.key)"
-                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+        <!-- Training Assistant -->
+        <div class="flex items-center space-x-4">
+          <TrainingAssistant 
+            :selected-product="selectedProductForTraining"
+            @search-suggestion="handleSearchSuggestion"
+            @help-request="handleHelpRequest"
+          />
+        </div>
+      </div>
+
+      <!-- Column Visibility Controls -->
+      <ColumnVisibilityControls
+        :visible-columns="visibleColumns"
+        :all-columns="allColumns"
+        :show-column-selector="showColumnSelector"
+        @open-column-selector="openColumnSelector"
+        @reset-column-visibility="resetColumnVisibility"
+      />
+
+      <!-- DataTable -->
+      <DataTable
+        :data="filteredProducts"
+        :columns="visibleColumns"
+        :loading="loading"
+        :categories="categories"
+        :status-options="statusOptions"
+        :show-export="true"
+        :column-filters="columnFilters"
+        @update:columnFilters="val => columnFilters = val"
+        @create="handleCreate"
+        @edit="handleEdit"
+        @delete="handleDelete"
+        @bulk-action="handleBulkAction"
+        @export="handleExport"
+        @row-click="showProductDetail"
+      >
+        <!-- Custom cell cho hình ảnh sản phẩm -->
+        <template #cell-image="{ item }">
+          <div class="flex items-center">
+            <div class="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center mr-4">
+              <img 
+                v-if="item.imageUrl" 
+                :src="item.imageUrl" 
+                :alt="item.name"
+                class="h-12 w-12 rounded-lg object-cover"
               />
-              <span class="text-sm">{{ column.label }}</span>
-            </label>
+              <svg v-else class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+              </svg>
+            </div>
+            <div>
+              <div class="font-medium text-gray-900">{{ item.name }}</div>
+              <div class="text-sm text-gray-500">{{ item.sku }}</div>
+            </div>
           </div>
-        </div>
-        
-        <div class="flex justify-end space-x-3 mt-6">
-          <button
-            @click="showColumnSelector = false"
-            class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-          >
-            Đóng
-          </button>
-          <button
-            @click="applyColumnVisibility"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Áp dụng
-          </button>
-        </div>
-      </div>
-    </div>
+        </template>
 
-    <!-- Stock Details Modal -->
-    <div v-if="showStockModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Chi tiết tồn kho</h3>
-          <button @click="showStockModal = false" class="text-gray-400 hover:text-gray-600">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <div v-if="selectedProductForStock" class="space-y-4">
-          <div class="border-b pb-4">
-            <h4 class="font-medium text-lg">{{ selectedProductForStock.name }}</h4>
-            <p class="text-sm text-gray-600">SKU: {{ selectedProductForStock.sku }}</p>
-          </div>
-
-          <!-- Summary Cards -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-blue-50 p-4 rounded-lg">
-              <div class="text-sm text-blue-600">Tổng tồn kho</div>
-              <div class="text-xl font-bold text-blue-800">{{ selectedProductForStock.stock || 0 }}</div>
-            </div>
-            <div class="bg-green-50 p-4 rounded-lg">
-              <div class="text-sm text-green-600">Có sẵn</div>
-              <div class="text-xl font-bold text-green-800">{{ selectedProductForStock.availableStock || 0 }}</div>
-            </div>
-            <div class="bg-yellow-50 p-4 rounded-lg">
-              <div class="text-sm text-yellow-600">Đã đặt trước</div>
-              <div class="text-xl font-bold text-yellow-800">{{ selectedProductForStock.reservedStock || 0 }}</div>
-            </div>
-            <div class="bg-purple-50 p-4 rounded-lg">
-              <div class="text-sm text-purple-600">Nhà cung cấp</div>
-              <div class="text-xl font-bold text-purple-800">{{ selectedProductForStock.supplierCount || 0 }}</div>
-            </div>
-          </div>
-
-          <!-- Inventory Details Table -->
-          <div v-if="selectedProductForStock.inventoryDetails && selectedProductForStock.inventoryDetails.length > 0">
-            <h5 class="font-medium text-gray-900 mb-3">Chi tiết theo nhà cung cấp</h5>
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nhà cung cấp
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tồn kho
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Có sẵn
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Đã đặt
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Giá vốn
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Vị trí
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <tr v-for="inventory in selectedProductForStock.inventoryDetails" :key="inventory.id">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {{ inventory.supplier?.name || 'N/A' }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {{ inventory.quantity || 0 }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {{ inventory.availableQuantity || 0 }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {{ inventory.reservedQuantity || 0 }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {{ formatCurrency(inventory.costPrice || 0) }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {{ inventory.location || 'N/A' }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          
-          <div v-else class="text-center py-8 text-gray-500">
-            <p>Chưa có dữ liệu tồn kho cho sản phẩm này</p>
-          </div>
-        </div>
-        <div class="mt-8">
-          <h4 class="font-semibold text-lg mb-2">Lịch sử giao dịch kho</h4>
-          <ProductInventoryHistory :product-id="selectedProductForStock?.id" />
-        </div>
-        <div class="mb-8">
-          <h4 class="font-semibold text-lg mb-2">Giá nhập/bán theo từng nhà cung cấp</h4>
-          <ProductSuppliersTable :product-id="selectedProductForStock?.id" />
-        </div>
-        <div class="mb-8">
-          <h4 class="font-semibold text-lg mb-2">Thông số kỹ thuật</h4>
-          <ProductDynamicAttributes :product-id="selectedProductForStock?.id" :category-id="selectedProductForStock?.categoryId" />
-        </div>
-      </div>
-    </div>
-
-    <!-- Product Detail Modal -->
-    <div v-if="showProductDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-8 w-full max-w-5xl max-h-[95vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-semibold">Chi tiết sản phẩm</h3>
-          <button @click="showProductDetailModal = false" class="text-gray-400 hover:text-gray-600">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <div v-if="selectedProductDetail" class="space-y-8">
-          <!-- Product Info Header -->
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <div class="flex items-center space-x-4">
-              <div class="h-20 w-20 rounded-lg bg-gray-200 flex items-center justify-center">
-                <img 
-                  v-if="selectedProductDetail.imageUrl" 
-                  :src="selectedProductDetail.imageUrl" 
-                  :alt="selectedProductDetail.name"
-                  class="h-20 w-20 rounded-lg object-cover"
-                />
-                <svg v-else class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                </svg>
-              </div>
-              <div>
-                <h4 class="text-2xl font-bold text-gray-900">{{ selectedProductDetail.name }}</h4>
-                <p class="text-sm text-gray-600">SKU: {{ selectedProductDetail.sku }}</p>
-                <p class="text-sm text-gray-600">Danh mục: {{ getCategoryName(selectedProductDetail.categoryId) }}</p>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-4 mt-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Thương hiệu</label>
-                <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.brand || 'N/A' }}</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Model</label>
-                <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.model || 'N/A' }}</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Mã phụ tùng</label>
-                <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.partNumber || 'N/A' }}</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Loại xe</label>
-                <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.vehicleType || 'N/A' }}</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Tồn kho</label>
-                <p class="mt-1 text-sm text-gray-900">{{ selectedProductDetail.stock || 0 }}</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Giá bán</label>
-                <p class="mt-1 text-sm text-gray-900">{{ formatPrice(selectedProductDetail.sellingPrice) }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Product Dynamic Attributes -->
-          <div>
-            <h4 class="font-semibold text-lg mb-2">Thông số kỹ thuật</h4>
-            <ProductDynamicAttributes 
-              :product-id="selectedProductDetail.id" 
-              :category-id="selectedProductDetail.categoryId" 
-            />
-          </div>
-
-          <!-- Product Suppliers Table -->
-          <div>
-            <h4 class="font-semibold text-lg mb-2">Giá nhập/bán theo từng nhà cung cấp</h4>
-            <ProductSuppliersTable :product-id="selectedProductDetail.id" />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add Product Modal -->
-    <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Thêm sản phẩm mới</h3>
-          <button @click="showAddModal = false" class="text-gray-400 hover:text-gray-600">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <form @submit.prevent="createProduct" class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm *</label>
-              <input v-model="newProduct.name" type="text" class="form-input w-full" required>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Mã SKU *</label>
-              <input v-model="newProduct.sku" type="text" class="form-input w-full" required>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Thương hiệu</label>
-              <input v-model="newProduct.brand" type="text" class="form-input w-full" placeholder="Isuzu, Hyundai, Hino...">
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Model</label>
-              <input v-model="newProduct.model" type="text" class="form-input w-full" placeholder="4JB1, HD72, 300...">
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Mã phụ tùng</label>
-              <input v-model="newProduct.partNumber" type="text" class="form-input w-full" placeholder="ISU-4JB1-OIL-001">
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Loại xe</label>
-              <select v-model="newProduct.vehicleType" class="form-input w-full">
-                <option value="">Chọn loại xe</option>
-                <option value="Xe tải nhẹ">Xe tải nhẹ</option>
-                <option value="Xe tải trung">Xe tải trung</option>
-                <option value="Xe tải nặng">Xe tải nặng</option>
-                <option value="Xe bán tải">Xe bán tải</option>
-                <option value="Xe van">Xe van</option>
-                <option value="Xe khách">Xe khách</option>
-                <option value="Xe chuyên dụng">Xe chuyên dụng</option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
-              <select v-model="newProduct.categoryId" class="form-input w-full">
-                <option value="">Chọn danh mục</option>
-                <option v-for="category in categories" :key="category.id" :value="category.id">
-                  {{ category.name }}
-                </option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Nhà cung cấp</label>
-              <select v-model="newProduct.supplierId" class="form-input w-full">
-                <option value="">Chọn nhà cung cấp</option>
-                <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id">
-                  {{ supplier.name }}
-                </option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Giá cơ bản *</label>
-              <input v-model.number="newProduct.basePrice" type="number" min="0" class="form-input w-full" required>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Giá bán</label>
-              <input v-model.number="newProduct.sellingPrice" type="number" min="0" class="form-input w-full">
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Giá vốn</label>
-              <input v-model.number="newProduct.costPrice" type="number" min="0" class="form-input w-full">
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Thời gian bảo hành (tháng)</label>
-              <input v-model.number="newProduct.warrantyPeriod" type="number" min="0" class="form-input w-full">
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Trọng lượng (kg)</label>
-              <input v-model.number="newProduct.weight" type="number" min="0" step="0.1" class="form-input w-full">
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Kích thước</label>
-              <input v-model="newProduct.dimensions" type="text" class="form-input w-full" placeholder="L x W x H cm">
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-              <select v-model="newProduct.status" class="form-input w-full">
-                <option value="ACTIVE">Hoạt động</option>
-                <option value="INACTIVE">Không hoạt động</option>
-                <option value="DISCONTINUED">Ngừng kinh doanh</option>
-                <option value="OUT_OF_STOCK">Hết hàng</option>
-              </select>
-            </div>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
-            <textarea v-model="newProduct.description" rows="3" class="form-input w-full"></textarea>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Thông số kỹ thuật</label>
-            <textarea v-model="newProduct.specifications" rows="3" class="form-input w-full" placeholder="Kích thước, trọng lượng, chất liệu..."></textarea>
-          </div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Tồn kho tối thiểu</label>
-              <input v-model.number="newProduct.minStockLevel" type="number" min="0" class="form-input w-full">
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Điểm đặt hàng lại</label>
-              <input v-model.number="newProduct.reorderPoint" type="number" min="0" class="form-input w-full">
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Vị trí lưu trữ</label>
-              <input v-model="newProduct.location" type="text" class="form-input w-full" placeholder="Kệ A, Tủ B...">
-            </div>
-
-          </div>
-          
-          <!-- Combo checkbox -->
-          <div class="flex items-center space-x-2">
-            <input 
-              v-model="newProduct.isCombo" 
-              type="checkbox" 
-              id="isCombo" 
-              class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        <!-- Custom cell cho tồn kho -->
+        <template #cell-stock="{ item }">
+          <div class="flex items-center justify-center">
+            <button 
+              @click="showStockDetails(item)"
+              class="px-2 py-1 rounded-full text-xs font-medium cursor-pointer hover:bg-gray-100"
+              :class="getStockClass(item.stock)"
             >
-            <label for="isCombo" class="text-sm font-medium text-gray-700">
-              Sản phẩm combo (gồm nhiều linh kiện)
-            </label>
+              {{ item.stock || 0 }}
+            </button>
+          </div>
+        </template>
+
+        <!-- Custom cell cho available stock -->
+        <template #cell-availableStock="{ item }">
+          <div class="text-center">
+            <span class="text-sm font-medium text-green-600">{{ item.availableStock || 0 }}</span>
+          </div>
+        </template>
+
+        <!-- Custom cell cho reserved stock -->
+        <template #cell-reservedStock="{ item }">
+          <div class="text-center">
+            <span class="text-sm font-medium text-yellow-600">{{ item.reservedStock || 0 }}</span>
+          </div>
+        </template>
+
+        <!-- Custom cell cho supplier count -->
+        <template #cell-supplierCount="{ item }">
+          <div class="text-center">
+            <span class="text-sm font-medium text-purple-600">{{ item.supplierCount || 0 }}</span>
+          </div>
+        </template>
+
+        <!-- Custom cell cho brand -->
+        <template #cell-brand="{ item }">
+          <div class="text-sm font-medium text-gray-900">{{ item.brand || '-' }}</div>
+        </template>
+
+        <!-- Custom cell cho model -->
+        <template #cell-model="{ item }">
+          <div class="text-sm text-gray-600">{{ item.model || '-' }}</div>
+        </template>
+
+        <!-- Custom cell cho partNumber -->
+        <template #cell-partNumber="{ item }">
+          <div class="text-sm font-mono text-blue-600">{{ item.partNumber || '-' }}</div>
+        </template>
+
+        <!-- Custom cell cho vehicleType -->
+        <template #cell-vehicleType="{ item }">
+          <div class="text-sm text-gray-700">{{ item.vehicleType || '-' }}</div>
+        </template>
+
+        <!-- Custom cell cho minStockLevel -->
+        <template #cell-minStockLevel="{ item }">
+          <div class="text-center">
+            <span class="text-sm font-medium text-orange-600">{{ item.minStockLevel || 0 }}</span>
+          </div>
+        </template>
+
+        <!-- Custom cell cho reorderPoint -->
+        <template #cell-reorderPoint="{ item }">
+          <div class="text-center">
+            <span class="text-sm font-medium text-red-600">{{ item.reorderPoint || 0 }}</span>
+          </div>
+        </template>
+
+        <!-- Custom cell cho ngày tạo -->
+        <template #cell-createdAt="{ item }">
+          <div class="text-center">
+            <span class="text-sm text-gray-700">
+              {{ item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : 'N/A' }}
+            </span>
+          </div>
+        </template>
+
+        <!-- Custom actions -->
+        <template #cell-actions="{ item }">
+          <div class="flex items-center justify-center space-x-2">
+            <button
+              @click="showStockDetails(item)"
+              class="text-blue-600 hover:text-blue-900 transition-colors"
+              title="Xem chi tiết tồn kho"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+            
+            <!-- Combo management button -->
+            <button
+              v-if="item.isCombo"
+              @click="manageCombo(item)"
+              class="text-purple-600 hover:text-purple-900 transition-colors"
+              title="Quản lý combo"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </button>
+            
+            <button
+              @click="handleEdit(item)"
+              class="text-blue-600 hover:text-blue-900 transition-colors"
+              title="Chỉnh sửa"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            <button
+              @click="handleDelete(item)"
+              class="text-red-600 hover:text-red-900 transition-colors"
+              title="Xóa"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+        </template>
+      </DataTable>
+
+
+      <!-- Stock Details Modal -->
+      <div v-if="showStockModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Chi tiết tồn kho</h3>
+            <button @click="showStockModal = false" class="text-gray-400 hover:text-gray-600">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
           
-          <div class="flex justify-end space-x-3 pt-4">
-            <button @click="showAddModal = false" type="button" class="btn-secondary">
-              Hủy
-            </button>
-            <button type="submit" class="btn-primary">
-              Thêm sản phẩm
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+          <div v-if="selectedProductForStock" class="space-y-4">
+            <div class="border-b pb-4">
+              <h4 class="font-medium text-lg">{{ selectedProductForStock.name }}</h4>
+              <p class="text-sm text-gray-600">SKU: {{ selectedProductForStock.sku }}</p>
+            </div>
 
-    <!-- Combo Management Modal -->
-    <div v-if="showComboModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Quản lý combo: {{ selectedComboProduct?.name }}</h3>
-          <button @click="showComboModal = false" class="text-gray-400 hover:text-gray-600">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <div v-if="selectedComboProduct" class="space-y-6">
-          <!-- Combo Summary -->
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <h4 class="font-medium text-gray-900 mb-2">Thông tin combo</h4>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div>
-                <span class="text-gray-600">Tổng giá combo:</span>
-                <div class="font-medium">{{ formatCurrency(comboTotalPrice) }}</div>
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <div class="text-sm text-blue-600">Tổng tồn kho</div>
+                <div class="text-xl font-bold text-blue-800">{{ selectedProductForStock.stock || 0 }}</div>
               </div>
-              <div>
-                <span class="text-gray-600">Số linh kiện:</span>
-                <div class="font-medium">{{ comboComponents.length }}</div>
+              <div class="bg-green-50 p-4 rounded-lg">
+                <div class="text-sm text-green-600">Có sẵn</div>
+                <div class="text-xl font-bold text-green-800">{{ selectedProductForStock.availableStock || 0 }}</div>
               </div>
-              <div>
-                <span class="text-gray-600">Có thể thay thế:</span>
-                <div class="font-medium">{{ substitutableCount }} linh kiện</div>
+              <div class="bg-yellow-50 p-4 rounded-lg">
+                <div class="text-sm text-yellow-600">Đã đặt trước</div>
+                <div class="text-xl font-bold text-yellow-800">{{ selectedProductForStock.reservedStock || 0 }}</div>
               </div>
-              <div>
-                <span class="text-gray-600">Trạng thái:</span>
-                <div class="font-medium text-green-600">Hoạt động</div>
+              <div class="bg-purple-50 p-4 rounded-lg">
+                <div class="text-sm text-purple-600">Nhà cung cấp</div>
+                <div class="text-xl font-bold text-purple-800">{{ selectedProductForStock.supplierCount || 0 }}</div>
               </div>
             </div>
-          </div>
 
-          <!-- Combo Components Table -->
-          <div>
-            <div class="flex justify-between items-center mb-3">
-              <h5 class="font-medium text-gray-900">Linh kiện trong combo</h5>
-              <button 
-                @click="addComponentToCombo"
-                class="btn-primary text-sm"
-              >
-                Thêm linh kiện
-              </button>
+            <!-- Inventory Details Table -->
+            <div v-if="selectedProductForStock.inventoryDetails && selectedProductForStock.inventoryDetails.length > 0">
+              <h5 class="font-medium text-gray-900 mb-3">Chi tiết theo nhà cung cấp</h5>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Nhà cung cấp
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Tồn kho
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Có sẵn
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Đã đặt
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Giá vốn
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Vị trí
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <tr v-for="inventory in selectedProductForStock.inventoryDetails" :key="inventory.id">
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ inventory.supplier?.name || 'N/A' }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ inventory.quantity || 0 }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ inventory.availableQuantity || 0 }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ inventory.reservedQuantity || 0 }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ formatCurrency(inventory.costPrice || 0) }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ inventory.location || 'N/A' }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
             
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Linh kiện
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Số lượng
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Giá trong combo
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Có thể thay thế
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Thao tác
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <tr v-for="component in comboComponents" :key="component.id">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div class="text-sm font-medium text-gray-900">{{ component.childProduct.name }}</div>
-                        <div class="text-sm text-gray-500">{{ component.childProduct.sku }}</div>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {{ component.quantity }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {{ formatCurrency(component.bundlePrice) }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span 
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                        :class="component.isSubstitutable ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
-                      >
-                        {{ component.isSubstitutable ? 'Có' : 'Không' }}
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div class="flex space-x-2">
-                        <button 
-                          @click="editComponent(component)"
-                          class="text-blue-600 hover:text-blue-900"
-                        >
-                          Sửa
-                        </button>
-                        <button 
-                          @click="removeComponent(component)"
-                          class="text-red-600 hover:text-red-900"
-                        >
-                          Xóa
-                        </button>
-                        <button 
-                          v-if="component.isSubstitutable"
-                          @click="showSubstitutes(component)"
-                          class="text-purple-600 hover:text-purple-900"
-                        >
-                          Thay thế
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div v-else class="text-center py-8 text-gray-500">
+              <p>Chưa có dữ liệu tồn kho cho sản phẩm này</p>
             </div>
-            </div>
+          </div>
+          <div class="mt-8">
+            <h4 class="font-semibold text-lg mb-2">Lịch sử giao dịch kho</h4>
+            <ProductInventoryHistory :product-id="selectedProductForStock?.id" />
+          </div>
+          <div class="mb-8">
+            <h4 class="font-semibold text-lg mb-2">Giá nhập/bán theo từng nhà cung cấp</h4>
+            <ProductSuppliersTable :product-id="selectedProductForStock?.id" />
+          </div>
+          <div class="mb-8">
+            <h4 class="font-semibold text-lg mb-2">Thông số kỹ thuật</h4>
+            <ProductDynamicAttributes :product-id="selectedProductForStock?.id" :category-id="selectedProductForStock?.categoryId" />
           </div>
         </div>
       </div>
+
+      <!-- Product Detail Modal -->
+      <ProductDetailModal
+        ref="productDetailModalRef"
+        @close="showProductDetailModal = false"
+      />
+
+      <!-- Add Product Modal -->
+      <AddProductModal
+        ref="addProductModalRef"
+        @close="showAddProductModal = false"
+        @success="handleAddProductSuccess"
+      />
+
+      <!-- Combo Management Modal -->
+      <ComboManagementModal
+        ref="comboManagementModalRef"
+        @close="showComboModal = false"
+        @success="handleComboManagementSuccess"
+      />
     </div>
   </div>
 </template>
@@ -784,15 +356,9 @@ export default {
     const selectedProductDetail = ref(null)
     const activeTab = ref('info')
     const loading = ref(false)
-    const showComboModal = ref(false)
-    const selectedComboProduct = ref(null)
-    const comboComponents = ref([])
-    const comboTotalPrice = ref(0)
+    
     
     // Column visibility management
-    const showColumnSelector = ref(false)
-    const columnVisibility = ref({})
-    const tempColumnVisibility = ref({})
 
     const newProduct = ref({
       name: '',
@@ -816,7 +382,7 @@ export default {
       reorderPoint: 10,
       location: '',
       isCombo: false
-    })
+)
     
     // Column definitions for DataTable
     const columns = ref([
@@ -825,37 +391,37 @@ export default {
         label: 'Sản phẩm',
         sortable: false,
         width: '280px'
-      },
+  ,
       {
         key: 'brand',
         label: 'Thương hiệu',
         sortable: true,
         width: '120px'
-      },
+  ,
       {
         key: 'model',
         label: 'Model',
         sortable: true,
         width: '120px'
-      },
+  ,
       {
         key: 'partNumber',
         label: 'Mã phụ tùng',
         sortable: true,
         width: '130px'
-      },
+  ,
       {
         key: 'vehicleType',
         label: 'Loại xe',
         sortable: true,
         width: '120px'
-      },
+  ,
       {
         key: 'category.name',
         label: 'Danh mục',
         sortable: true,
         width: '150px'
-      },
+  ,
       {
         key: 'supplier.name',
         label: 'Nhà cung cấp',
@@ -887,7 +453,7 @@ export default {
         width: '120px'
       },
       {
-        key: 'stock',
+        key: 
         label: 'Tồn kho',
         sortable: true,
         align: 'center',
@@ -986,67 +552,57 @@ export default {
     const allColumns = computed(() => columns.value)
     
     // Visible columns based on visibility settings
-    const visibleColumns = computed(() => {
-      return columns.value.filter(column => columnVisibility.value[column.key] !== false)
-    })
     
-    // Initialize column visibility
-    const initializeColumnVisibility = () => {
-      // Danh sách các cột mặc định nên hiển thị
-      const defaultVisibleKeys = [
-        'image', // tên + ảnh
-        'brand',
-        'model',
-        'category.name',
-        'sellingPrice',
-        'basePrice',
-        'stock',
-        'actions' // thao tác (nếu có)
-      ];
-      columns.value.forEach(column => {
-        if (columnVisibility.value[column.key] === undefined) {
-          columnVisibility.value[column.key] = defaultVisibleKeys.includes(column.key);
-        }
-      });
+    
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
     }
     
-    // Column visibility methods
-    const isColumnVisible = (columnKey) => {
-      return tempColumnVisibility.value[columnKey] !== false
+
+
     }
     
-    const toggleColumnVisibility = (columnKey) => {
-      tempColumnVisibility.value[columnKey] = !tempColumnVisibility.value[columnKey]
+
+
+
+
     }
     
-    const selectAllColumns = () => {
-      columns.value.forEach(column => {
-        tempColumnVisibility.value[column.key] = true
-      })
+
+
+
+
     }
     
-    const deselectAllColumns = () => {
-      columns.value.forEach(column => {
-        tempColumnVisibility.value[column.key] = false
-      })
+
+
+
     }
     
-    const applyColumnVisibility = () => {
-      columnVisibility.value = { ...tempColumnVisibility.value }
-      showColumnSelector.value = false
+
+
+
+
     }
     
-    const openColumnSelector = () => {
-      // Copy current visibility to temp for editing
-      tempColumnVisibility.value = { ...columnVisibility.value }
-      showColumnSelector.value = true
-    }
-    
-    const resetColumnVisibility = () => {
-      columns.value.forEach(column => {
-        columnVisibility.value[column.key] = true
-        tempColumnVisibility.value[column.key] = true
-      })
+
+
+
+
+
     }
     
     // Initialize on component mount
@@ -1389,16 +945,14 @@ export default {
       })
     })
 
-    const substitutableCount = computed(() => {
-      return comboComponents.value.filter(component => component.isSubstitutable).length
-    })
+    
 
     // API Methods
     const fetchProductsWithInventory = async () => {
       loading.value = true
       try {
-        const response = await productsAPI.getAllWithInventory()
-        products.value = response.data.map(product => ({
+        const response = await productsAPI.getAll()
+        products.value = response.data.content.map(product => ({
           ...product,
           stock: product.totalStock || 0,
           availableStock: product.availableStock || 0,
@@ -1410,7 +964,7 @@ export default {
         // Fallback to basic products API
         try {
           const basicResponse = await productsAPI.getAll()
-          products.value = basicResponse.data.map(product => ({
+          products.value = basicResponse.data.content.map(product => ({
             ...product,
             stock: 0,
             availableStock: 0,
