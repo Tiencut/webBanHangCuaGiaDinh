@@ -3,12 +3,14 @@ package com.giadinh.banphutung.web_ban_hang_gia_dinh.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notes")
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class Note extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

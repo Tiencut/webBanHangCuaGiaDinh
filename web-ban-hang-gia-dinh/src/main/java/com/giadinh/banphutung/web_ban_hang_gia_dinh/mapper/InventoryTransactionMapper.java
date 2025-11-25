@@ -16,6 +16,11 @@ public interface InventoryTransactionMapper {
 
     List<InventoryTransactionDto> toDtoList(List<InventoryTransaction> entities);
 
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "isActive", ignore = true)
     @InheritInverseConfiguration
     InventoryTransaction toEntity(InventoryTransactionDto dto);
-} 
+}

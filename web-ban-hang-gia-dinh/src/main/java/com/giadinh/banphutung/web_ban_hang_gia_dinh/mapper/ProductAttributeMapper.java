@@ -12,6 +12,11 @@ public interface ProductAttributeMapper {
     @Mapping(target = "type", source = "type")
     ProductAttributeDto toDto(ProductAttribute entity);
     List<ProductAttributeDto> toDtoList(List<ProductAttribute> entities);
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "isActive", ignore = true)
     @InheritInverseConfiguration
     ProductAttribute toEntity(ProductAttributeDto dto);
-} 
+}

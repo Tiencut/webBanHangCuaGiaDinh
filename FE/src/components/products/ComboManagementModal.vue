@@ -1,16 +1,16 @@
 <template>
-    <div v-if="showComboModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div v-if="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Quản lý combo: {{ props.selectedComboProduct?.name }}</h3>
-          <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600">
+          <h3 class="text-lg font-semibold">Quản lý combo: {{ selectedComboProduct?.name }}</h3>
+          <button @click="close" class="text-gray-400 hover:text-gray-600">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
         
-        <div v-if="props.selectedComboProduct" class="space-y-6">
+  <div v-if="selectedComboProduct" class="space-y-6">
           <!-- Combo Summary -->
           <div class="bg-gray-50 p-4 rounded-lg">
             <h4 class="font-medium text-gray-900 mb-2">Thông tin combo</h4>
@@ -123,13 +123,8 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, computed, watch } from 'vue';
+import { defineEmits, ref, computed, onUnmounted } from 'vue';
 import { formatCurrency } from '@/utils/helpers';
-
-const props = defineProps({
-  showComboModal: Boolean,
-  selectedComboProduct: Object,
-});
 
 const emit = defineEmits([
   'close',
@@ -140,6 +135,8 @@ const emit = defineEmits([
   'show-substitutes'
 ]);
 
+const isOpen = ref(false);
+const selectedComboProduct = ref(null);
 const comboComponentsLocal = ref([]);
 const comboTotalPriceLocal = ref(0);
 
@@ -147,25 +144,40 @@ const substitutableCount = computed(() => {
   return comboComponentsLocal.value.filter(component => component.isSubstitutable).length;
 });
 
-// Watch for changes in selectedComboProduct prop to initialize local state
-watch(() => props.selectedComboProduct, (newProduct) => {
-  if (newProduct) {
-    comboComponentsLocal.value = [];
-    comboTotalPriceLocal.value = 0;
-    if (newProduct.isCombo && newProduct.components) {
-      newProduct.components.forEach(component => {
-        comboComponentsLocal.value.push({
-          id: component.id,
-          childProduct: component.childProduct,
-          quantity: component.quantity,
-          bundlePrice: component.bundlePrice,
-          isSubstitutable: component.isSubstitutable
-        });
-        comboTotalPriceLocal.value += component.bundlePrice * component.quantity;
+function open(product) {
+  selectedComboProduct.value = product || null;
+  comboComponentsLocal.value = [];
+  comboTotalPriceLocal.value = 0;
+  if (selectedComboProduct.value?.isCombo && selectedComboProduct.value.components) {
+    selectedComboProduct.value.components.forEach(component => {
+      comboComponentsLocal.value.push({
+        id: component.id,
+        childProduct: component.childProduct,
+        quantity: component.quantity,
+        bundlePrice: component.bundlePrice,
+        isSubstitutable: component.isSubstitutable
       });
-    }
+      comboTotalPriceLocal.value += component.bundlePrice * component.quantity;
+    });
   }
-}, { immediate: true }); // Run immediately on component mount
+  isOpen.value = true;
+  window.addEventListener('keydown', onKeyDown);
+}
+
+function close() {
+  isOpen.value = false;
+  selectedComboProduct.value = null;
+  window.removeEventListener('keydown', onKeyDown);
+  emit('close');
+}
+
+function onKeyDown(e) { if (e.key === 'Escape') close(); }
+
+defineExpose({ open, close });
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeyDown);
+});
 
 const addComponentToCombo = () => {
   const newComponent = {

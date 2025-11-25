@@ -1,9 +1,9 @@
 <template>
-    <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div v-if="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-semibold">Thêm sản phẩm mới</h3>
-          <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600">
+          <button @click="close" class="text-gray-400 hover:text-gray-600">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -11,7 +11,7 @@
         </div>
         
         <!--  -->
-        <form @submit.prevent="createProduct" class="space-y-4">
+  <form @submit.prevent="createProduct" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm *</label>
@@ -155,7 +155,7 @@
           </div>
           
           <div class="flex justify-end space-x-3 pt-4">
-            <button @click="$emit('close')" type="button" class="btn-secondary">
+            <button @click="close" type="button" class="btn-secondary">
               Hủy
             </button>
             <button type="submit" class="btn-primary">
@@ -168,20 +168,17 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-import { useToast } from 'vue-toastification';
+import { ref, onUnmounted } from 'vue';
 import api from '@/services/api';
 
 const props = defineProps({
-  showAddModal: Boolean,
   categories: Array,
   suppliers: Array,
 });
 
 const emit = defineEmits(['close', 'product-created']);
 
-const toast = useToast();
-
+const isOpen = ref(false);
 const newProduct = ref({
   name: '',
   sku: '',
@@ -204,12 +201,6 @@ const newProduct = ref({
   reorderPoint: 0,
   location: '',
   isCombo: false,
-});
-
-watch(() => props.showAddModal, (newValue) => {
-  if (newValue) {
-    resetNewProduct();
-  }
 });
 
 const resetNewProduct = () => {
@@ -249,14 +240,45 @@ const createProduct = async () => {
     }
 
     await api.post('/products', productToCreate);
-    toast.success('Sản phẩm đã được thêm thành công!');
+    if (window.$toast && typeof window.$toast.success === 'function') {
+      window.$toast.success('Sản phẩm đã được thêm thành công!');
+    } else {
+      // Fallback
+      console.log('Sản phẩm đã được thêm thành công!');
+    }
     emit('product-created');
-    emit('close');
+    close();
   } catch (error) {
     console.error('Lỗi khi thêm sản phẩm:', error);
-    toast.error('Lỗi khi thêm sản phẩm.');
+    if (window.$toast && typeof window.$toast.error === 'function') {
+      window.$toast.error('Lỗi khi thêm sản phẩm.');
+    } else {
+      alert('Lỗi khi thêm sản phẩm.');
+    }
   }
 };
+
+  function open() {
+    resetNewProduct();
+    isOpen.value = true;
+    window.addEventListener('keydown', onKeyDown);
+  }
+
+  function close() {
+    isOpen.value = false;
+    window.removeEventListener('keydown', onKeyDown);
+    emit('close');
+  }
+
+  function onKeyDown(e) {
+    if (e.key === 'Escape') close();
+  }
+
+  defineExpose({ open, close });
+
+  onUnmounted(() => {
+    window.removeEventListener('keydown', onKeyDown);
+  });
 </script>
 
 <style scoped>
