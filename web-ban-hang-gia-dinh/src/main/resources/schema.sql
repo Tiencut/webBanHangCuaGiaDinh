@@ -28,6 +28,8 @@ CREATE TABLE IF NOT EXISTS categories (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
+    -- Use TEXT for H2 compatibility; store JSON array string (e.g. '[]' or '["unit","meter"]')
+    selling_methods TEXT DEFAULT '[]',
     parent_id BIGINT,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

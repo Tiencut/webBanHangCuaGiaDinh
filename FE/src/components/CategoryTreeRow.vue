@@ -4,10 +4,11 @@
       class="category-row"
       :data-parent-id="category.id"
       :data-category-id="category.id"
+      @click="$emit('edit', category)"
     >
       <div class="flex items-center">
         <!-- Drag Handle -->
-        <div class="drag-handle cursor-move pr-2 text-gray-400 hover:text-gray-600">
+        <div class="drag-handle cursor-move pr-2 text-gray-400 hover:text-gray-600" @click.stop>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
           </svg>
@@ -16,10 +17,10 @@
         <div 
           class="flex-1 flex items-center cursor-pointer"
           :style="{ 'padding-left': `${level * 20}px` }"
-          @click="$emit('toggle')"
         >
           <button
             class="mr-2 p-1 rounded-full hover:bg-gray-200 transition-colors"
+            @click.stop="$emit('toggle')"
           >
             <svg
               v-if="hasChildren"
@@ -42,6 +43,14 @@
         </div>
         
         <div class="w-40 text-sm text-gray-600">{{ category.code }}</div>
+        <div class="w-56 text-sm text-gray-600">
+          <template v-if="category.sellingMethods && category.sellingMethods.length">
+            <span v-for="(m, idx) in category.sellingMethods" :key="idx" class="inline-block mr-1 mb-1 px-2 py-0.5 text-xs rounded bg-gray-100 text-gray-800">
+              {{ m }}
+            </span>
+          </template>
+          <span v-else class="text-gray-400">-</span>
+        </div>
         <div class="w-32 text-center">
           <span class="px-2 py-1 text-xs rounded-full font-medium"
                 :class="category.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
@@ -51,14 +60,14 @@
         <div class="w-24 text-center text-sm font-medium text-blue-600">{{ category.productCount || 0 }}</div>
         <div class="w-24 flex items-center justify-center space-x-2">
           <button
-            @click="$emit('add', category)"
+            @click.stop="$emit('add', category)"
             class="text-green-600 hover:text-green-900 transition-colors"
             title="Thêm danh mục con"
           >
              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
           </button>
           <button
-            @click="$emit('edit', category)"
+            @click.stop="$emit('edit', category)"
             class="text-blue-600 hover:text-blue-900 transition-colors"
             title="Chỉnh sửa"
           >
@@ -67,7 +76,7 @@
               </svg>
           </button>
           <button
-            @click="$emit('delete', category)"
+            @click.stop="$emit('delete', category)"
             class="text-red-600 hover:text-red-900 transition-colors"
             title="Xóa"
           >

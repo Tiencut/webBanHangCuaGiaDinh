@@ -38,6 +38,12 @@ export const ordersApi = {
     return api.patch(`/orders/${id}/status`, { status });
   },
 
+  // Áp giá cho đơn hàng
+  applyPrice: (id, userId = null) => {
+    const params = userId ? `?userId=${userId}` : ''
+    return api.put(`/orders/${id}/apply-price${params}`)
+  },
+
   // Lấy thống kê đơn hàng
   getOrderStats: () => {
     return api.get('/orders/stats');

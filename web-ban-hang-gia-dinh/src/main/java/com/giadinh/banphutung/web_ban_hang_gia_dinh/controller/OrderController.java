@@ -181,4 +181,12 @@ public class OrderController {
         List<OrderDto> orders = orderService.getVoiceCreatedOrders();
         return ResponseEntity.ok(orders);
     }
+
+    @PutMapping("/{id}/apply-price")
+    @Operation(summary = "Apply price for order", description = "Mark an order as having prices applied")
+    public ResponseEntity<OrderDto> applyPrice(@PathVariable Long id, @RequestParam(required = false) Long userId) {
+        log.info("PUT /api/orders/{}/apply-price - Applying price by user: {}", id, userId);
+        OrderDto order = orderService.applyPrice(id, userId);
+        return ResponseEntity.ok(order);
+    }
 }

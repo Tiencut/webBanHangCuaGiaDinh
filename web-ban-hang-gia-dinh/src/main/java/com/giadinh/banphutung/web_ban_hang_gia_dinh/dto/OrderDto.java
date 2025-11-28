@@ -37,6 +37,9 @@ public class OrderDto {
     private LocalDateTime confirmedAt;
     private LocalDateTime deliveredAt;
     private LocalDateTime expectedDeliveryDate;
+    private Boolean isPriceApplied;
+    private LocalDateTime priceAppliedAt;
+    private Long priceAppliedBy;
     private Boolean voiceCreated;
     private Boolean isDeleted;
     private LocalDateTime createdAt;

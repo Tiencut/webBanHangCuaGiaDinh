@@ -7,12 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CategoryDto;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CategorySearchRequest;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Category;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.mapper.CategoryMapper;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.CategoryRepository;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CategorySearchRequest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +49,13 @@ public class CategoryService {
     public CategoryDto createCategory(CategoryDto categoryDto) {
         log.info("Creating new category: {}", categoryDto.getName());
         
-        // Check if category code already exists
+        // Normalize code: trim and convert blank -> null to avoid inserting empty strings
+        if (categoryDto.getCode() != null) {
+            String trimmed = categoryDto.getCode().trim();
+            categoryDto.setCode(trimmed.isEmpty() ? null : trimmed);
+        }
+
+        // Check if category code already exists (only when non-blank)
         if (categoryDto.getCode() != null && !categoryDto.getCode().trim().isEmpty()) {
             Optional<Category> existingCategory = categoryRepository.findByCodeAndIsActiveTrue(categoryDto.getCode());
             if (existingCategory.isPresent()) {
@@ -77,6 +83,12 @@ public class CategoryService {
         log.info("Updating category with id: {}", id);
         Category category = categoryRepository.findByIdAndIsActiveTrue(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
+
+        // Normalize code: trim and convert blank -> null to avoid inserting empty strings
+        if (categoryDto.getCode() != null) {
+            String trimmed = categoryDto.getCode().trim();
+            categoryDto.setCode(trimmed.isEmpty() ? null : trimmed);
+        }
 
         // Check if new code conflicts with existing category
         if (categoryDto.getCode() != null && !categoryDto.getCode().trim().isEmpty() && 

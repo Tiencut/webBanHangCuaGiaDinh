@@ -2,6 +2,7 @@ package com.giadinh.banphutung.web_ban_hang_gia_dinh.mapper;
 
 import java.util.List;
 
+import org.mapstruct.AfterMapping;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -18,6 +19,7 @@ public interface CategoryMapper {
     @Mapping(source = "parent.id", target = "parentId")
     @Mapping(source = "parent.name", target = "parentName")
     @Mapping(source = "children", target = "children")
+    @Mapping(source = "sellingMethods", target = "sellingMethods")
     CategoryDto toDto(Category category);
     
     List<CategoryDto> toDtoList(List<Category> categories);
@@ -26,9 +28,18 @@ public interface CategoryMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "parent", ignore = true)
     @Mapping(target = "children", ignore = true)
+    @Mapping(target = "sellingMethods", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     void updateEntityFromDto(CategoryDto dto, @MappingTarget Category category);
+
+    @AfterMapping
+    default void handleSellingMethods(CategoryDto dto, @MappingTarget Category category) {
+        if (dto == null) return;
+        if (dto.getSellingMethods() != null) {
+            category.setSellingMethods(new java.util.ArrayList<>(dto.getSellingMethods()));
+        }
+    }
 } 

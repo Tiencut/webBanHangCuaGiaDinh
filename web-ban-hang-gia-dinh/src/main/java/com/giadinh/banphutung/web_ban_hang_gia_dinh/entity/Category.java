@@ -1,13 +1,22 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.entity;
 
-import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "categories")
@@ -44,6 +53,11 @@ public class Category extends BaseEntity {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("sortOrder ASC")
     private List<Category> children = new ArrayList<>();
+
+    // Selling methods stored as JSONB in Postgres. Example: ["unit","meter","set"]
+    @Convert(converter = JsonListConverter.class)
+    @Column(name = "selling_methods")
+    private List<String> sellingMethods = new ArrayList<>();
     
     // Business methods
     public boolean isRoot() {

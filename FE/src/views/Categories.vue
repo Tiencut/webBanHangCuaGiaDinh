@@ -18,6 +18,7 @@
       <div class="flex items-center px-4 py-3 bg-gray-50 border-b border-gray-200 font-semibold text-sm text-gray-600">
         <div class="flex-1 pl-7">Tên danh mục</div>
         <div class="w-40">Mã</div>
+        <div class="w-56 text-sm text-gray-600">Cách bán</div>
         <div class="w-32 text-center">Trạng thái</div>
         <div class="w-24 text-center">Số SP</div>
         <div class="w-24 text-center">Thao tác</div>
@@ -54,308 +55,213 @@
         </template>
       </draggable>
     </div>
+    <!-- Kết thúc -->
 
-    <!-- Add/Edit Category Modal -->
-    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">{{ isEditing ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới' }}</h3>
-          <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <form @submit.prevent="saveCategory" class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Tên danh mục *</label>
-              <input v-model="categoryForm.name" type="text" class="form-input w-full" required>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Mã danh mục</label>
-              <input v-model="categoryForm.code" type="text" class="form-input w-full" placeholder="ENGINE, BRAKE, TIRE...">
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục cha</label>
-              <select v-model="categoryForm.parentId" class="form-input w-full">
-                <option :value="null">Không có (danh mục gốc)</option>
-                <option v-for="cat in flatCategories" :key="cat.id" :value="cat.id">
-                  <span v-for="i in cat.level" :key="i">&nbsp;&nbsp;</span>
-                  {{ cat.name }}
-                </option>
-              </select>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Thứ tự sắp xếp</label>
-              <input v-model.number="categoryForm.sortOrder" type="number" min="0" class="form-input w-full">
-            </div>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
-            <textarea v-model="categoryForm.description" rows="3" class="form-input w-full" 
-                      placeholder="Mô tả chi tiết về danh mục này..."></textarea>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-            <select v-model="categoryForm.isActive" class="form-input w-full">
-              <option :value="true">Hoạt động</option>
-              <option :value="false">Không hoạt động</option>
-            </select>
-          </div>
-          
-          <div class="flex justify-end space-x-3 pt-4">
-            <button @click="closeModal" type="button" class="btn-secondary">
-              Hủy
-            </button>
-            <button type="submit" class="btn-primary">
-              {{ isEditing ? 'Cập nhật' : 'Thêm danh mục' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <!-- Add/Edit Category Modal (extracted) -->
+    <CategoryFormModal
+      :visible="showModal"
+      @update:visible="value => showModal = value"
+      :selected="selectedCategory"
+      :parentId="categoryForm.parentId"
+      :flatCategories="flatCategories"
+      @saved="loadCategories"
+    />
     </div>
   </div>
 </template>
 
-<script>
-import { ref, computed, onMounted } from 'vue'
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue'
 import draggable from 'vuedraggable'
 import CategoryTreeRow from '@/components/CategoryTreeRow.vue'
+import CategoryFormModal from '@/components/category/CategoryFormModal.vue'
 import { categoriesApi } from '@/api/categories.js'
 
-// Add a new method to your API service object
-categoriesApi.updateCategoryParent = (categoryId, newParentId) => {
-  return categoriesApi.put(`/${categoryId}/parent`, { newParentId });
-};
+// helper: add updateCategoryParent if not present
+if (!categoriesApi.updateCategoryParent) {
+  categoriesApi.updateCategoryParent = (categoryId, newParentId) => {
+    return categoriesApi.put(`/${categoryId}/parent`, { newParentId });
+  };
+}
 
-export default {
-  name: 'Categories',
-  components: {
-    draggable,
-    CategoryTreeRow
-  },
-  setup() {
-    const loading = ref(false)
-    const showModal = ref(false)
-    const isEditing = ref(false)
-    const selectedCategory = ref(null)
-    const categories = ref([])
-    const expandedState = ref({});
+const loading = ref(false)
+const showModal = ref(false)
+const isEditing = ref(false)
+const selectedCategory = ref(null)
+const categories = ref([])
+const expandedState = ref({})
 
-    // Form data
-    const categoryForm = ref({
-      name: '',
-      code: '',
-      description: '',
-      parentId: null,
-      sortOrder: 0,
-      isActive: true
+const categoryForm = ref({
+  name: '',
+  code: '',
+  description: '',
+  sellingMethodsRaw: '',
+  sellingMethods: [],
+  parentId: null,
+  sortOrder: 0,
+  isActive: true
+})
+
+const buildTree = (list) => {
+  const map = {}
+  list.forEach(item => { map[item.id] = { ...item, children: [] } })
+  const roots = []
+  Object.values(map).forEach(node => {
+    if (node.parentId == null) roots.push(node)
+    else if (map[node.parentId]) map[node.parentId].children.push(node)
+    else roots.push(node)
+  })
+  return roots
+}
+
+const buildFlatList = (list) => {
+  const roots = buildTree(list)
+  const res = []
+  const walk = (nodes, level) => {
+    nodes.forEach(n => {
+      res.push({ id: n.id, name: n.name, level })
+      if (n.children && n.children.length) walk(n.children, level + 1)
     })
+  }
+  walk(roots, 0)
+  return res
+}
 
-    const categoryTree = computed(() => {
-      const allNodes = categories.value.map(cat => ({ ...cat, children: [], expanded: expandedState.value[cat.id] || false }));
-      const tree = [];
-      const map = allNodes.reduce((acc, node) => {
-        acc[node.id] = node;
-        return acc;
-      }, {});
+// Use a writable tree for draggable. Keep it in sync with `categories`.
+const categoryTree = ref(buildTree(categories.value))
+watch(categories, (newVal) => {
+  categoryTree.value = buildTree(newVal)
+}, { deep: true })
+const flatCategories = computed(() => buildFlatList(categories.value))
 
-      allNodes.forEach(node => {
-        if (node.parentId && map[node.parentId]) {
-          map[node.parentId].children.push(node);
-        } else {
-          tree.push(node);
-        }
-      });
-      return tree;
-    });
+const toggleNode = (id) => { expandedState.value[id] = !expandedState.value[id] }
 
-    const flatCategories = computed(() => {
-      const result = [];
-      function flatten(nodes, level = 0) {
-        nodes.forEach(node => {
-          result.push({ ...node, level });
-          if (node.children) {
-            flatten(node.children, level + 1);
-          }
-        });
-      }
-      flatten(categoryTree.value);
-      return result;
-    });
-
-    const toggleNode = (categoryId) => {
-      expandedState.value[categoryId] = !expandedState.value[categoryId];
-    };
-
-    // Methods
-    const handleCreateRoot = () => {
-      isEditing.value = false
-      selectedCategory.value = null
-      resetForm()
-      categoryForm.value.parentId = null // Ensure it's a root category
-      showModal.value = true
-    }
-
-    const handleAddChild = (parentCategory) => {
-      isEditing.value = false
-      selectedCategory.value = null
-      resetForm()
-      categoryForm.value.parentId = parentCategory.id // Set parent
-      showModal.value = true
-    }
-
-    const handleEdit = (category) => {
-      isEditing.value = true
-      selectedCategory.value = category
-      categoryForm.value = {
-        name: category.name,
-        code: category.code,
-        description: category.description,
-        parentId: category.parentId || null,
-        sortOrder: category.sortOrder,
-        isActive: category.isActive
-      }
-      showModal.value = true
-    }
-
-    const handleDelete = async (category) => {
-       if (confirm(`Bạn có chắc chắn muốn xóa danh mục "${category.name}"?`)) {
-        try {
-          await categoriesApi.deleteCategory(category.id)
-          await loadCategories() // Reload categories
-        } catch (error) {
-          console.error('Error deleting category:', error)
-          alert('Xóa danh mục thất bại. Vui lòng thử lại.');
-        }
-      }
-    }
-
-    const saveCategory = async () => {
-      try {
-        if (isEditing.value) {
-          await categoriesApi.updateCategory(selectedCategory.value.id, categoryForm.value)
-        } else {
-          await categoriesApi.createCategory(categoryForm.value)
-        }
-        await loadCategories()
-        closeModal()
-      } catch (error) {
-        console.error('Error saving category:', error)
-        alert('Lưu danh mục thất bại. Vui lòng thử lại.');
-      }
-    }
-
-    const closeModal = () => {
-      showModal.value = false
-      resetForm()
-    }
-
-    const resetForm = () => {
-      categoryForm.value = {
-        name: '',
-        code: '',
-        description: '',
-        parentId: null,
-        sortOrder: 0,
-        isActive: true
-      }
-    }
-
-    const handleDragEnd = async (event) => {
-      const { to } = event;
-      const draggedElement = event.item;
-      const draggedCategoryId = parseInt(draggedElement.dataset.categoryId);
-      const newParentId = to.dataset.parentId ? parseInt(to.dataset.parentId) : null;
-      
-      console.log(`Dragged category ${draggedCategoryId} to new parent ID: ${newParentId}`);
-
-      // Basic check to see if position actually changed
-      const originalCategory = findCategoryById(categories.value, draggedCategoryId);
-      if (originalCategory && originalCategory.parentId === newParentId) {
-        console.log("No change in parent, skipping API call.");
-        return;
-      }
-
-      try {
-        await categoriesApi.updateCategoryParent(draggedCategoryId, newParentId);
-        await loadCategories(); // Reload to reflect changes and ensure consistency
-      } catch (error) {
-        console.error("Failed to update category parent:", error);
-        alert("Cập nhật thứ tự danh mục thất bại! Vui lòng thử lại.");
-        // We reload here as well to revert any optimistic UI changes
-        await loadCategories();
-      }
-    };
-
-    const findCategoryById = (nodes, id) => {
-      for (const node of nodes) {
-        if (node.id === id) return node;
-        if (node.children) {
-          const found = findCategoryById(node.children, id);
-          if (found) return found;
-        }
-      }
-      return null;
-    };
-    
-    const handleChildrenUpdate = (parentCategory, newChildren) => {
-      parentCategory.children = newChildren;
-    };
-
-    const loadCategories = async () => {
-      try {
-        loading.value = true
-        const response = await categoriesApi.getAllCategories()
-        categories.value = response.data
-
-        // Expand all nodes by default
-        const newExpandedState = {}
-        response.data.forEach(cat => {
-          if (response.data.some(c => c.parentId === cat.id)) {
-            newExpandedState[cat.id] = true;
-          }
-        });
-        expandedState.value = newExpandedState;
-
-      } catch (error) {
-        console.error('Error loading categories:', error)
-        categories.value = []; // Reset on error
-      } finally {
-        loading.value = false
-      }
-    }
-    
-    onMounted(loadCategories);
-
-    return {
-      loading,
-      showModal,
-      isEditing,
-      selectedCategory,
-      categories,
-      categoryTree,
-      flatCategories,
-      categoryForm,
-      expandedState,
-      handleCreateRoot,
-      handleAddChild,
-      handleEdit,
-      handleDelete,
-      saveCategory,
-      closeModal,
-      toggleNode,
-      handleDragEnd,
-      handleChildrenUpdate,
-    }
+const resetForm = () => {
+  categoryForm.value = {
+    name: '',
+    code: '',
+    description: '',
+    sellingMethodsRaw: '',
+    sellingMethods: [],
+    parentId: null,
+    sortOrder: 0,
+    isActive: true
   }
 }
-</script> 
+
+const handleCreateRoot = () => { resetForm(); isEditing.value = false; selectedCategory.value = null; showModal.value = true }
+
+const handleAddChild = (parentCategory) => { resetForm(); categoryForm.value.parentId = parentCategory.id; isEditing.value = false; showModal.value = true }
+
+const handleEdit = (category) => {
+  isEditing.value = true
+  selectedCategory.value = category
+  categoryForm.value = {
+    name: category.name,
+    code: category.code,
+    description: category.description,
+    sellingMethodsRaw: (category.sellingMethods && category.sellingMethods.length) ? category.sellingMethods.join('\n') : '',
+    sellingMethods: category.sellingMethods || [],
+    parentId: category.parentId || null,
+    sortOrder: category.sortOrder || 0,
+    isActive: category.isActive !== false
+  }
+  showModal.value = true
+}
+
+const handleDelete = async (category) => {
+  if (!confirm(`Bạn có chắc chắn muốn xóa danh mục "${category.name}"?`)) return
+  try {
+    await categoriesApi.deleteCategory(category.id)
+    await loadCategories()
+  } catch (error) {
+    console.error('Error deleting category:', error)
+    alert('Xóa danh mục thất bại. Vui lòng thử lại.')
+  }
+}
+
+const saveCategory = async () => {
+  try {
+    const raw = categoryForm.value.sellingMethodsRaw || ''
+    const arr = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean)
+    categoryForm.value.sellingMethods = arr
+    if (isEditing.value && selectedCategory.value) {
+      await categoriesApi.updateCategory(selectedCategory.value.id, categoryForm.value)
+    } else {
+      await categoriesApi.createCategory(categoryForm.value)
+    }
+    await loadCategories()
+    closeModal()
+  } catch (error) {
+    console.error('Error saving category:', error)
+    alert('Lưu danh mục thất bại. Vui lòng thử lại.')
+  }
+}
+
+const closeModal = () => { showModal.value = false; resetForm() }
+
+const findCategoryById = (nodes, id) => {
+  for (const node of nodes) {
+    if (node.id === id) return node
+    if (node.children) {
+      const found = findCategoryById(node.children, id)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+const handleChildrenUpdate = (parentCategory, newChildren) => { parentCategory.children = newChildren }
+
+const handleDragEnd = async (event) => {
+  try {
+    const draggedEl = event.item
+    const draggedCategoryId = draggedEl && draggedEl.dataset ? parseInt(draggedEl.dataset.categoryId) : null
+    const to = event.to
+
+    // Walk up from the drop container to find an element with data-category-id or data-parent-id
+    const findParentIdFromContainer = (el) => {
+      let node = el
+      while (node) {
+        if (node.dataset && node.dataset.parentId) return parseInt(node.dataset.parentId)
+        if (node.dataset && node.dataset.categoryId) return parseInt(node.dataset.categoryId)
+        node = node.parentElement
+      }
+      return null
+    }
+
+    const newParentId = findParentIdFromContainer(to)
+    if (!draggedCategoryId) return
+
+    const originalCategory = findCategoryById(categories.value, draggedCategoryId)
+    if (originalCategory && originalCategory.parentId === newParentId) return
+
+    await categoriesApi.updateCategoryParent(draggedCategoryId, newParentId)
+    await loadCategories()
+  } catch (error) {
+    console.error('Failed to update category parent:', error)
+    alert('Cập nhật thứ tự danh mục thất bại! Vui lòng thử lại.')
+    await loadCategories()
+  }
+}
+
+const loadCategories = async () => {
+  try {
+    loading.value = true
+    const response = await categoriesApi.getAllCategories()
+    categories.value = response.data || []
+    const newExpanded = {}
+    categories.value.forEach(cat => {
+      if (categories.value.some(c => c.parentId === cat.id)) newExpanded[cat.id] = true
+    })
+    expandedState.value = newExpanded
+  } catch (error) {
+    console.error('Error loading categories:', error)
+    categories.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadCategories)
+</script>

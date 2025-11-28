@@ -276,4 +276,28 @@ public class OrderService {
         List<Order> orders = orderRepository.findByVoiceCreatedTrueAndIsDeletedFalse();
         return orderMapper.toDtoList(orders);
     }
+
+    /**
+     * Mark an order as having prices applied.
+     * @param id order id
+     * @param userId optional user id who applied the prices
+     * @return updated OrderDto
+     */
+    public OrderDto applyPrice(Long id, Long userId) {
+        log.info("Applying price for order id: {} by user: {}", id, userId);
+        Order order = orderRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+
+        if (Boolean.TRUE.equals(order.getIsPriceApplied())) {
+            throw new BusinessException("Prices have already been applied to this order");
+        }
+
+        order.setIsPriceApplied(true);
+        order.setPriceAppliedAt(LocalDateTime.now());
+        order.setPriceAppliedBy(userId);
+
+        Order updated = orderRepository.save(order);
+        log.info("Price applied for order id: {}", updated.getId());
+        return orderMapper.toDto(updated);
+    }
 }

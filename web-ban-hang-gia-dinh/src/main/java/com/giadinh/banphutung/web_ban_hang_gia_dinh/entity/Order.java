@@ -123,6 +123,18 @@ public class Order extends BaseEntity {
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
     
+    // Flag cho biết đã áp giá (price applied) cho hoá đơn chưa
+    @Column(name = "is_price_applied")
+    private Boolean isPriceApplied = false;
+
+    // Thời điểm đã áp giá
+    @Column(name = "price_applied_at")
+    private LocalDateTime priceAppliedAt;
+
+    // Người dùng đã áp giá (user id)
+    @Column(name = "price_applied_by")
+    private Long priceAppliedBy;
+    
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderDetail> orderDetails = new ArrayList<>();
     

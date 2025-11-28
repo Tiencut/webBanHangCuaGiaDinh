@@ -243,6 +243,12 @@
             >
               In đơn hàng
             </button>
+            <!-- Apply Price Button -->
+            <ApplyPriceButton
+              :order-id="order.id"
+              :initial-applied="order.isPriceApplied"
+              @applied="(updated) => { Object.assign(order, updated); }"
+            />
           </div>
         </div>
       </div>
@@ -270,6 +276,7 @@
 <script>
 import { ref, onMounted, computed } from 'vue'
 import { ordersApi, customersApi } from '@/api'
+import ApplyPriceButton from '@/components/order/ApplyPriceButton.vue'
 import { removeVietnameseTones } from '../utils/removeVietnameseTones'
 
 export default {
@@ -552,6 +559,7 @@ export default {
       getStatusText,
       getDeliveryMethodText,
       getCustomerName,
+      ApplyPriceButton,
       
       // Computed
       paginationInfo,

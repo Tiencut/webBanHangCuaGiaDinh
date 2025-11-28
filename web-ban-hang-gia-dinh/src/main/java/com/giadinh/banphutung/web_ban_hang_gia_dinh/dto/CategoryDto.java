@@ -1,9 +1,9 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh.dto;
 
-import lombok.Data;
-
 import java.time.LocalDateTime;
 import java.util.List;
+
+import lombok.Data;
 
 @Data
 public class CategoryDto {
@@ -20,4 +20,5 @@ public class CategoryDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isActive;
+    private List<String> sellingMethods;
 } 
