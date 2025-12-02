@@ -4,9 +4,10 @@ import axios from 'axios'
 const API_BASE_URL = 'http://localhost:8080/api'
 
 // Create axios instance with base configuration
+// Increase timeout to 30s to avoid transient timeouts when backend is slow
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
   }

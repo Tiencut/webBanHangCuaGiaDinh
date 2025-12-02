@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product.ProductStatus;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.ProductService;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
-import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.CreateProductRequest;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.ProductDto;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product.ProductStatus;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.BusinessException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.exception.ResourceNotFoundException;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.ProductService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -46,6 +46,8 @@ import lombok.extern.slf4j.Slf4j;
 public class ProductController {
     
     private final ProductService productService;
+    private final com.giadinh.banphutung.web_ban_hang_gia_dinh.mapper.ProductMapper productMapper;
+
     
     // ===== CUSTOM ENDPOINTS (không có trong Spring Data REST) =====
     
@@ -156,6 +158,27 @@ public class ProductController {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> products = productService.searchProducts(term, pageable);
         return ResponseEntity.ok(products);
+    }
+
+    @Operation(summary = "Lấy sản phẩm (phân trang)", description = "Lấy danh sách sản phẩm với phân trang và tìm kiếm tùy chọn")
+    @GetMapping
+    public ResponseEntity<org.springframework.data.domain.Page<com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.ProductDto>> getProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long supplierId) {
+        log.info("GET /api/products - page={}, size={}, search={}", page, size, search);
+        Pageable pageable = PageRequest.of(page, size);
+        org.springframework.data.domain.Page<com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Product> products;
+        if (search != null && !search.isBlank()) {
+            products = productService.searchProducts(search, pageable);
+        } else {
+            products = productService.searchProducts("", pageable);
+        }
+
+        org.springframework.data.domain.Page<com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.ProductDto> dtoPage = products.map(productMapper::toDto);
+        return ResponseEntity.ok(dtoPage);
     }
     
     @Operation(summary = "Tạo sản phẩm mới", 

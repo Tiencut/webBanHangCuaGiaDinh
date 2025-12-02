@@ -122,6 +122,31 @@
 
       <!-- Actions -->
       <div class="flex items-center space-x-2">
+        <!-- Excel group: single button with hover/focus dropdown for Import/Export -->
+        <div v-if="showImport || showExport" class="relative group">
+          <button
+            class="px-3 py-1 bg-gray-100 rounded-md text-sm flex items-center gap-2 hover:bg-gray-200 focus:outline-none"
+            aria-haspopup="true"
+            aria-expanded="false"
+            title="Excel"
+          >
+            <svg class="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14" />
+            </svg>
+            <span class="text-sm font-medium">Excel</span>
+          </button>
+
+          <div
+            class="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transform scale-95 group-hover:scale-100 transition-all z-50"
+            role="menu"
+          >
+            <button v-if="showImport" @click.prevent="triggerImport" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm" role="menuitem">Import</button>
+            <button v-if="showExport" @click.prevent="exportData" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm" role="menuitem">Export</button>
+          </div>
+
+          <input ref="importInput" type="file" accept=".csv,.xls,.xlsx" class="hidden" @change="handleImportFile" />
+        </div>
+
         <button
           v-if="selectedRows.length > 0"
           @click="handleBulkAction"
@@ -133,16 +158,7 @@
           Thao tác ({{ selectedRows.length }})
         </button>
         
-        <button
-          v-if="showExport"
-          @click="exportData"
-          class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center"
-        >
-          <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          Xuất Excel
-        </button>
+        <!-- Export moved into Excel dropdown above -->
         
         <button
           @click="$emit('create')"
@@ -446,11 +462,22 @@
         </div>
       </div>
     </div>
+  
+  <ImportPreviewModal
+    v-model="showPreviewModal"
+    :expectedHeaders="expectedHeaders"
+    :parsedHeaders="parsedHeaders"
+    :previewRows="previewRows"
+    :maxRows="10"
+    @confirm="confirmImport"
+    @cancel="cancelImport"
+  />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import ImportPreviewModal from './excel/ImportPreviewModal.vue'
 
 // Props
 const props = defineProps({
@@ -490,6 +517,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  showImport: {
+    type: Boolean,
+    default: false
+  },
   pageSizeOptions: {
     type: Array,
     default: () => [10, 20, 50, 100]
@@ -514,7 +545,7 @@ const props = defineProps({
 
 // Emits
 const emit = defineEmits([
-  'create', 'edit', 'delete', 'bulkAction', 'export', 'rowClick', 'update:columnFilters'
+  'create', 'edit', 'delete', 'bulkAction', 'export', 'import', 'import-file', 'rowClick', 'update:columnFilters'
 ])
 
 // Reactive state
@@ -759,7 +790,115 @@ const handleRowClick = (item) => {
 }
 
 const exportData = () => {
+  // default behaviour: export CSV and notify parent
+  try {
+    exportCSV(filteredData.value)
+  } catch (e) {
+    console.error('Export failed', e)
+  }
   emit('export', filteredData.value)
+}
+
+// --- CSV Export / Import helpers ---
+const importInput = ref(null)
+
+// Import preview modal state
+const showPreviewModal = ref(false)
+const parsedHeaders = ref([])
+const previewRows = ref([])
+const expectedHeaders = computed(() => props.columns.map(c => c.label || c.key))
+
+const triggerImport = () => {
+  importInput.value?.click()
+}
+
+const handleImportFile = async (event) => {
+  const file = event.target.files && event.target.files[0]
+  if (!file) return
+  const name = file.name.toLowerCase()
+  // If CSV, parse locally and emit parsed rows
+  if (name.endsWith('.csv')) {
+    try {
+      const text = await file.text()
+      const { headers, rows } = parseCSV(text)
+      parsedHeaders.value = headers
+      previewRows.value = rows
+      // show preview modal for user confirmation/validation
+      showPreviewModal.value = true
+    } catch (err) {
+      console.error('Failed to parse CSV', err)
+      alert('Không thể đọc file CSV')
+    }
+  } else {
+    // For xlsx/xls, emit raw file so parent can upload or handle with sheetjs
+    emit('import-file', file)
+  }
+  // reset
+  event.target.value = ''
+}
+
+const parseCSV = (text) => {
+  const lines = text.split(/\r?\n/).filter(l => l.trim() !== '')
+  if (lines.length === 0) return { headers: [], rows: [] }
+  const rawHeaders = lines[0].split(',').map(h => h.trim())
+  const rows = []
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(',')
+    const obj = {}
+    for (let j = 0; j < rawHeaders.length; j++) {
+      obj[rawHeaders[j]] = (cols[j] || '').trim()
+    }
+    rows.push(obj)
+  }
+  return { headers: rawHeaders, rows }
+}
+
+const confirmImport = () => {
+  // emit the parsed rows to parent to continue import
+  emit('import', previewRows.value)
+  // clear preview state
+  previewRows.value = []
+  parsedHeaders.value = []
+  showPreviewModal.value = false
+}
+
+const cancelImport = () => {
+  previewRows.value = []
+  parsedHeaders.value = []
+  showPreviewModal.value = false
+}
+
+const exportCSV = (data) => {
+  if (!data || !Array.isArray(data)) return
+  // Use columns order and labels as headers
+  const headers = props.columns.map(c => c.label || c.key)
+  const keys = props.columns.map(c => c.key)
+  const escape = (val) => {
+    if (val == null) return ''
+    const s = String(val)
+    if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+      return '"' + s.replace(/"/g, '""') + '"'
+    }
+    return s
+  }
+  const rows = [headers.join(',')]
+  data.forEach(item => {
+    const vals = keys.map(k => {
+      const v = getColumnValue(item, k)
+      return escape(v)
+    })
+    rows.push(vals.join(','))
+  })
+  const csv = rows.join('\r\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `export_${new Date().toISOString().slice(0,10)}.csv`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
 }
 
 const clearDateFilter = () => {

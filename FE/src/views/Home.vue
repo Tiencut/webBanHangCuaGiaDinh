@@ -2,11 +2,8 @@
   <div class="w-full space-y-6">
     <!-- Quick Stats + Quick Actions (same row on md+) -->
     <div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-6">
-      <div class="w-full md:flex-1">
+      <div class="w-full">
         <QuickStats />
-      </div>
-      <div class="mt-4 md:mt-0 md:w-auto">
-        <QuickActions />
       </div>
     </div>
 

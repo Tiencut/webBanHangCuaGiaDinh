@@ -9,21 +9,22 @@
 
         <!-- Training Assistant -->
         <div class="flex items-center space-x-4">
-          <TrainingAssistant :selected-product="selectedProductForTraining" @search-suggestion="handleSearchSuggestion"
-            @help-request="handleHelpRequest" />
+            <TrainingAssistant :selected-product="selectedProductForTraining" @search-suggestion="handleSearchSuggestion"
+              @help-request="handleHelpRequest" />
+            <!-- (Excel control removed — using DataTable built-in Import/Export) -->
         </div>
       </div>
 
-      <!-- Column Visibility Controls -->
-      <ColumnVisibilityControls :visible-columns="visibleColumns" :all-columns="allColumns"
-        v-model:show-column-selector="showColumnSelector" @apply-column-visibility="applyColumnVisibility"
-        @reset-column-visibility="resetColumnVisibility" /> 
+      <!-- Column Visibility Controls (products-scoped inline version) -->
+      <ColumnVisibilityControls :all-columns="allColumns" @update:visibleColumns="onVisibleColumnsUpdate" />
+
+      <!-- Column Visibility Controls (products-scoped inline version) -->
 
       <!-- DataTable -->
       <DataTable :data="filteredProducts" :columns="visibleColumns" :loading="loading" :categories="categories"
-        :status-options="statusOptions" :show-export="true" :column-filters="columnFilters"
+        :status-options="statusOptions" :show-export="true" :show-import="true" :column-filters="columnFilters"
         @update:columnFilters="val => columnFilters = val" @create="handleCreate" @edit="handleEdit"
-        @delete="handleDelete" @bulk-action="handleBulkAction" @export="handleExport" @row-click="handleRowClick">
+        @delete="handleDelete" @bulk-action="handleBulkAction" @export="handleExport" @import="handleImportedRows" @import-file="handleImportedFile" @row-click="handleRowClick">
         <!-- Custom cell cho hình ảnh sản phẩm -->
         <template #cell-image="{ item }">
           <div class="flex items-center">
@@ -166,14 +167,15 @@
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useProductsStore } from '../stores/products'
 import { formatCurrency, debounce } from '../utils/helpers'
-import { productsAPI, inventoryAPI } from '@/services'
+import { productsAPI, inventoryAPI, categoriesAPI } from '@/services'
 import TrainingAssistant from '@/components/TrainingAssistant.vue'
 import DataTable from '@/components/DataTable.vue'
 import ProductStockDetailsModal from '@/components/products/ProductStockDetailsModal.vue'
 import ProductDetailModal from '@/components/products/ProductDetailModal.vue'
 import AddProductModal from '@/components/products/AddProductModal.vue'
 import ComboManagementModal from '@/components/products/ComboManagementModal.vue'
-import ColumnVisibilityControls from '@/components/ColumnVisibilityControls.vue'
+// Use the products-scoped ColumnVisibilityControls (inline controls)
+import ColumnVisibilityControls from '@/components/products/ColumnVisibilityControls.vue'
 import { removeVietnameseTones } from '../utils/removeVietnameseTones'
 
 
@@ -193,32 +195,29 @@ export default {
   // Reactive data
   const searchQuery = ref('')
   const selectedCategory = ref('')
+  
   const selectedSupplier = ref('')
   const products = ref([])
   const categories = ref([])
+    const fetchCategories = async () => {
+      try {
+        const res = await categoriesAPI.getAll()
+        // API may return array directly or under data.content
+        // categoriesAPI.getAll likely returns { data: [...] }
+        categories.value = res.data || []
+      } catch (err) {
+        console.error('Error fetching categories:', err)
+        categories.value = []
+      }
+    }
   const suppliers = ref([])
   const columnVisibility = ref({
+    // Minimal default: show only the most important/simple columns
     image: true,
-    brand: true,
-    model: true,
-    partNumber: true,
-    vehicleType: true,
-    'category.name': true,
-    'supplier.name': true,
-    basePrice: true,
     sellingPrice: true,
-    costPrice: true,
     stock: true,
     availableStock: true,
-    reservedStock: true,
-    minStockLevel: true,
-    reorderPoint: true,
-    supplierCount: true,
-    warrantyPeriod: true,
-    weight: true,
     status: true,
-    isCombo: true,
-    createdAt: true,
     actions: true
   })
   const tempColumnVisibility = ref({})
@@ -438,38 +437,34 @@ export default {
     }
 
     const resetColumnVisibility = () => {
+      // Reset to the minimal/simple default set
       columnVisibility.value = {
         image: true,
-        brand: true,
-        model: true,
-        partNumber: true,
-        vehicleType: true,
-        'category.name': true,
-        'supplier.name': true,
-        basePrice: true,
         sellingPrice: true,
-        costPrice: true,
         stock: true,
         availableStock: true,
-        reservedStock: true,
-        minStockLevel: true,
-        reorderPoint: true,
-        supplierCount: true,
-        warrantyPeriod: true,
-        weight: true,
         status: true,
-        isCombo: true,
-        createdAt: true,
         actions: true
       }
       saveColumnVisibility()
       showColumnSelector.value = false
     }
 
+    const onVisibleColumnsUpdate = (visibleCols) => {
+      // visibleCols is an array of column objects from the child component
+      const map = {}
+      columns.value.forEach(col => {
+        map[col.key] = !!visibleCols.find(vc => vc && vc.key === col.key)
+      })
+      columnVisibility.value = map
+      saveColumnVisibility()
+    }
+
     // Initialize on component mount
     onMounted(() => {
       initializeColumnVisibility()
       fetchProductsWithInventory()
+        fetchCategories()
       console.log('Products component mounted')
     })
 
@@ -586,7 +581,41 @@ export default {
 
     const handleExport = (data) => {
       console.log('Export products:', data)
-      // Logic to export data
+      // Parent-level export handling — DataTable also supports export if used there
+    }
+
+    const handleImportedRows = async (rows) => {
+      try {
+        console.log('Imported rows (parsed CSV):', rows)
+        alert(`Imported ${rows.length} rows (client parsed).`)
+        // Optionally: send rows to backend via productsAPI if an endpoint exists
+        if (productsAPI && typeof productsAPI.importRows === 'function') {
+          await productsAPI.importRows(rows)
+          alert('Server import successful')
+        }
+        await fetchProductsWithInventory()
+      } catch (err) {
+        console.error('handleImportedRows failed', err)
+        alert('Import failed: ' + (err?.message || err))
+      }
+    }
+
+    const handleImportedFile = async (file) => {
+      try {
+        if (productsAPI && typeof productsAPI.import === 'function') {
+          const form = new FormData()
+          form.append('file', file)
+          await productsAPI.import(form)
+          alert('Server import successful')
+          await fetchProductsWithInventory()
+        } else {
+          console.log('Imported file (parent should handle):', file)
+          alert('File received. Implement server upload in productsAPI.import to process it.')
+        }
+      } catch (err) {
+        console.error('handleImportedFile failed', err)
+        alert('Import failed: ' + (err?.message || err))
+      }
     }
 
     const duplicateProduct = (product) => {
@@ -650,12 +679,7 @@ export default {
       productStockModalRef.value?.open?.(product)
     }
 
-    // Lifecycle
-    onMounted(() => {
-      // Load data when component mounts
-      fetchProductsWithInventory()
-      console.log('Products component mounted')
-    })
+    // Lifecycle (initialization handled earlier)
 
     // modals now manage their own escape handling
     onUnmounted(() => {
@@ -731,6 +755,13 @@ export default {
       // Column filters
       columnFilters,
       filteredProducts
+      ,
+      // Import handlers from DataTable
+      handleImportedRows,
+      handleImportedFile
+      ,
+      // Column visibility callback from child
+      onVisibleColumnsUpdate
     }
   }
 }

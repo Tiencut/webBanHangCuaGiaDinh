@@ -26,7 +26,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, watch } from 'vue'
+import { defineProps, defineEmits, ref, watch, computed } from 'vue'
 import { ElDialog, ElCheckboxGroup, ElCheckbox, ElButton } from 'element-plus'
 
 const props = defineProps({
@@ -80,6 +80,14 @@ const resetColumnVisibility = () => {
   emit('reset-column-visibility')
   dialogVisible.value = false
 }
+
+// Add a simple filter/query and filteredColumns to match the products-scoped control
+const filterQuery = ref('')
+const filteredColumns = computed(() => {
+  const q = String(filterQuery.value || '').trim().toLowerCase()
+  if (!q) return props.allColumns
+  return props.allColumns.filter(c => (c.label || c.key).toLowerCase().includes(q))
+})
 </script>
 
 <style scoped>

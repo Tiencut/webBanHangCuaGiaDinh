@@ -2,8 +2,20 @@ import api from './api'
 
 // Products API Service
 const productsAPI = {
-  // Get all products
-  getAll: () => api.get('/products'),
+  // Get all products (with retry on transient failures)
+  getAll: async (attempts = 2) => {
+    const attempt = async (n) => {
+      try {
+        return await api.get('/products')
+      } catch (err) {
+        if (n <= 1) throw err
+        // simple backoff
+        await new Promise(res => setTimeout(res, 1000))
+        return attempt(n - 1)
+      }
+    }
+    return attempt(attempts)
+  },
 
   // Get product by ID
   getById: (id) => api.get(`/products/${id}`),
@@ -231,8 +243,19 @@ const categoriesAPI = {
   // Get category tree
   getTree: () => api.get('/categories/tree'),
 
-  // Get all categories
-  getAll: () => api.get('/categories'),
+  // Get all categories (with retry)
+  getAll: async (attempts = 2) => {
+    const attempt = async (n) => {
+      try {
+        return await api.get('/categories')
+      } catch (err) {
+        if (n <= 1) throw err
+        await new Promise(res => setTimeout(res, 1000))
+        return attempt(n - 1)
+      }
+    }
+    return attempt(attempts)
+  },
 
   // Get category by ID
   getById: (id) => api.get(`/categories/${id}`),

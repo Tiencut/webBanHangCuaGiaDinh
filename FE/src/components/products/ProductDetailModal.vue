@@ -16,9 +16,9 @@
             <div class="flex items-center space-x-4">
               <div class="h-20 w-20 rounded-lg bg-gray-200 flex items-center justify-center">
                 <img 
-                  v-if="selectedProductDetail.imageUrl" 
-                  :src="selectedProductDetail.imageUrl" 
-                  :alt="selectedProductDetail.name"
+                  v-if="selectedProduct && selectedProduct.imageUrl" 
+                  :src="selectedProduct.imageUrl" 
+                  :alt="selectedProduct.name"
                   class="h-20 w-20 rounded-lg object-cover"
                 />
                 <svg v-else class="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,7 +95,7 @@ const selectedProduct = ref(null);
 const activeTab = ref('info'); // Default active tab
 
 const getCategoryName = (categoryId) => {
-  const category = props.categories?.find(cat => cat.id === categoryId) || [];
+  const category = props.categories?.find(cat => cat.id === categoryId) || null;
   return category ? category.name : 'N/A';
 };
 
@@ -121,7 +121,4 @@ function handleEscClose(e) {
 
 defineExpose({ open, close });
 </script>
-
-                  v-if="selectedProduct.imageUrl" 
-                  :src="selectedProduct.imageUrl" 
-                  :alt="selectedProduct.name"
+ 

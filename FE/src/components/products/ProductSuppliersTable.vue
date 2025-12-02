@@ -26,7 +26,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { formatCurrency } from '@/utils/helpers'
 import api from '@/services/api'
 
