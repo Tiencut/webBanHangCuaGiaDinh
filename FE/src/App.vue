@@ -1,59 +1,7 @@
 <template>
   <div id="app" class="min-h-screen bg-gray-50">
-    <!-- Top Navigation Bar (Horizontal) -->
-    <div class="bg-white shadow-lg border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
-      <div class="w-full px-2 sm:px-4">
-        <div class="flex items-center justify-between h-16">
-          <!-- Logo -->
-          <div class="flex items-center">
-            <div class="h-8 w-8 bg-[#0070F4] rounded-lg flex items-center justify-center mr-3">
-              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M13 6H4a2 2 0 00-2 2v6a2 2 0 002 2h1m8-10V4a2 2 0 00-2-2H4m7 4v10m0 0h6a2 2 0 002-2v-6a2 2 0 00-2-2h-6z" />
-              </svg>
-            </div>
-            <span class="font-bold text-lg text-gray-900">AutoParts</span>
-          </div>
-
-          <NavigationMenu />
-
-          <!-- Right Actions -->
-          <div class="flex items-center space-x-4">
-            <!-- Mobile Menu Button -->
-            <button @click="sidebarOpen = !sidebarOpen"
-              class="md:hidden p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#0070F4]">
-              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-
-            <!-- Quick Actions -->
-            <button
-              class="p-2 text-gray-500 hover:text-gray-600 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0070F4]">
-              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
-
-            <!-- User Menu -->
-            <div class="relative">
-              <button
-                class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0070F4] rounded-lg p-2">
-                <div class="h-8 w-8 bg-[#0070F4] rounded-full flex items-center justify-center">
-                  <span class="text-white text-sm font-medium">A</span>
-                </div>
-                <span class="hidden lg:block text-sm font-medium">Admin</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-
-      </div>
-    </div>
+    <!-- Top Navigation Bar (component) -->
+    <AppHeader />
     <!-- Main Content Area -->
     <div class="pt-16">
       <div class="w-full px-2 sm:px-4 py-4">
@@ -65,20 +13,20 @@
     <!-- Backdrop for Mobile Menu -->
     <div v-if="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden">
     </div>
+    
+    <!-- Global Components -->
+    <Toast />
+    <ConfirmDialog 
+      :show="showConfirmDialog"
+      :title="confirmDialog.title"
+      :message="confirmDialog.message"
+      :type="confirmDialog.type"
+      :confirm-text="confirmDialog.confirmText"
+      :cancel-text="confirmDialog.cancelText"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
+    />
   </div>
-  
-  <!-- Global Components -->
-  <Toast />
-  <ConfirmDialog 
-    :show="showConfirmDialog"
-    :title="confirmDialog.title"
-    :message="confirmDialog.message"
-    :type="confirmDialog.type"
-    :confirm-text="confirmDialog.confirmText"
-    :cancel-text="confirmDialog.cancelText"
-    @confirm="handleConfirm"
-    @cancel="handleCancel"
-  />
 </template>
 
 <script>
@@ -86,6 +34,7 @@ import { ref, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import Toast from '@/components/Toast.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import AppHeader from '@/components/layout/AppHeader.vue'
 import MobileMenu from './components/layout/MobileMenu.vue'
 import NavigationMenu from './components/layout/NavigationMenu.vue'
 
@@ -95,7 +44,8 @@ export default {
     Toast,
     ConfirmDialog,
     MobileMenu,
-    NavigationMenu
+    NavigationMenu,
+    AppHeader
   },
   setup() {
     const route = useRoute()

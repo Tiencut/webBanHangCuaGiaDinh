@@ -1,4 +1,5 @@
 <template>
+  <div>
   <nav class="hidden md:flex items-center space-x-6 flex-1">
     <!-- Dashboard -->
     <router-link to="/"
@@ -40,51 +41,21 @@
             </svg>
           </template>
         </DropdownItem>
+          <DropdownItem to="/vehicles" title="Loại xe" route-name="Vehicles">
+            <template #icon>
+              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 6H4a2 2 0 00-2 2v6a2 2 0 002 2h1m8-10V4a2 2 0 00-2-2H4m7 4v10m0 0h6a2 2 0 002-2v-6a2 2 0 00-2-2h-6z" />
+              </svg>
+            </template>
+          </DropdownItem>
         <!-- Categories Link -->
         <DropdownItem to="/categories" title="Quản lý danh mục" route-name="Categories">
           <template #icon>
             <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-            </svg>
-          </template>
-        </DropdownItem>
-      </template>
-    </DropdownMenu>
-
-
-
-    <!-- Purchase/Import Dropdown -->
-    <DropdownMenu 
-      title="Nhập hàng" 
-      :active-routes="['Suppliers', 'PurchaseOrder', 'PurchaseReturns']">
-      <template #icon>
-        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-        </svg>
-      </template>
-      <template #items>
-        <DropdownItem to="/suppliers" title="Nhà cung cấp" route-name="Suppliers">
-          <template #icon>
-            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-          </template>
-        </DropdownItem>
-        <DropdownItem to="/purchase-order" title="Nhập hàng" route-name="PurchaseOrder">
-          <template #icon>
-            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M16 11V7a4 4 0 00-8 0v4M8 11v6a2 2 0 002 2h4a2 2 0 002-2v-6M8 11h8" />
-            </svg>
-          </template>
-        </DropdownItem>
-        <DropdownItem to="/purchase-returns" title="Trả hàng nhập" route-name="PurchaseReturns">
-          <template #icon>
-            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z" />
             </svg>
           </template>
         </DropdownItem>
@@ -106,6 +77,14 @@
           <template #icon>
             <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </template>
+        </DropdownItem>
+        <DropdownItem to="/inventory-check" title="Kiểm kho" route-name="InventoryCheck">
+          <template #icon>
+            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2H9m0 0V3a2 2 0 012-2h2a2 2 0 012 2v2" />
             </svg>
           </template>
         </DropdownItem>
@@ -137,67 +116,40 @@
       </template>
     </DropdownMenu>
 
-    <!-- Regular Menu Items -->
-    <router-link to="/customers"
-      class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-      :class="$route.name === 'Customers' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
-      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-      </svg>
-      Khách hàng
-    </router-link>
+    <!-- Customers Dropdown (contains Khách hàng and Quản lý nợ) -->
+    <DropdownMenu title="Khách hàng" :active-routes="['Customers','Debts']">
+      <template #icon>
+        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1z" />
+        </svg>
+      </template>
+      <template #items>
+        <DropdownItem to="/customers" title="Danh sách khách hàng" route-name="Customers">
+          <template #icon>
+            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1z" />
+            </svg>
+          </template>
+        </DropdownItem>
+        <DropdownItem to="/debts" title="Quản lý nợ" route-name="Debts">
+          <template #icon>
+            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10" />
+            </svg>
+          </template>
+        </DropdownItem>
+      </template>
+    </DropdownMenu>
 
-    <router-link to="/vehicles"
+    <!-- Regular Menu Items (rendered from data to reduce repetition) -->
+    <router-link v-for="item in regularLinks" :key="item.to" :to="item.to"
       class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-      :class="$route.name === 'Vehicles' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
-      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M13 6H4a2 2 0 00-2 2v6a2 2 0 002 2h1m8-10V4a2 2 0 00-2-2H4m7 4v10m0 0h6a2 2 0 002-2v-6a2 2 0 00-2-2h-6z" />
-      </svg>
-      Loại xe
-    </router-link>
-
-    <router-link to="/debts"
-      class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-      :class="$route.name === 'Debts' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
-      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-      Quản lý nợ
-    </router-link>
-
-    <router-link to="/inventory-check"
-      class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-      :class="$route.name === 'InventoryCheck' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
-      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2H9m0 0V3a2 2 0 012-2h2a2 2 0 012 2v2M9 5a2 2 0 012 2v2a2 2 0 01-2 2m6 0a2 2 0 002-2V7a2 2 0 00-2-2M9 5a2 2 0 012 2v2a2 2 0 01-2 2m6 0a2 2 0 002-2V7a2 2 0 00-2-2" />
-      </svg>
-      Kiểm kho
-    </router-link>
-
-    <router-link to="/import"
-      class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-      :class="$route.name === 'ImportData' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
-      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-      </svg>
-      Import
-    </router-link>
-
-    <router-link to="/notes"
-      class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-      :class="$route.name === 'Notes' ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
-      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M12 20h9M12 4h9M3 9h18M3 15h18" />
-      </svg>
-      Ghi chú
+      :class="route.name === item.routeName ? 'bg-[#0070F4] text-white' : 'text-gray-700 hover:bg-gray-100'">
+      <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" v-html="item.svgInner"></svg>
+      {{ item.title }}
     </router-link>
 
     <!-- Sales (Bán hàng) - Positioned at the far right -->
@@ -214,6 +166,7 @@
     </div>
   </nav>
   <MobileMenu :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
+  </div>
 </template>
 
 <script>
@@ -237,6 +190,27 @@ export default {
     const isOrdersDropdownOpen = ref(false)
     const isPurchaseDropdownOpen = ref(false)
     const sidebarOpen = ref(false)
+
+    const regularLinks = [
+      {
+        to: '/import',
+        routeName: 'ImportData',
+        title: 'Import',
+        svgInner: `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+        `
+      },
+      {
+        to: '/notes',
+        routeName: 'Notes',
+        title: 'Ghi chú',
+        svgInner: `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 20h9M12 4h9M3 9h18M3 15h18" />
+        `
+      }
+    ]
 
     // Mounted logic
     onMounted(() => {
@@ -266,7 +240,8 @@ export default {
       isProductsDropdownOpen,
       isOrdersDropdownOpen,
       isPurchaseDropdownOpen,
-      sidebarOpen
+      sidebarOpen,
+      regularLinks
     }
   }
 }

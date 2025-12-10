@@ -4,6 +4,9 @@ import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.OrderDto;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.OrderStatsResponse;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.entity.Order;
 import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.OrderService;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.service.AllocationService;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.AllocationResponseDto;
+import com.giadinh.banphutung.web_ban_hang_gia_dinh.dto.AllocationConfirmRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
+    private final AllocationService allocationService;
 
     @GetMapping
     @Operation(summary = "Get all orders", description = "Retrieve a list of all orders")
@@ -120,10 +124,28 @@ public class OrderController {
 
     @PutMapping("/{id}/confirm")
     @Operation(summary = "Confirm order", description = "Confirm a pending order")
-    public ResponseEntity<OrderDto> confirmOrder(@PathVariable Long id) {
+    public ResponseEntity<OrderDto> confirmOrder(@PathVariable Long id, @RequestBody(required = false) AllocationConfirmRequest allocationRequest) {
         log.info("PUT /api/orders/{}/confirm - Confirming order", id);
+        // If allocation payload provided, commit allocation first
+        if (allocationRequest != null && allocationRequest.getAllocations() != null) {
+            try {
+                allocationService.commitAllocation(id, allocationRequest.getAllocations());
+            } catch (Exception ex) {
+                log.error("Allocation commit failed for order {}: {}", id, ex.getMessage());
+                return ResponseEntity.status(409).build();
+            }
+        }
+
         OrderDto order = orderService.confirmOrder(id);
         return ResponseEntity.ok(order);
+    }
+
+    @PostMapping("/{id}/allocate")
+    @Operation(summary = "Allocate order", description = "Get allocation suggestions for an order")
+    public ResponseEntity<AllocationResponseDto> allocateOrder(@PathVariable Long id) {
+        log.info("POST /api/orders/{}/allocate - Allocating order suggestion", id);
+        AllocationResponseDto resp = allocationService.allocate(id);
+        return ResponseEntity.ok(resp);
     }
 
     @PutMapping("/{id}/ship")

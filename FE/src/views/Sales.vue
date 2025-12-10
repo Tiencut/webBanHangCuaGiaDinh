@@ -142,32 +142,6 @@
               Công nợ hiện tại: ₫{{ formatCurrency(customerDebt) }}
             </div>
           </div>
-    // Lịch sử mua hàng và công nợ khách hàng
-    const customerHistory = ref([])
-    const customerDebt = ref(null)
-
-    // Hàm lấy lịch sử mua hàng và công nợ
-    const fetchCustomerHistory = async () => {
-      if (!selectedCustomer.value || !selectedCustomer.value.id) {
-        customerHistory.value = []
-        customerDebt.value = null
-        return
-      }
-      try {
-        // Giả sử có API customersApi.getHistory và customersApi.getDebt
-        const [ordersRes, debtRes] = await Promise.all([
-          customersApi.getHistory(selectedCustomer.value.id, 0, 5),
-          customersApi.getDebt(selectedCustomer.value.id)
-        ])
-        customerHistory.value = ordersRes.data.content || ordersRes.data || []
-        customerDebt.value = debtRes.data?.debt ?? 0
-      } catch (e) {
-        customerHistory.value = []
-        customerDebt.value = null
-        console.error('Lỗi khi lấy lịch sử mua hàng/công nợ:', e)
-      }
-    }
-
           <!-- Cart Items -->
           <div class="space-y-3 mb-6 max-h-60 overflow-y-auto">
             <div v-if="cartItems.length === 0" class="text-center text-gray-500 py-8">
@@ -551,6 +525,30 @@ export default {
     // Format currency
     const formatCurrency = (value) => {
       return new Intl.NumberFormat('vi-VN').format(value)
+    }
+    // Lịch sử mua hàng và công nợ khách hàng
+    const customerHistory = ref([])
+    const customerDebt = ref(null)
+
+    // Hàm lấy lịch sử mua hàng và công nợ
+    const fetchCustomerHistory = async () => {
+      if (!selectedCustomer.value || !selectedCustomer.value.id) {
+        customerHistory.value = []
+        customerDebt.value = null
+        return
+      }
+      try {
+        const [ordersRes, debtRes] = await Promise.all([
+          customersApi.getHistory(selectedCustomer.value.id, 0, 5),
+          customersApi.getDebt(selectedCustomer.value.id)
+        ])
+        customerHistory.value = ordersRes.data.content || ordersRes.data || []
+        customerDebt.value = debtRes.data?.debt ?? 0
+      } catch (e) {
+        customerHistory.value = []
+        customerDebt.value = null
+        console.error('Lỗi khi lấy lịch sử mua hàng/công nợ:', e)
+      }
     }
 
     onMounted(() => {

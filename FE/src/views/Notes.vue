@@ -91,26 +91,65 @@ export default {
     }
 
     const createNote = async () => {
-      if (!form.value.title) return
-      const payload = { userId: auth.user.id, title: form.value.title, content: form.value.content }
-      await notesApi.create(payload)
-      form.value = { title: '', content: '' }
-      fetchNotes()
+      // ensure user is loaded
+      try {
+        await auth.getCurrentUser()
+      } catch (e) {
+        console.error('Failed to load current user', e)
+      }
+      if (!auth.user?.id) {
+        alert('Vui lòng đăng nhập trước khi tạo ghi chú.')
+        return
+      }
+
+      const title = (form.value.title || '').trim()
+      if (!title) {
+        alert('Tiêu đề không được để trống.')
+        return
+      }
+
+      const payload = { userId: auth.user.id, title, content: (form.value.content || '').trim() }
+      try {
+        await notesApi.create(payload)
+        form.value = { title: '', content: '' }
+        await fetchNotes()
+      } catch (err) {
+        console.error('Tạo ghi chú thất bại', err)
+        alert('Tạo ghi chú thất bại. Vui lòng thử lại.')
+      }
     }
 
     const saveNote = async (note) => {
-      const payload = { title: note.title, content: note.content, completed: note.completed, dueDate: note.dueDate }
-      await notesApi.update(note.id, payload)
+      try {
+        const payload = { title: note.title, content: note.content, completed: note.completed, dueDate: note.dueDate }
+        if (!note?.id) {
+          console.warn('saveNote called without id', note)
+          return
+        }
+        await notesApi.update(note.id, payload)
+      } catch (err) {
+        console.error('Lưu ghi chú thất bại', err)
+        alert('Lưu ghi chú thất bại. Vui lòng thử lại.')
+      }
     }
 
     const toggleCompleted = async (note) => {
-      note.completed = !note.completed
-      await saveNote(note)
+      try {
+        note.completed = !note.completed
+        await saveNote(note)
+      } catch (err) {
+        console.error('Cập nhật trạng thái thất bại', err)
+      }
     }
 
     const removeNote = async (id) => {
-      await notesApi.delete(id)
-      fetchNotes()
+      try {
+        await notesApi.delete(id)
+        await fetchNotes()
+      } catch (err) {
+        console.error('Xóa ghi chú thất bại', err)
+        alert('Xóa ghi chú thất bại. Vui lòng thử lại.')
+      }
     }
 
     const formatDateInput = (dt) => {

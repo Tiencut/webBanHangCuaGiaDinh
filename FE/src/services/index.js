@@ -63,7 +63,15 @@ const productsAPI = {
   getInventory: (productId) => api.get(`/products/${productId}/inventory`),
 
   // Get product total stock
-  getTotalStock: (productId) => api.get(`/products/${productId}/total-stock`)
+  getTotalStock: (productId) => api.get(`/products/${productId}/total-stock`),
+
+  // Import products via file upload (multipart/form-data)
+  // Accepts a FormData instance with a `file` field (Excel/CSV)
+  import: (formData, config = {}) => api.post('/import/excel', formData, Object.assign({
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }, config))
 }
 
 // Product Bundle API Service
@@ -165,6 +173,11 @@ const ordersAPI = {
 
   // Get orders by status
   getByStatus: (status) => api.get(`/orders/status/${status}`)
+  ,
+  // Get allocation suggestion for an order
+  allocate: (orderId) => api.post(`/orders/${orderId}/allocate`),
+  // Confirm order with optional allocation payload
+  confirm: (orderId, allocationPayload) => api.put(`/orders/${orderId}/confirm`, allocationPayload)
 }
 
 // Vehicles API Service

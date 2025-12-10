@@ -129,7 +129,19 @@
               </thead>
               <tbody>
                 <tr v-for="item in selectedOrder.orderDetails" :key="item.id">
-                  <td>{{ item.productName }}</td>
+                  <td>
+                    <div>{{ item.productName }}</div>
+                    <div v-if="selectedOrder._allocations">
+                      <div v-for="allocItem in (selectedOrder._allocations || [])" :key="allocItem.orderItemId">
+                        <template v-if="allocItem.orderItemId === item.id">
+                          <div v-for="a in allocItem.allocations" :key="a.inventoryId">
+                            <span class="chip">Lấy từ: {{ a.supplierName }} ({{ a.suggestedQuantity }})</span>
+                          </div>
+                          <button @click.prevent="openSupplierPicker(item)" class="btn-link">Chọn khác</button>
+                        </template>
+                      </div>
+                    </div>
+                  </td>
                   <td>{{ item.quantity }}</td>
                   <td>{{ formatCurrency(item.unitPrice) }}</td>
                   <td>{{ formatCurrency(item.quantity * item.unitPrice) }}</td>
@@ -179,6 +191,9 @@ export default {
       this.loadOrders(),
       this.loadCustomers()
     ])
+  },
+  components: {
+    SupplierPicker: () => import('@/components/SupplierPicker.vue')
   },
   methods: {
     async loadOrders() {
@@ -268,9 +283,18 @@ export default {
         this.currentPage++
       }
     },
-    viewOrder(order) {
+    async viewOrder(order) {
       this.selectedOrder = order
       this.showViewModal = true
+      // request allocation suggestion
+      try {
+        const res = await fetch(`/api/orders/${order.id}/allocate`, { method: 'POST' })
+        const body = await res.json()
+        this.selectedOrder._allocations = body.allocations || []
+      } catch (e) {
+        console.error('Failed to fetch allocation suggestion', e)
+        this.selectedOrder._allocations = []
+      }
     },
     editOrder(order) {
       this.formData = {
