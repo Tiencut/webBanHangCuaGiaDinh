@@ -117,6 +117,12 @@ const routes = [
     meta: { title: 'Bán hàng' }
   },
   {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('../views/Profile.vue'),
+    meta: { title: 'Hồ sơ cá nhân' }
+  },
+  {
     path: '/debts',
     name: 'Debts',
     component: () => import('../views/Debts.vue'),

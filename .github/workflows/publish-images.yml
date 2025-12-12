@@ -1,0 +1,30 @@
+name: Build and Publish Images
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend jar
+        run: |
+          cd web-ban-hang-gia-dinh
+          ./mvnw -B -DskipTests package
+      - name: Build images
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/backend:latest -f web-ban-hang-gia-dinh/Dockerfile web-ban-hang-gia-dinh
+          docker build -t ghcr.io/${{ github.repository }}/frontend:latest -f FE/Dockerfile FE
+      - name: Publish to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push images
+        run: |
+          docker push ghcr.io/${{ github.repository }}/backend:latest
+          docker push ghcr.io/${{ github.repository }}/frontend:latest

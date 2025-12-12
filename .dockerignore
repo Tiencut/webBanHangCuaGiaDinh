@@ -1,0 +1,10 @@
+target
+.mvn
+.git
+node_modules
+FE/node_modules
+logs
+*.log
+*.tmp
+dist
+/.env

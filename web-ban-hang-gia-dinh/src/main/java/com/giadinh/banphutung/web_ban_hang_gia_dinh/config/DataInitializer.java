@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,7 @@ public class DataInitializer {
     private CategoryRepository categoryRepository;
 
     @Bean
+    @ConditionalOnProperty(prefix = "app", name = "init-data", havingValue = "true", matchIfMissing = true)
     @Transactional
     CommandLineRunner initDatabase() {
         return args -> {
