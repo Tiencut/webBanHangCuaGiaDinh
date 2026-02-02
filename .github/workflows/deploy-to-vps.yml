@@ -28,7 +28,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Build and push images
         run: |
@@ -45,11 +45,47 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            set -e
-            cd "${{ secrets.REMOTE_COMPOSE_DIR }}"
+            set -euo pipefail
+            REMOTE_DIR="${{ secrets.REMOTE_COMPOSE_DIR }}"
+            mkdir -p "$REMOTE_DIR"
+            # write remote .env to enable Raptor mini (Preview) for all clients; default to true if secret not set
+            echo "ENABLE_RAPTOR_MINI=${{ secrets.ENABLE_RAPTOR_MINI || 'true' }}" > "$REMOTE_DIR/.env"
+            # create remote deploy script
+            cat > "$REMOTE_DIR/remote_deploy.sh" <<'EOF'
+            #!/usr/bin/env bash
+            set -euo pipefail
+            DIR="$(dirname "$0")"
+            cd "$DIR"
+            echo "Pulling images..."
             docker compose pull || true
+            echo "Starting containers..."
             docker compose up -d --remove-orphans
-            docker image prune -f
+            echo "Pruning images..."
+            docker image prune -f || true
+            echo "Waiting for health endpoint..."
+            HEALTH_URL=${HEALTH_URL:-http://localhost:8080/actuator/health}
+            MAX_WAIT=${MAX_WAIT:-120}
+            SLEEP_INTERVAL=${SLEEP_INTERVAL:-5}
+            elapsed=0
+            while [ $elapsed -lt $MAX_WAIT ]; do
+              if curl -fsS "$HEALTH_URL" >/dev/null 2>&1; then
+                echo "Health check passed"
+                exit 0
+              fi
+              sleep $SLEEP_INTERVAL
+              elapsed=$((elapsed + SLEEP_INTERVAL))
+            done
+            echo "Health check failed after ${MAX_WAIT}s" >&2
+            exit 2
+            EOF
+            # strip leading YAML indentation so script has a correct shebang at column 1
+            sed -i 's/^ \{12\}//' "$REMOTE_DIR/remote_deploy.sh"
+            chmod +x "$REMOTE_DIR/remote_deploy.sh"
+            # run remote deploy script (export HEALTH_URL if different)
+            HEALTH_URL="${{ secrets.DEPLOY_HEALTH_URL || 'http://localhost:8080/actuator/health' }}"
+            ssh_opts="-o StrictHostKeyChecking=no"
+            # Execute script
+            bash -lc "HEALTH_URL=$HEALTH_URL $REMOTE_DIR/remote_deploy.sh"
 
       - name: Done
         run: echo "Deployment finished"

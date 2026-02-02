@@ -32,6 +32,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
+    private final com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.InventoryRepository inventoryRepository;
     
     // Tạo product mới từ DTO
     public ProductDto createProduct(CreateProductRequest request) {
@@ -184,6 +185,11 @@ public class ProductService {
         
         product.setSellingPrice(newPrice);
         return productRepository.save(product);
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getStock(Long productId) {
+        return inventoryRepository.sumCurrentQuantityByProductId(productId);
     }
     
     // Cập nhật trạng thái sản phẩm

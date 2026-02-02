@@ -11,6 +11,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -30,15 +31,16 @@ public class SecurityConfig {
             .cors(withDefaults()) // Kích hoạt CORS với cấu hình mặc định (sẽ lấy từ bean bên dưới)
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/").permitAll()
-                .requestMatchers("/api/**").permitAll()
+                .requestMatchers("/", "/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/api-docs/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/error").permitAll()
-                .anyRequest().permitAll()
-            );
+                .anyRequest().authenticated()
+            )
+            .addFilterBefore(new com.giadinh.banphutung.web_ban_hang_gia_dinh.security.JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+            ;
         
         return http.build();
     }

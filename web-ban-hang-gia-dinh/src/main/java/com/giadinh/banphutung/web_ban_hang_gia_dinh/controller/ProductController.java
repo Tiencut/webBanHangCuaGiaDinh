@@ -2,6 +2,7 @@ package com.giadinh.banphutung.web_ban_hang_gia_dinh.controller;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -232,6 +233,18 @@ public class ProductController {
         } catch (Exception e) {
             log.error("Error updating product: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @Operation(summary = "Lấy tồn kho theo sản phẩm", description = "Trả về tổng số lượng tồn kho hiện có của sản phẩm")
+    @GetMapping("/{id}/stock")
+    public ResponseEntity<?> getProductStock(@PathVariable Long id) {
+        try {
+            Integer qty = productService.getStock(id);
+            return ResponseEntity.ok(Map.of("productId", id, "stock", qty != null ? qty : 0));
+        } catch (Exception e) {
+            log.error("Error fetching product stock: {}", e.getMessage());
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
 

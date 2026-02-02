@@ -1,0 +1,10 @@
+<h1>Đơn hàng {{orderId}} đã được nhận</h1>
+<p>Xin chào {{customerName}},</p>
+<p>Chúng tôi đã nhận được đơn hàng #{{orderId}} với tổng tiền {{total}}.</p>
+<p>Chi tiết:</p>
+<ul>
+{{#each items}}
+  <li>{{name}} x{{quantity}} - {{price}}</li>
+{{/each}}
+</ul>
+<p>Cảm ơn bạn đã mua sắm!</p>

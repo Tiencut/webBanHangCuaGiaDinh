@@ -47,6 +47,15 @@ public class UserService {
         return userMapper.toDto(user);
     }
 
+    /**
+     * Internal helper: return the User entity (not DTO) by id when needed by other services.
+     * Returns Optional.empty() if not found or not active.
+     */
+    public Optional<User> getUserEntityById(Long id) {
+        log.debug("Fetching user entity by id: {}", id);
+        return userRepository.findByIdAndIsActiveTrue(id);
+    }
+
     public UserDto getUserByUsername(String username) {
         log.info("Fetching user by username: {}", username);
         User user = userRepository.findByUsernameAndIsActiveTrue(username)

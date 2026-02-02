@@ -23,7 +23,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+// import java.util.Optional; // not used
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -31,10 +34,19 @@ import java.util.Optional;
 @Transactional
 public class OrderService {
 
+    private static int safeInt(Integer v) {
+        return v == null ? 0 : v;
+    }
+
     private final OrderRepository orderRepository;
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
     private final OrderMapper orderMapper;
+    private final com.giadinh.banphutung.web_ban_hang_gia_dinh.repository.InventoryRepository inventoryRepository;
+    private final com.giadinh.banphutung.web_ban_hang_gia_dinh.service.NotificationClient notificationClient;
+
+    @org.springframework.beans.factory.annotation.Value("${notifications.admin.email:admin@example.com}")
+    private String notificationsAdminEmail;
 
     public List<OrderDto> getAllOrders() {
         log.info("Fetching all orders");
@@ -90,6 +102,72 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
         log.info("Order created successfully with id: {}", savedOrder.getId());
+
+        // send order confirmation notification (enqueue)
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("orderId", savedOrder.getId());
+            payload.put("customerName", customer.getName());
+            payload.put("to", customer.getEmail());
+            payload.put("total", savedOrder.getTotalAmount());
+            List<Map<String, Object>> items = new ArrayList<>();
+            if (savedOrder.getOrderDetails() != null) {
+                for (OrderDetail od : savedOrder.getOrderDetails()) {
+                    Map<String, Object> it = new HashMap<>();
+                    it.put("name", od.getProduct() != null ? od.getProduct().getName() : "#" + (od.getProduct() != null ? od.getProduct().getId() : ""));
+                    it.put("quantity", od.getQuantity());
+                    it.put("price", od.getUnitPrice());
+                    items.add(it);
+                }
+            }
+            payload.put("items", items);
+            // enqueue job (best-effort)
+            notificationClient.enqueue("order-confirmation", payload);
+        } catch (Exception ex) {
+            log.warn("Failed to enqueue order confirmation notification: {}", ex.getMessage());
+        }
+
+        // Allocate inventory (pessimistic lock) for each order detail
+        if (savedOrder.getOrderDetails() != null) {
+            for (OrderDetail od : savedOrder.getOrderDetails()) {
+                Long productId = od.getProduct() != null ? od.getProduct().getId() : null;
+                Long supplierId = od.getSupplier() != null ? od.getSupplier().getId() : null;
+                if (productId == null || supplierId == null) continue;
+                var invOpt = inventoryRepository.findByProductIdAndSupplierIdForUpdate(productId, supplierId);
+                if (invOpt.isEmpty()) {
+                    throw new BusinessException("Inventory not found for product " + productId + " supplier " + supplierId);
+                }
+                var inv = invOpt.get();
+                Integer currentQty = inv.getCurrentQuantity();
+                if (currentQty == null) currentQty = 0;
+                int reqQty = safeInt(od.getQuantity());
+                if (currentQty < reqQty) {
+                    throw new BusinessException("Insufficient stock for product " + productId);
+                }
+                inv.setCurrentQuantity(currentQty - reqQty);
+                Integer committed = inv.getCommittedQuantity();
+                if (committed == null) committed = 0;
+                inv.setCommittedQuantity(committed + reqQty);
+                inventoryRepository.save(inv);
+                // recording inventory transaction left as TODO (inventoryTransactionService)
+                // if remaining inventory is low, notify admin/supplier
+                try {
+                    Integer remaining = inv.getCurrentQuantity();
+                    if (remaining == null) remaining = 0;
+                    int threshold = 5; // simple threshold
+                    if (remaining <= threshold) {
+                        Map<String, Object> p = new HashMap<>();
+                        p.put("productName", od.getProduct() != null ? od.getProduct().getName() : "product-" + productId);
+                        p.put("remaining", remaining);
+                        p.put("to", notificationsAdminEmail);
+                        notificationClient.enqueue("stock-low", p);
+                    }
+                } catch (Exception ex) {
+                    log.warn("Failed to enqueue stock-low notification: {}", ex.getMessage());
+                }
+            }
+        }
+
         return orderMapper.toDto(savedOrder);
     }
 
@@ -166,6 +244,17 @@ public class OrderService {
         order.setConfirmedAt(LocalDateTime.now());
         Order updatedOrder = orderRepository.save(order);
         log.info("Order confirmed successfully with id: {}", updatedOrder.getId());
+
+        // enqueue lifecycle notification
+        try {
+            Map<String, Object> p = new HashMap<>();
+            p.put("orderId", updatedOrder.getId());
+            p.put("to", updatedOrder.getCustomer() != null ? updatedOrder.getCustomer().getEmail() : null);
+            p.put("customerName", updatedOrder.getCustomer() != null ? updatedOrder.getCustomer().getName() : null);
+            notificationClient.enqueue("order-confirmed", p);
+        } catch (Exception ex) {
+            log.warn("Failed to enqueue order-confirmed notification: {}", ex.getMessage());
+        }
         return orderMapper.toDto(updatedOrder);
     }
 
@@ -182,6 +271,16 @@ public class OrderService {
         order.setShippedDate(LocalDateTime.now());
         Order updatedOrder = orderRepository.save(order);
         log.info("Order shipped successfully with id: {}", updatedOrder.getId());
+
+        try {
+            Map<String, Object> p = new HashMap<>();
+            p.put("orderId", updatedOrder.getId());
+            p.put("to", updatedOrder.getCustomer() != null ? updatedOrder.getCustomer().getEmail() : null);
+            p.put("customerName", updatedOrder.getCustomer() != null ? updatedOrder.getCustomer().getName() : null);
+            notificationClient.enqueue("order-shipped", p);
+        } catch (Exception ex) {
+            log.warn("Failed to enqueue order-shipped notification: {}", ex.getMessage());
+        }
         return orderMapper.toDto(updatedOrder);
     }
 
@@ -198,6 +297,16 @@ public class OrderService {
         order.setDeliveredAt(LocalDateTime.now());
         Order updatedOrder = orderRepository.save(order);
         log.info("Order delivered successfully with id: {}", updatedOrder.getId());
+
+        try {
+            Map<String, Object> p = new HashMap<>();
+            p.put("orderId", updatedOrder.getId());
+            p.put("to", updatedOrder.getCustomer() != null ? updatedOrder.getCustomer().getEmail() : null);
+            p.put("customerName", updatedOrder.getCustomer() != null ? updatedOrder.getCustomer().getName() : null);
+            notificationClient.enqueue("order-delivered", p);
+        } catch (Exception ex) {
+            log.warn("Failed to enqueue order-delivered notification: {}", ex.getMessage());
+        }
         return orderMapper.toDto(updatedOrder);
     }
 
@@ -214,8 +323,100 @@ public class OrderService {
         order.setCancelReason(reason);
         order.setCancelledAt(LocalDateTime.now());
         Order updatedOrder = orderRepository.save(order);
+        // restore inventory for each detail
+        if (updatedOrder.getOrderDetails() != null) {
+            for (OrderDetail od : updatedOrder.getOrderDetails()) {
+                Long productId = od.getProduct() != null ? od.getProduct().getId() : null;
+                Long supplierId = od.getSupplier() != null ? od.getSupplier().getId() : null;
+                if (productId == null || supplierId == null) continue;
+                var invOpt = inventoryRepository.findByProductIdAndSupplierId(productId, supplierId);
+                if (invOpt.isPresent()) {
+                    var inv = invOpt.get();
+                    Integer cur = inv.getCurrentQuantity();
+                    if (cur == null) cur = 0;
+                    int q = safeInt(od.getQuantity());
+                    inv.setCurrentQuantity(cur + q);
+                    Integer committed = inv.getCommittedQuantity();
+                    if (committed == null) committed = 0;
+                    inv.setCommittedQuantity(committed - q);
+                    inventoryRepository.save(inv);
+                }
+            }
+        }
         log.info("Order cancelled successfully with id: {}", updatedOrder.getId());
         return orderMapper.toDto(updatedOrder);
+    }
+
+    // Payment webhook helpers
+    public void applyPaymentSuccess(Long orderId, String provider, String providerTxnId) {
+        log.info("Applying payment success for order {} via {}", orderId, provider);
+        var opt = orderRepository.findByIdAndIsDeletedFalse(orderId);
+        if (opt.isEmpty()) {
+            log.warn("Order not found for payment success: {}", orderId);
+            return;
+        }
+        var order = opt.get();
+        order.setPaymentStatus(Order.PaymentStatus.PAID);
+        order.setStatus(Order.OrderStatus.CONFIRMED);
+        Order saved = orderRepository.save(order);
+
+        // enqueue order confirmation notification (best-effort)
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("orderId", saved.getId());
+            payload.put("customerName", saved.getCustomer() != null ? saved.getCustomer().getName() : "");
+            payload.put("to", saved.getCustomer() != null ? saved.getCustomer().getEmail() : null);
+            payload.put("total", saved.getTotalAmount());
+            payload.put("provider", provider);
+            payload.put("providerTxnId", providerTxnId);
+            List<Map<String, Object>> items = new ArrayList<>();
+            if (saved.getOrderDetails() != null) {
+                for (OrderDetail od : saved.getOrderDetails()) {
+                    Map<String, Object> it = new HashMap<>();
+                    it.put("name", od.getProduct() != null ? od.getProduct().getName() : "");
+                    it.put("quantity", od.getQuantity());
+                    it.put("price", od.getUnitPrice());
+                    items.add(it);
+                }
+            }
+            payload.put("items", items);
+            notificationClient.enqueue("order-confirmation", payload);
+
+            // also enqueue SMS if customer phone exists
+            try {
+                if (saved.getCustomer() != null && saved.getCustomer().getPhone() != null) {
+                    Map<String, Object> sms = new HashMap<>();
+                    sms.put("phone", saved.getCustomer().getPhone());
+                    sms.put("text", "Don hang #" + saved.getId() + " da duoc thanh toan. Cam on!");
+                    notificationClient.enqueue("sms", sms);
+                }
+            } catch (Exception ex) {
+                log.warn("Failed to enqueue sms notification: {}", ex.getMessage());
+            }
+        } catch (Exception ex) {
+            log.warn("Failed to enqueue order confirmation notification: {}", ex.getMessage());
+        }
+    }
+
+    public void applyPaymentFailure(Long orderId, String provider, String providerTxnId) {
+        log.info("Applying payment failure for order {} via {}", orderId, provider);
+        var opt = orderRepository.findByIdAndIsDeletedFalse(orderId);
+        if (opt.isEmpty()) return;
+        var order = opt.get();
+        order.setPaymentStatus(Order.PaymentStatus.PENDING);
+        Order saved = orderRepository.save(order);
+
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("orderId", saved.getId());
+            payload.put("to", saved.getCustomer() != null ? saved.getCustomer().getEmail() : null);
+            payload.put("customerName", saved.getCustomer() != null ? saved.getCustomer().getName() : null);
+            payload.put("provider", provider);
+            payload.put("providerTxnId", providerTxnId);
+            notificationClient.enqueue("payment-failure", payload);
+        } catch (Exception ex) {
+            log.warn("Failed to enqueue payment-failure notification: {}", ex.getMessage());
+        }
     }
 
     public OrderStatsResponse getOrderStats() {

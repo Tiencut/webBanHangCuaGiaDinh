@@ -6,38 +6,57 @@ const API_BASE_URL = 'http://localhost:8080/api'
 // Create axios instance with base configuration
 // Increase timeout to 30s to avoid transient timeouts when backend is slow
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+    baseURL: API_BASE_URL,
+    timeout: 30000,
+    headers: {
+        'Content-Type': 'application/json'
+    }
 })
 
 // Request interceptor for adding auth token
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('auth_token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+    (config) => {
+        const token = localStorage.getItem('auth_token')
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`
+        }
+        return config
+    },
+    (error) => {
+        return Promise.reject(error)
     }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
 )
 
 // Response interceptor for handling common errors
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized - redirect to login
-      localStorage.removeItem('auth_token')
-      window.location.href = '/login'
+    (response) => response,
+    async(error) => {
+        const originalRequest = error.config
+        if (error.response ? .status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true
+            const refreshToken = localStorage.getItem('refresh_token')
+            if (refreshToken) {
+                try {
+                    const resp = await axios.post(`${API_BASE_URL}/auth/refresh-token`, null, { params: { refreshToken } })
+                    const newToken = resp.data ? .token
+                    const newRefresh = resp.data ? .refreshToken
+                    if (newToken) {
+                        localStorage.setItem('auth_token', newToken)
+                        if (newRefresh) localStorage.setItem('refresh_token', newRefresh)
+                        originalRequest.headers['Authorization'] = `Bearer ${newToken}`
+                        return api(originalRequest)
+                    }
+                } catch (refreshErr) {
+                    console.error('Refresh failed', refreshErr)
+                }
+            }
+            // fallback: clear auth and redirect
+            localStorage.removeItem('auth_token')
+            localStorage.removeItem('refresh_token')
+            window.location.href = '/login'
+        }
+        return Promise.reject(error)
     }
-    return Promise.reject(error)
-  }
 )
 
 export default api
