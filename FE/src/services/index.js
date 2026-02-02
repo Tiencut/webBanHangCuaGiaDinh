@@ -470,8 +470,9 @@ export {
   authAPI,
   importAPI,
   dashboardAPI,
-  inventoryAPI
-  , draftsAPI
+  inventoryAPI,
+  draftsAPI,
+  checkoutAPI
 }
 
 // Checkout / Payment API

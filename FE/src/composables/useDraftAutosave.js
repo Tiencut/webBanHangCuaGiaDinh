@@ -1,3 +1,6 @@
+import { ref, watch } from 'vue'
+import { draftsAPI } from '../services'
+
 // Simple autosave composable for order drafts
 // Usage: const autosave = useDraftAutosave({ saveFn, intervalMs, storageKey, getPayload })
 export default function useDraftAutosave({ saveFn, getPayload, debounceMs = 3000, storageKey = 'order-autosave' } = {}) {
@@ -19,13 +22,13 @@ export default function useDraftAutosave({ saveFn, getPayload, debounceMs = 3000
         try {
             pending = true
             await saveFn()
-                // persist what caller provides
+            // persist what caller provides
             const payload = getPayload ? getPayload() : null
             await persistLocal(payload)
             pending = false
         } catch (e) {
             pending = false
-                // still persist locally
+            // still persist locally
             try { await persistLocal(getPayload ? getPayload() : null) } catch (_) {}
             throw e
         }
@@ -39,14 +42,18 @@ export default function useDraftAutosave({ saveFn, getPayload, debounceMs = 3000
     }
 
     const forceSave = async() => {
-        if (debounceTimer) { clearTimeout(debounceTimer);
-            debounceTimer = null }
+        if (debounceTimer) {
+            clearTimeout(debounceTimer)
+            debounceTimer = null
+        }
         await doSave()
     }
 
     const stop = () => {
-        if (debounceTimer) { clearTimeout(debounceTimer);
-            debounceTimer = null }
+        if (debounceTimer) {
+            clearTimeout(debounceTimer)
+            debounceTimer = null
+        }
         pending = false
     }
 
@@ -63,10 +70,9 @@ export default function useDraftAutosave({ saveFn, getPayload, debounceMs = 3000
 
     return { notifyChange, forceSave, stop, loadLocal, isPending: () => pending }
 }
-import { ref, watch } from 'vue'
-import { draftsAPI } from '../services'
 
-export function useDraftAutosave(initialData = {}, intervalMs = 5000) {
+// Legacy version renamed to avoid conflict
+export function useDraftAutosaveLegacy(initialData = {}, intervalMs = 5000) {
     const draft = ref(initialData)
     let timer = null
 

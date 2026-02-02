@@ -11,18 +11,21 @@ const api = axios.create({
 });
 
 // Attach Authorization header when token exists
-api.interceptors.request.use((config) => {
-    try {
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-            config.headers = config.headers || {};
-            config.headers['Authorization'] = `Bearer ${token}`;
+api.interceptors.request.use(
+    (config) => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                config.headers = config.headers || {};
+                config.headers['Authorization'] = `Bearer ${token}`;
+            }
+        } catch (err) {
+            // ignore
         }
-    } catch (err) {
-        // ignore
-    }
-    return config;
-});
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
 // Interceptor để xử lý response
 api.interceptors.response.use(
@@ -37,22 +40,5 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
-
-// Request interceptor: attach Authorization header if token present
-api.interceptors.request.use(
-    (config) => {
-        try {
-            const token = localStorage.getItem('auth_token')
-            if (token) {
-                config.headers = config.headers || {}
-                config.headers['Authorization'] = `Bearer ${token}`
-            }
-        } catch (e) {
-            // ignore
-        }
-        return config
-    },
-    (error) => Promise.reject(error)
-)
 
 export default api;

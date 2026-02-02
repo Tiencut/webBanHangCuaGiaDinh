@@ -340,9 +340,7 @@ export default {
     } catch (e) {
       console.error('failed to start autosave', e)
     }
-  }
-
-  ,
+  },
   beforeUnmount() {
     if (this._autosave && this._autosave.stop) this._autosave.stop()
   }

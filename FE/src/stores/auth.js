@@ -11,11 +11,11 @@ export const useAuthStore = defineStore('auth', {
 
     getters: {
         isAuthenticated: (state) => !!state.token,
-        userRole: (state) => state.user ? .role,
-        userName: (state) => state.user ? .name || state.user ? .username,
-        isAdmin: (state) => state.user ? .role === 'ADMIN',
-        isManager: (state) => state.user ? .role === 'MANAGER',
-        isStaff: (state) => state.user ? .role === 'STAFF'
+        userRole: (state) => state.user?.role,
+        userName: (state) => state.user?.name || state.user?.username,
+        isAdmin: (state) => state.user?.role === 'ADMIN',
+        isManager: (state) => state.user?.role === 'MANAGER',
+        isStaff: (state) => state.user?.role === 'STAFF'
     },
 
     actions: {
@@ -34,7 +34,7 @@ export const useAuthStore = defineStore('auth', {
 
                 return { success: true, user }
             } catch (error) {
-                this.error = error.response ? .data ? .message || error.message
+                this.error = error.response?.data?.message || error.message
                 console.error('Login error:', error)
                 return { success: false, error: this.error }
             } finally {
@@ -50,7 +50,7 @@ export const useAuthStore = defineStore('auth', {
                 const response = await authAPI.register(userData)
                 return { success: true, data: response.data }
             } catch (error) {
-                this.error = error.response ? .data ? .message || error.message
+                this.error = error.response?.data?.message || error.message
                 console.error('Registration error:', error)
                 return { success: false, error: this.error }
             } finally {
@@ -89,7 +89,7 @@ export const useAuthStore = defineStore('auth', {
                 this.error = error.message
                 console.error('Error getting current user:', error)
                     // If token is invalid, logout
-                if (error.response ? .status === 401) {
+                if (error.response?.status === 401) {
                     this.logout()
                 }
                 return null
@@ -124,7 +124,7 @@ export const useAuthStore = defineStore('auth', {
                 await authAPI.changePassword(passwords)
                 return { success: true }
             } catch (error) {
-                this.error = error.response ? .data ? .message || error.message
+                this.error = error.response?.data?.message || error.message
                 console.error('Change password error:', error)
                 return { success: false, error: this.error }
             } finally {

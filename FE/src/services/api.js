@@ -32,14 +32,14 @@ api.interceptors.response.use(
     (response) => response,
     async(error) => {
         const originalRequest = error.config
-        if (error.response ? .status === 401 && !originalRequest._retry) {
+        if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true
             const refreshToken = localStorage.getItem('refresh_token')
             if (refreshToken) {
                 try {
                     const resp = await axios.post(`${API_BASE_URL}/auth/refresh-token`, null, { params: { refreshToken } })
-                    const newToken = resp.data ? .token
-                    const newRefresh = resp.data ? .refreshToken
+                    const newToken = resp.data?.token
+                    const newRefresh = resp.data?.refreshToken
                     if (newToken) {
                         localStorage.setItem('auth_token', newToken)
                         if (newRefresh) localStorage.setItem('refresh_token', newRefresh)

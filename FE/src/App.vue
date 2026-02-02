@@ -94,13 +94,11 @@ export default {
       }
     }
 
-    onMounted(() => {
-      window.$confirm = showConfirm
-    })
-
     const sidebarOpen = ref(false)
 
     onMounted(() => {
+      window.$confirm = showConfirm
+
       window.addEventListener('resize', () => {
         if (window.innerWidth >= 1024) {
           sidebarOpen.value = false
