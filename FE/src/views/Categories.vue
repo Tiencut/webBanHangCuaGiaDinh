@@ -180,26 +180,6 @@ const handleDelete = async (category) => {
   }
 }
 
-const saveCategory = async () => {
-  try {
-    const raw = categoryForm.value.sellingMethodsRaw || ''
-    const arr = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean)
-    categoryForm.value.sellingMethods = arr
-    if (isEditing.value && selectedCategory.value) {
-      await categoriesApi.updateCategory(selectedCategory.value.id, categoryForm.value)
-    } else {
-      await categoriesApi.createCategory(categoryForm.value)
-    }
-    await loadCategories()
-    closeModal()
-  } catch (error) {
-    console.error('Error saving category:', error)
-    alert('Lưu danh mục thất bại. Vui lòng thử lại.')
-  }
-}
-
-const closeModal = () => { showModal.value = false; resetForm() }
-
 const findCategoryById = (nodes, id) => {
   for (const node of nodes) {
     if (node.id === id) return node

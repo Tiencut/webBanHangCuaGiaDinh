@@ -333,7 +333,7 @@ export default {
       }
 
       // start listening to changes: deep watch
-      this.$watch(() => this.form, (n, o) => {
+      this.$watch(() => this.form, () => {
         if (this._autosave) this._autosave.notifyChange()
       }, { deep: true })
 

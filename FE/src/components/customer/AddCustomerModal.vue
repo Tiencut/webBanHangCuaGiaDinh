@@ -148,10 +148,6 @@ const resetForm = () => {
     status: 'ACTIVE',
   };
 };
-
-const closeDialog = () => {
-  emit('update:show', false);
-};
 </script>
 
 <style scoped>

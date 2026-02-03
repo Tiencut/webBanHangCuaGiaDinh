@@ -28,7 +28,6 @@
 
 <script>
 import RecentCustomers from '@/components/home/RecentCustomers.vue'
-import { ref, onMounted } from 'vue'
 import NotesWidget from '@/components/notes/NotesWidget.vue'
 import QuickStats from '@/components/home/QuickStats.vue'
 import RecentOrders from '@/components/home/RecentOrders.vue'

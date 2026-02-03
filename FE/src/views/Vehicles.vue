@@ -461,6 +461,12 @@ export default {
       }
     }
 
+    // View parts for vehicle
+    const viewParts = (vehicle) => {
+      console.log('View parts for:', vehicle)
+      // Navigate to parts page with vehicle filter
+    }
+
     // Edit vehicle
     const editVehicle = (vehicle) => {
       selectedVehicle.value = { ...vehicle }
@@ -524,6 +530,11 @@ export default {
       loadVehicles()
     }
 
+    const filterByBrand = (brandName) => {
+      selectedBrand.value = brandName
+      applyFilters()
+    }
+
     // Change page
     const changePage = (page) => {
       currentPage.value = page
@@ -551,32 +562,6 @@ export default {
         'INACTIVE': 'Không hoạt động'
       }
       return texts[status] || status
-    }
-
-    // Get brand class
-    const getBrandClass = (brand) => {
-      const classes = {
-        'HINO': 'bg-blue-100 text-blue-800',
-        'HYUNDAI': 'bg-green-100 text-green-800',
-        'THACO': 'bg-purple-100 text-purple-800',
-        'DONGFENG': 'bg-orange-100 text-orange-800',
-        'ISUZU': 'bg-red-100 text-red-800',
-        'MITSUBISHI': 'bg-indigo-100 text-indigo-800'
-      }
-      return classes[brand] || 'bg-gray-100 text-gray-800'
-    }
-
-    // Get brand text
-    const getBrandText = (brand) => {
-      const texts = {
-        'HINO': 'Hino',
-        'HYUNDAI': 'Hyundai',
-        'THACO': 'Thaco',
-        'DONGFENG': 'Dongfeng',
-        'ISUZU': 'Isuzu',
-        'MITSUBISHI': 'Mitsubishi'
-      }
-      return texts[brand] || brand
     }
 
     // Computed properties
@@ -620,6 +605,7 @@ export default {
       deleteVehicle,
       editVehicle,
       viewVehicle,
+      viewParts,
       getCompatibleProducts,
       suggestProducts,
       applyFilters,
@@ -628,8 +614,10 @@ export default {
       formatDate,
       getStatusClass,
       getStatusText,
-      getBrandClass,
-      getBrandText,
+      getFuelTypeText,
+      getTypeText,
+      getTypeClass,
+      filterByBrand,
       
       // Computed
       filteredVehicles, // Thêm filteredVehicles vào đây

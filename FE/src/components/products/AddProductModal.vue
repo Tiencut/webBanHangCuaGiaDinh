@@ -171,7 +171,7 @@
 import { ref, onUnmounted } from 'vue';
 import api from '@/services/api';
 
-const props = defineProps({
+defineProps({
   categories: Array,
   suppliers: Array,
 });

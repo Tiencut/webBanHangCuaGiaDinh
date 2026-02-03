@@ -1,6 +1,7 @@
 package com.giadinh.banphutung.web_ban_hang_gia_dinh;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.flywaydb.core.Flyway;
@@ -8,6 +9,7 @@ import org.flywaydb.core.Flyway;
 public class FlywayIntegrationTest {
 
     @Test
+    @Disabled("Requires Docker environment")
     @DisabledIfSystemProperty(named = "skipIntegrationTests", matches = "true")
     void flywayRunsOnPostgres() {
         try (PostgreSQLContainer<?> pg = new PostgreSQLContainer<>("postgres:15")) {

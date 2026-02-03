@@ -29,7 +29,7 @@ export default function useDraftAutosave({ saveFn, getPayload, debounceMs = 3000
         } catch (e) {
             pending = false
             // still persist locally
-            try { await persistLocal(getPayload ? getPayload() : null) } catch (_) {}
+            try { await persistLocal(getPayload ? getPayload() : null) } catch (_) { /* ignore */ }
             throw e
         }
     }
@@ -94,7 +94,7 @@ export function useDraftAutosaveLegacy(initialData = {}, intervalMs = 5000) {
 
     watch(draft, (val) => {
         // immediate localStorage backup
-        try { localStorage.setItem('order_draft', JSON.stringify(val)) } catch (e) {}
+        try { localStorage.setItem('order_draft', JSON.stringify(val)) } catch (e) { /* ignore */ }
     }, { deep: true })
 
     return { draft, startAutoSave, stopAutoSave }

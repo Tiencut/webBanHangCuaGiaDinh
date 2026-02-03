@@ -90,7 +90,7 @@ public class VehicleModel extends BaseEntity {
     /**
      * Năm sản xuất (alias cho yearFrom - để tương thích với service)
      */
-    @Column(name = "year")
+    @Column(name = "model_year")
     private String year;
 
     /**

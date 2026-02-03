@@ -192,9 +192,6 @@ export default {
       this.loadCustomers()
     ])
   },
-  components: {
-    SupplierPicker: () => import('@/components/SupplierPicker.vue')
-  },
   methods: {
     async loadOrders() {
       try {

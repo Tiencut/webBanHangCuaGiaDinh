@@ -14,7 +14,6 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
-import api from '@/services/api'
 
 const props = defineProps({
   'product-id': [String, Number],

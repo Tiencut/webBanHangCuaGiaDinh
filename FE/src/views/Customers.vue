@@ -76,7 +76,7 @@
     <div v-else>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div 
-          v-for="customer in customers" 
+          v-for="customer in filteredCustomers" 
           :key="customer.id"
           class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
         >
@@ -176,7 +176,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import customerService from '@/services/customerService';
 import { removeVietnameseTones } from '@/utils/removeVietnameseTones';
 import AddCustomerModal from '@/components/customer/AddCustomerModal.vue';

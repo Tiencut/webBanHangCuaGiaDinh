@@ -225,7 +225,7 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { customersApi } from '../api/customers.js';
 
 export default {

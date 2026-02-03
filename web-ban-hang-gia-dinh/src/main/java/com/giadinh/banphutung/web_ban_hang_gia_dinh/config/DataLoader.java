@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -23,10 +24,25 @@ public class DataLoader implements CommandLineRunner {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
+    @Value("${app.init-data:true}")
+    private boolean shouldInit;
+
     @Override
     public void run(String... args) throws Exception {
+        if (!shouldInit) {
+            log.info("Data seeding is disabled (app.init-data=false).");
+            return;
+        }
         try {
-            if (productRepository.count() > 0) {
+            long productCount = 0;
+            try {
+                productCount = productRepository.count();
+            } catch (Exception e) {
+                log.warn("Could not check product count, table might not exist yet: {}", e.getMessage());
+                return;
+            }
+
+            if (productCount > 0) {
                 log.info("Products already exist — skipping data loader.");
                 return;
             }

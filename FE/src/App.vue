@@ -34,9 +34,8 @@ import { ref, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import Toast from '@/components/Toast.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import AppHeader from '@/components/layout/AppHeader.vue'
 import MobileMenu from './components/layout/MobileMenu.vue'
-import NavigationMenu from './components/layout/NavigationMenu.vue'
+import AppHeader from '@/components/layout/AppHeader.vue'
 
 export default {
   name: 'App',
@@ -44,7 +43,6 @@ export default {
     Toast,
     ConfirmDialog,
     MobileMenu,
-    NavigationMenu,
     AppHeader
   },
   setup() {

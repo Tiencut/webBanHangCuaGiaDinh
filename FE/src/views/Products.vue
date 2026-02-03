@@ -164,10 +164,9 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
-import { useProductsStore } from '../stores/products'
-import { formatCurrency, debounce } from '../utils/helpers'
-import { productsAPI, inventoryAPI, categoriesAPI } from '@/services'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { formatCurrency } from '../utils/helpers'
+import { productsAPI, categoriesAPI } from '@/services'
 import TrainingAssistant from '@/components/TrainingAssistant.vue'
 import DataTable from '@/components/DataTable.vue'
 import ProductStockDetailsModal from '@/components/products/ProductStockDetailsModal.vue'
@@ -176,8 +175,6 @@ import AddProductModal from '@/components/products/AddProductModal.vue'
 import ComboManagementModal from '@/components/products/ComboManagementModal.vue'
 // Use the products-scoped ColumnVisibilityControls (inline controls)
 import ColumnVisibilityControls from '@/components/products/ColumnVisibilityControls.vue'
-import { removeVietnameseTones } from '../utils/removeVietnameseTones'
-
 
 export default {
   name: 'Products',
@@ -222,6 +219,7 @@ export default {
   })
   const tempColumnVisibility = ref({})
   const comboComponents = ref([])
+  const comboTotalPrice = ref(0)
   // modal refs: components tự quản lý trạng thái nội bộ
   const productStockModalRef = ref(null)
   const productDetailModalRef = ref(null)
@@ -684,7 +682,7 @@ export default {
     // modals now manage their own escape handling
     onUnmounted(() => {
       // ensure no leaked listeners if components didn't clean up
-      try { window.removeEventListener('keydown', handleEscClose) } catch (e) {}
+      try { window.removeEventListener('keydown', handleEscClose) } catch (e) { /* ignore */ }
     })
 
     function handleEscClose() { /* placeholder for safety cleanup */ }
@@ -700,6 +698,7 @@ export default {
       columnVisibility,
       tempColumnVisibility,
       comboComponents,
+      comboTotalPrice,
       allColumns,
       visibleColumns,
       showColumnSelector,
@@ -719,11 +718,6 @@ export default {
       // Table config
       columns,
       statusOptions,
-
-      // Mock data
-      products,
-      categories,
-      suppliers,
 
       // Methods
       getCategoryName,
@@ -745,12 +739,18 @@ export default {
       duplicateProduct,
       viewHistory,
 
+      // Combo Methods
+      addComponentToCombo,
+      editComponent,
+      removeComponent,
+      showSubstitutes,
+
       // Training Assistant
-  handleSearchSuggestion,
-  handleHelpRequest,
-  selectProductForTraining,
-  handleRowClick,
-  showStockDetails,
+      handleSearchSuggestion,
+      handleHelpRequest,
+      selectProductForTraining,
+      handleRowClick,
+      showStockDetails,
 
       // Column filters
       columnFilters,

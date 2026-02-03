@@ -227,7 +227,6 @@ export default {
     const searchTerm = ref('')
     const statusFilter = ref('')
     const selectedBrand = ref('')
-    const selectedStatus = ref('')
 
     // Modal states
     const showAddSupplierModal = ref(false)

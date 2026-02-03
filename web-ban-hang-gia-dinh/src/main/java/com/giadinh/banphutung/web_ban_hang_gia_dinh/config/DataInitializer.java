@@ -45,8 +45,13 @@ public class DataInitializer {
     @Transactional
     CommandLineRunner initDatabase() {
         return args -> {
-            // Chỉ init nếu chưa có dữ liệu
-            if (vehicleModelRepository.count() > 0) {
+            try {
+                // Chỉ init nếu chưa có dữ liệu
+                if (vehicleModelRepository.count() > 0) {
+                    return;
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️ Could not check vehicle model count, table might not exist yet: " + e.getMessage());
                 return;
             }
             

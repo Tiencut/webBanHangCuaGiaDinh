@@ -132,7 +132,7 @@
               <ul class="text-xs text-gray-700 space-y-1 max-h-32 overflow-y-auto">
                 <li v-for="order in customerHistory" :key="order.id">
                   <span class="font-medium">#{{ order.code || order.id }}</span> -
-                  {{ order.date | formatDate }} -
+                  {{ formatDate(order.date) }} -
                   <span class="text-green-700">₫{{ formatCurrency(order.totalAmount) }}</span>
                   <span v-if="order.status === 'CREDIT'" class="ml-2 text-yellow-700">(Còn nợ)</span>
                 </li>
@@ -327,6 +327,14 @@ export default {
     const loadingStats = ref(false)
 
     // Load sales stats
+    const formatDate = (date) => {
+      if (!date) return ''
+      try {
+        return format(new Date(date), 'dd/MM/yyyy HH:mm', { locale: vi })
+      } catch (e) {
+        return date
+      }
+    }
     const loadStats = async () => {
       try {
         loadingStats.value = true
@@ -478,8 +486,7 @@ export default {
           notes: orderNotes.value
         }
         // Tạo đơn hàng qua salesApi
-        const orderRes = await salesApi.createOrder(orderPayload)
-        const orderId = orderRes.data?.id
+        await salesApi.createOrder(orderPayload)
         // Xử lý thanh toán nếu cần (nếu backend tách riêng)
         // await salesApi.processPayment(orderId, { method: paymentMethod.value, amount: total.value })
 
@@ -592,6 +599,7 @@ export default {
       addCustomer,
       processPayment,
       formatCurrency,
+      formatDate,
       fetchTopSelling,
       fetchCustomerHistory,
       // Computed
@@ -605,16 +613,7 @@ export default {
       isCreditSale,
       // Lịch sử mua hàng & công nợ
       customerHistory,
-      customerDebt,
-      // Date filter
-      formatDate: (value) => {
-        if (!value) return ''
-        try {
-          return format(new Date(value), 'dd/MM/yyyy', { locale: vi })
-        } catch {
-          return value
-        }
-      }
+      customerDebt
     }
 
   }

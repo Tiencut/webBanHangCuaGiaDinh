@@ -457,27 +457,27 @@ const draftsAPI = {
   delete: (id) => api.delete(`/orders/drafts/${id}`)
 }
 
-// Export all services
-export {
-  productsAPI,
-  productBundlesAPI,
-  customersAPI,
-  ordersAPI,
-  vehiclesAPI,
-  suppliersAPI,
-  categoriesAPI,
-  trainingAPI,
-  authAPI,
-  importAPI,
-  dashboardAPI,
-  inventoryAPI,
-  draftsAPI,
-  checkoutAPI
-}
-
 // Checkout / Payment API
 const checkoutAPI = {
     initiate: (orderId, provider = 'VNPAY') => api.post('/checkout/initiate', { orderId, provider }),
     // Poll payment status by order id
     getStatus: (orderId) => api.get(`/orders/${orderId}`)
+}
+
+// Export all services
+export {
+    productsAPI,
+    productBundlesAPI,
+    customersAPI,
+    ordersAPI,
+    vehiclesAPI,
+    suppliersAPI,
+    categoriesAPI,
+    trainingAPI,
+    authAPI,
+    importAPI,
+    dashboardAPI,
+    inventoryAPI,
+    draftsAPI,
+    checkoutAPI
 }

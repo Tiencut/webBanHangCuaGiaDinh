@@ -7,7 +7,7 @@
   >
     <el-checkbox-group v-model="tempColumnVisibility">
       <el-checkbox
-        v-for="column in allColumns"
+        v-for="column in filteredColumns"
         :key="column.key"
         :label="column.key"
       >

@@ -12,8 +12,8 @@
 
     <transition name="fade">
       <div v-if="open" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-        <router-link @click.native="close" to="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Hồ sơ cá nhân</router-link>
-        <router-link @click.native="close" to="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cài đặt</router-link>
+        <router-link @click="close" to="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Hồ sơ cá nhân</router-link>
+        <router-link @click="close" to="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cài đặt</router-link>
         <div class="border-t border-gray-100 my-1"></div>
         <button @click="onLogout" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Đăng xuất</button>
       </div>

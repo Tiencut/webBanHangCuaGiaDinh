@@ -214,7 +214,6 @@
 
 <script>
 import { ref, reactive, onMounted } from 'vue'
-import axios from 'axios'
 
 export default {
   name: 'TrainingAssistant',

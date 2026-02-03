@@ -47,7 +47,6 @@
 </template>
 
 <script>
-import { ref } from 'vue'
 import { 
   ExclamationTriangleIcon,
   InformationCircleIcon,

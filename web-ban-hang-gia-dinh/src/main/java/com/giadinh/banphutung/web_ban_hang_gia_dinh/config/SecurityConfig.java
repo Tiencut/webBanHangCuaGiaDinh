@@ -31,9 +31,9 @@ public class SecurityConfig {
             .cors(withDefaults()) // Kích hoạt CORS với cấu hình mặc định (sẽ lấy từ bean bên dưới)
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/", "/auth/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/v3/api-docs/**", "/api-docs/**").permitAll()
+                .requestMatchers("/", "/api/auth/**").permitAll()
+                .requestMatchers("/api/products/**", "/api/categories/**", "/api/vehicles/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api-docs/**", "/swagger-resources/**", "/webjars/**", "/configuration/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/error").permitAll()

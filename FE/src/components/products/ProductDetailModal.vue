@@ -79,7 +79,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, onUnmounted } from 'vue';
+import { ref, defineProps, defineEmits } from 'vue';
 import ProductDynamicAttributes from '@/components/products/ProductDynamicAttributes.vue';
 import ProductSuppliersTable from '@/components/products/ProductSuppliersTable.vue';
 import { formatCurrency } from '@/utils/helpers';
